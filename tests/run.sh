@@ -19,7 +19,14 @@ if [ -z "$ENGINES" ]; then
   for e in jq node php python3; do command -v "$e" >/dev/null 2>&1 && ENGINES="$ENGINES${ENGINES:+,}$e"; done
 fi
 
-mkdir -p "$ROOT/tests/.tmp"
+# Fixtures live outside the kit repo, in a root unique to this run, so a
+# fixture git command that misfires can never reach the kit's own history,
+# and parallel runs can't delete each other's fixtures.
+RUN_ROOT="$(mktemp -d "${TMPDIR:-/tmp}/yaykit-tests.XXXXXX")"
+RUN_ROOT="$(cd "$RUN_ROOT" && pwd -P)"
+export GIT_CEILING_DIRECTORIES="$(dirname "$RUN_ROOT")"
+KIT_HEAD="$(git -C "$ROOT" rev-parse HEAD 2>/dev/null || true)"
+trap 'rm -rf "$RUN_ROOT"' EXIT
 total_fail=0; total_pass=0
 
 for engine in $(printf '%s' "$ENGINES" | tr ',' ' '); do
@@ -30,7 +37,7 @@ for engine in $(printf '%s' "$ENGINES" | tr ',' ' '); do
     if grep -q '^# engine-independent' "$f" && [ "$engine" != "${ENGINES%%,*}" ]; then continue; fi
     out="$(
       export YAY_JSON_ENGINE="$engine"
-      T_TMP="$(mktemp -d "$ROOT/tests/.tmp/run.XXXXXX")"; export T_TMP
+      T_TMP="$(mktemp -d "$RUN_ROOT/run.XXXXXX")"; export T_TMP
       . "$ROOT/tests/lib/assert.sh"
       . "$f"
       for t in $(declare -F | awk '{print $3}' | grep '^test_'); do
@@ -46,6 +53,9 @@ for engine in $(printf '%s' "$ENGINES" | tr ',' ' '); do
   done
 done
 
-rm -rf "$ROOT/tests/.tmp"
+if [ "$(git -C "$ROOT" rev-parse HEAD 2>/dev/null || true)" != "$KIT_HEAD" ]; then
+  echo "FATAL: the kit repo's HEAD moved during the tests (a fixture committed to it). Reset it." >&2
+  exit 2
+fi
 if [ "$total_fail" -gt 0 ]; then echo "FAILED: $total_fail assertion(s)"; exit 1; fi
 echo "all tests passed"

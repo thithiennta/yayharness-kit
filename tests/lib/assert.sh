@@ -27,7 +27,7 @@ assert_exit() { # code cmd...
 assert_file() { if [ -e "$1" ]; then _pass; else _fail "missing file $1"; fi; }
 assert_no_file() { if [ -e "$1" ]; then _fail "file should not exist: $1"; else _pass; fi; }
 
-# A throwaway git repo with an identity, under tests/.tmp.
+# A throwaway git repo with an identity, under this run's temp root (outside the kit repo).
 mk_repo() {
   local d
   d="$(mktemp -d "${T_TMP:?}/repo.XXXXXX")"
