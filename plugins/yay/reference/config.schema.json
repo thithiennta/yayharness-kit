@@ -1,0 +1,91 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "yayharness/config.schema.json",
+  "title": "yay harness repo config",
+  "type": "object",
+  "required": ["schemaVersion", "plugin", "editions", "git", "commands"],
+  "additionalProperties": false,
+  "properties": {
+    "$schema": { "type": "string" },
+    "schemaVersion": { "const": 1 },
+    "plugin": {
+      "type": "object",
+      "required": ["name", "slug", "mainFile"],
+      "additionalProperties": false,
+      "properties": {
+        "name": { "type": "string", "minLength": 1 },
+        "slug": { "type": "string", "pattern": "^[a-z0-9-]+$" },
+        "mainFile": { "type": "string" },
+        "textDomain": { "type": "string" },
+        "wporgSlug": { "type": ["string", "null"] }
+      }
+    },
+    "editions": { "type": "array", "items": { "type": "string" }, "minItems": 1, "uniqueItems": true },
+    "requires": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "php": { "type": "string" },
+        "wp": { "type": "string" },
+        "wc": { "type": ["string", "null"] }
+      }
+    },
+    "tested": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "wp": { "type": "string" },
+        "wc": { "type": ["string", "null"] }
+      }
+    },
+    "git": {
+      "type": "object",
+      "required": ["baseBranch"],
+      "additionalProperties": false,
+      "properties": {
+        "baseBranch": { "type": "string" },
+        "tagFormat": { "type": "string", "default": "v{version}" },
+        "branchTypes": { "type": "array", "items": { "type": "string" } },
+        "scopes": { "type": "array", "items": { "type": "string" } }
+      }
+    },
+    "commands": {
+      "type": "object",
+      "additionalProperties": { "type": "string" },
+      "properties": {
+        "install": { "type": "string" },
+        "dev": { "type": "string" },
+        "build": { "type": "string" },
+        "lint": { "type": "string" },
+        "typecheck": { "type": "string" },
+        "test": { "type": "string" },
+        "package": { "type": "string" }
+      }
+    },
+    "package": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": { "output": { "type": "string" } }
+    },
+    "versionFiles": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["file", "pattern"],
+        "additionalProperties": false,
+        "properties": { "file": { "type": "string" }, "pattern": { "type": "string" } }
+      }
+    },
+    "generatedPaths": { "type": "array", "items": { "type": "string" } },
+    "changelog": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "readme": { "type": "string", "default": "readme.txt" },
+        "notesDir": { "type": "string", "default": "docs/releases" }
+      }
+    },
+    "checks": { "type": "array", "items": { "type": "string" } },
+    "keep": { "type": "array", "items": { "type": "string" } }
+  }
+}

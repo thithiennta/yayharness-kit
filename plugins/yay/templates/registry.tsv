@@ -1,0 +1,17 @@
+# template	dest	mode	group
+# mode: file (kit-owned file) | block (kit-owned CLAUDE.md block) | json (kit-owned, merged with .yay/<name>.extra.json) | seed (written once, then not kit-owned; "-" = empty file) | lines (each template line must exist in dest; others untouched)
+CLAUDE.skeleton.md	CLAUDE.md	seed	claude-md
+CLAUDE.managed.md	CLAUDE.md	block	claude-md
+rules/yay-workflow.md	.claude/rules/yay-workflow.md	file	rules
+rules/yay-git.md	.claude/rules/yay-git.md	file	rules
+rules/yay-wordpress.md	.claude/rules/yay-wordpress.md	file	rules
+settings.json	.claude/settings.json	json	settings
+github/pull_request_template.md	.github/pull_request_template.md	file	github
+docs/roadmap.md	docs/roadmap.md	seed	docs
+docs/knowledge-readme.md	docs/knowledge/README.md	seed	docs
+-	docs/brainstorms/.gitkeep	seed	docs
+-	docs/plans/.gitkeep	seed	docs
+-	docs/bugs/.gitkeep	seed	docs
+-	docs/backlog/.gitkeep	seed	docs
+-	docs/releases/.gitkeep	seed	docs
+gitignore.lines	.gitignore	lines	git

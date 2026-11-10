@@ -1,0 +1,17 @@
+{
+  "$schema": "https://json.schemastore.org/claude-code-settings.json",
+  "extraKnownMarketplaces": {
+    "yayharness": { "source": {{kit.marketplaceSource}} }
+  },
+  "enabledPlugins": { "yay@yayharness": true },
+  "permissions": {
+    "allow": [
+      "Bash(yayh *)",
+      "Bash(git status *)",
+      "Bash(git diff *)",
+      "Bash(git log *)",
+      "Bash(git show *)",
+      "Bash(git worktree list *)"
+    ]
+  }
+}

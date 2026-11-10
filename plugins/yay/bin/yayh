@@ -1,0 +1,135 @@
+#!/usr/bin/env bash
+# yayh: the yay kit's helper CLI. Skills call it, so Claude never re-derives
+# IDs, slugs, versions or config by hand. It's on PATH while the plugin is enabled.
+set -euo pipefail
+
+YAY_KIT_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+YAY_LIB_DIR="$YAY_KIT_ROOT/lib"
+# shellcheck source=../lib/common.sh
+. "$YAY_LIB_DIR/common.sh"
+. "$YAY_LIB_DIR/config.sh"
+. "$YAY_LIB_DIR/frontmatter.sh"
+. "$YAY_LIB_DIR/manifest.sh"
+. "$YAY_LIB_DIR/git.sh"
+. "$YAY_LIB_DIR/harness.sh"
+
+usage() {
+  cat <<'EOF'
+yayh <command> [args]
+
+Kit
+  version                          kit version
+  root                             kit root (for templates and reference docs)
+
+Config (.yay/config.json)
+  config get <key> [fallback]      dotted key; arrays print one per line
+  config fill <template> k=v...    substitute {version} {edition} {slug} {zip}
+  config path                      path of the repo config
+  config validate                  check required keys, files and formats
+
+IDs, slugs, front-matter
+  slug <text>                      kebab-case slug, max 50 chars
+  id next <R|BS|P|B|BL>            next free id in docs/
+  id find <ID>                     file(s) that declare the id
+  fm get <file> <key>
+  fm set <file> <key> <value>
+
+Manifest (.yay/manifest.json)
+  manifest status [entry...]       clean|modified|missing per kit-owned file
+  manifest record <entry> [tpl]    store the current hash (entry may end #managed)
+  manifest forget <entry>
+  manifest hash <entry>
+
+Harness
+  harness status                   not-initialized | no-manifest | current X | outdated X -> Y
+  harness detect                   print a proposed .yay/config.json for this repo
+  harness inventory                old-harness files: wipe/keep/untracked (TSV)
+  harness wipe --yes [--allow-base] git rm the old harness (needs a clean tree, not on base)
+  harness sync [--check] [--force] [--diff] [--only=claude-md,rules,settings,github,docs]
+                                   write kit-owned files; prints <action>\t<entry>
+  harness files                    kit-written paths that exist (stage these, never git add -A)
+  harness render <template>        render one template with this repo's config
+
+Git
+  git base                         base branch
+  git branch-name <type> <text>    validated <type>/<slug>
+  git branch-check <branch>        exit 0 if the name follows conventions
+  git commit-check <msg|file>      exit 0 if the header is a valid conventional commit
+  git last-tag                     latest release tag (version order)
+  git tag-for <version>            tag name for a version
+  git version-of-tag <tag>
+  git bump <current> <major|minor|patch|x.y.z>
+  git worktree <branch> [from]     create or reuse .claude/worktrees/<slug>, print path
+
+Environment: YAY_REPO overrides the repo root, YAY_JSON_ENGINE forces jq|node|php|python3.
+EOF
+}
+
+cmd="${1:-help}"; shift || true
+case "$cmd" in
+  version) yay_kit_version ;;
+  root) printf '%s\n' "$YAY_KIT_ROOT" ;;
+  slug) [ $# -gt 0 ] || yay_die "usage: yayh slug <text>"; yay_slugify "$*" ;;
+  config)
+    sub="${1:-}"; shift || true
+    case "$sub" in
+      get) [ $# -ge 1 ] || yay_die "usage: yayh config get <key> [fallback]"
+           yay_config_get "$@" || yay_die "config key '$1' is not set in $(yay_config_file)" ;;
+      fill) [ $# -ge 1 ] || yay_die "usage: yayh config fill <template> k=v..."; yay_fill "$@" ;;
+      path) yay_config_file ;;
+      validate) yay_config_validate && echo "config ok" ;;
+      *) yay_die "usage: yayh config get|fill|path|validate" ;;
+    esac ;;
+  id)
+    sub="${1:-}"; shift || true
+    case "$sub" in
+      next) [ $# -eq 1 ] || yay_die "usage: yayh id next <R|BS|P|B|BL>"; yay_id_next "$1" ;;
+      find) [ $# -eq 1 ] || yay_die "usage: yayh id find <ID>"; yay_id_find "$1" || yay_die "no artifact declares $1" ;;
+      *) yay_die "usage: yayh id next|find" ;;
+    esac ;;
+  fm)
+    sub="${1:-}"; shift || true
+    case "$sub" in
+      get) [ $# -eq 2 ] || yay_die "usage: yayh fm get <file> <key>"; yay_fm_get "$1" "$2" || exit 3 ;;
+      set) [ $# -eq 3 ] || yay_die "usage: yayh fm set <file> <key> <value>"; yay_fm_set "$1" "$2" "$3" ;;
+      *) yay_die "usage: yayh fm get|set" ;;
+    esac ;;
+  manifest)
+    sub="${1:-}"; shift || true
+    case "$sub" in
+      status) yay_manifest_status "$@" ;;
+      record) [ $# -ge 1 ] || yay_die "usage: yayh manifest record <entry> [template]"; yay_manifest_record "$@" ;;
+      forget) [ $# -eq 1 ] || yay_die "usage: yayh manifest forget <entry>"; yay_manifest_forget "$1" ;;
+      hash) [ $# -eq 1 ] || yay_die "usage: yayh manifest hash <entry>"; yay_manifest_hash "$1" || yay_die "cannot hash $1" ;;
+      *) yay_die "usage: yayh manifest status|record|forget|hash" ;;
+    esac ;;
+  git)
+    sub="${1:-}"; shift || true
+    case "$sub" in
+      base) yay_base_branch ;;
+      branch-name) [ $# -ge 2 ] || yay_die "usage: yayh git branch-name <type> <text>"; yay_branch_name "$@" ;;
+      branch-check) [ $# -eq 1 ] || yay_die "usage: yayh git branch-check <branch>"
+                    yay_branch_check "$1" || { echo "branch '$1' must be <type>/<kebab-slug> with type in: $(yay_config_get git.branchTypes | tr '\n' ' ')" >&2; exit 1; } ;;
+      commit-check) [ $# -eq 1 ] || yay_die "usage: yayh git commit-check <msg|file>"; yay_commit_check "$1" ;;
+      last-tag) yay_last_tag ;;
+      tag-for) [ $# -eq 1 ] || yay_die "usage: yayh git tag-for <version>"; yay_tag_for "$1" ;;
+      version-of-tag) [ $# -eq 1 ] || yay_die "usage: yayh git version-of-tag <tag>"; yay_version_of_tag "$1" ;;
+      bump) [ $# -eq 2 ] || yay_die "usage: yayh git bump <current> <major|minor|patch|x.y.z>"; yay_semver_bump "$1" "$2" ;;
+      worktree) [ $# -ge 1 ] || yay_die "usage: yayh git worktree <branch> [from]"; yay_worktree_create "$@" ;;
+      *) yay_die "usage: yayh git base|branch-name|branch-check|commit-check|last-tag|tag-for|version-of-tag|bump|worktree" ;;
+    esac ;;
+  harness)
+    sub="${1:-}"; shift || true
+    case "$sub" in
+      status) yay_harness_status ;;
+      detect) yay_detect ;;
+      inventory) yay_inventory ;;
+      wipe) yay_wipe "$@" ;;
+      sync) yay_sync "$@" ;;
+      files) yay_harness_files | sort -u ;;
+      render) [ $# -eq 1 ] || yay_die "usage: yayh harness render <template>"; yay_render "$YAY_TEMPLATES/$1" ;;
+      *) yay_die "usage: yayh harness status|detect|inventory|wipe|sync|render" ;;
+    esac ;;
+  help|-h|--help) usage ;;
+  *) usage >&2; exit 2 ;;
+esac

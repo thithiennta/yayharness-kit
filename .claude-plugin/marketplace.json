@@ -1,0 +1,16 @@
+{
+  "name": "yayharness",
+  "owner": { "name": "YayCommerce" },
+  "metadata": {
+    "description": "Shared Claude Code harness for YayCommerce WordPress plugins.",
+    "version": "0.1.0"
+  },
+  "plugins": [
+    {
+      "name": "yay",
+      "source": "./plugins/yay",
+      "description": "One workflow for every Yay plugin: harness and knowledge init and update, brainstorm, plan, implement, debug, fix, roadmap, changelog, build and release.",
+      "version": "0.1.0"
+    }
+  ]
+}
