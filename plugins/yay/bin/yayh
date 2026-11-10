@@ -13,6 +13,7 @@ YAY_LIB_DIR="$YAY_KIT_ROOT/lib"
 . "$YAY_LIB_DIR/git.sh"
 . "$YAY_LIB_DIR/harness.sh"
 . "$YAY_LIB_DIR/knowledge.sh"
+. "$YAY_LIB_DIR/artifact.sh"
 
 usage() {
   cat <<'EOF'
@@ -52,6 +53,23 @@ Harness
                                    write kit-owned files; prints <action>\t<entry>
   harness files                    kit-written paths that exist (stage these, never git add -A)
   harness render <template>        render one template with this repo's config
+
+Artifacts (brainstorms, plans, bugs, backlog)
+  artifact new <brainstorm|plan|bug|backlog> "<title>" [from=X] [roadmap=R-n] [type=feat] [severity=high] [editions="free, pro"]
+                                   create from the template with the next id; prints the path
+  artifact resolve <ID|path|slug>  path of one artifact
+  artifact list [type] [--status=s] id, status, title, path (TSV)
+  artifact carry <worktree> <path>...
+                                   move new (untracked) artifacts from this checkout into a worktree
+  plan tasks <plan>                T<n>, done|open, text (TSV)
+  plan tick <plan> <T<n>> [--undo] tick a task's checkbox
+  plan check <plan>                structure errors and warnings (exit 1 on errors)
+  id conflicts [base]              ids this branch adds that the base branch already uses
+
+Commands and debugging
+  run <name> [version=x] [edition=y]
+                                   run commands.<name> from .yay/config.json in the repo root
+  debug markers                    yay:debug instrumentation left in the tree (path:line:text)
 
 Knowledge (CLAUDE.md project block + docs/knowledge/)
   knowledge docs                   list knowledge docs
@@ -96,8 +114,9 @@ case "$cmd" in
     sub="${1:-}"; shift || true
     case "$sub" in
       next) [ $# -eq 1 ] || yay_die "usage: yayh id next <R|BS|P|B|BL>"; yay_id_next "$1" ;;
+      conflicts) yay_id_conflicts "$@" ;;
       find) [ $# -eq 1 ] || yay_die "usage: yayh id find <ID>"; yay_id_find "$1" || yay_die "no artifact declares $1" ;;
-      *) yay_die "usage: yayh id next|find" ;;
+      *) yay_die "usage: yayh id next|find|conflicts" ;;
     esac ;;
   fm)
     sub="${1:-}"; shift || true
@@ -142,6 +161,26 @@ case "$cmd" in
       render) [ $# -eq 1 ] || yay_die "usage: yayh harness render <template>"; yay_render "$YAY_TEMPLATES/$1" ;;
       *) yay_die "usage: yayh harness status|detect|inventory|wipe|sync|render" ;;
     esac ;;
+  artifact)
+    sub="${1:-}"; shift || true
+    case "$sub" in
+      new) [ $# -ge 2 ] || yay_die "usage: yayh artifact new <type> \"<title>\" [key=value...]"; yay_artifact_new "$@" ;;
+      resolve) [ $# -eq 1 ] || yay_die "usage: yayh artifact resolve <ID|path|slug>"; yay_artifact_resolve "$1" || yay_die "no artifact matches '$1'" ;;
+      list) yay_artifact_list "$@" ;;
+      carry) [ $# -ge 2 ] || yay_die "usage: yayh artifact carry <worktree> <path>..."; yay_artifact_carry "$@" ;;
+      *) yay_die "usage: yayh artifact new|resolve|list|carry" ;;
+    esac ;;
+  plan)
+    sub="${1:-}"; shift || true
+    case "$sub" in
+      tasks) [ $# -eq 1 ] || yay_die "usage: yayh plan tasks <plan>"; yay_plan_tasks "$1" ;;
+      tick) [ $# -ge 2 ] || yay_die "usage: yayh plan tick <plan> <T<n>> [--undo]"; yay_plan_tick "$@" ;;
+      check) [ $# -eq 1 ] || yay_die "usage: yayh plan check <plan>"; yay_plan_check "$1" ;;
+      *) yay_die "usage: yayh plan tasks|tick|check" ;;
+    esac ;;
+  run) [ $# -ge 1 ] || yay_die "usage: yayh run <command-name> [k=v...]"; yay_run "$@" ;;
+  debug)
+    case "${1:-}" in markers) yay_debug_markers ;; *) yay_die "usage: yayh debug markers" ;; esac ;;
   knowledge)
     sub="${1:-}"; shift || true
     case "$sub" in

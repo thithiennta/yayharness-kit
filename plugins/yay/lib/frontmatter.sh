@@ -58,6 +58,15 @@ yay_id_next() {
       | sort -n | tail -1)"
     max="${max:-0}"
   fi
+  # Also count IDs already on the base branch, so two branches started from
+  # different points don't hand out the same number.
+  local base bmax
+  base="$(yay_config_get git.baseBranch 2>/dev/null || true)"
+  if [ -n "$base" ] && git -C "$(yay_repo_root)" rev-parse --verify --quiet "$base^{commit}" >/dev/null 2>&1; then
+    bmax="$( { git -C "$(yay_repo_root)" grep -h -oE "^(id: |### )${prefix}-[0-9]+" "$base" -- docs/ 2>/dev/null || true; } \
+      | sed -E "s/.*${prefix}-//" | sort -n | tail -1)"
+    [ -n "$bmax" ] && [ "$bmax" -gt "$max" ] && max="$bmax"
+  fi
   printf '%s-%d\n' "$prefix" $((max + 1))
 }
 

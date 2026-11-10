@@ -217,6 +217,10 @@ $gen
 GEN
         [ "$skip" = 1 ] && continue
         case "$tok" in */*)
+          # Only paths rooted in this repo: a first segment that isn't a
+          # top-level entry here (e.g. WooCommerce's myaccount/orders.php
+          # template path) refers to something outside it.
+          [ -e "$root/${tok%%/*}" ] || continue
           [ -e "$root/${tok%/}" ] || yay_git check-ignore -q "$tok" 2>/dev/null || _k_issue "$f" "$ln" "path \`$tok\` does not exist"
           ;;
         *)

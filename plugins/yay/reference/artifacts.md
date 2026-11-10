@@ -24,6 +24,12 @@ Get the next free ID with `yayh id next <PREFIX>`. It scans `docs/` and returns 
 
 Slugs are lowercase words joined by `-`, at most 50 characters (`yayh slug "<text>"`).
 
+## Where artifacts live before they have a branch
+
+`/yay:brainstorm`, `/yay:plan` and `/yay:debug` run before any branch exists, so they only **create new files** (`yayh artifact new …`) in the current checkout, uncommitted. They never edit tracked files there. `/yay:implement` and `/yay:fix` create the worktree, then move those files into it (`yayh artifact carry <worktree> <files>`). Status changes to existing tracked files (the roadmap item, an older brainstorm) happen inside the branch. That way every artifact is committed with the work it describes.
+
+When you're already on a non-base branch, a skill may commit its new artifact there, if asked (`--commit`).
+
 ## Shapes
 
 ### Roadmap: `docs/roadmap.md`
@@ -62,6 +68,7 @@ title: Express checkout buttons
 status: draft | ready | in-progress | done | dropped
 from: BS-3                      # brainstorm, roadmap item or bug id
 roadmap: R-12
+type: feat                      # branch type for /yay:implement (feat fix chore refactor perf docs test)
 branch: feat/express-checkout   # set by /yay:implement
 pr:                             # PR number, set by /yay:implement
 editions: [free, pro]

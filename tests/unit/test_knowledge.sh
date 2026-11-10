@@ -142,3 +142,12 @@ test_stale_never_badref_and_since() {
   assert_contains "$out" "fresh	docs/knowledge/known-issues.md"     # nothing under its covers changed
   assert_fails "$YAYH" knowledge stale --since=nope-ref
 }
+
+test_check_skips_paths_outside_the_repo() {
+  export YAY_REPO; YAY_REPO="$(_krepo)"
+  _write_docs "$YAY_REPO"
+  printf 'Theme overrides of `myaccount/orders.php` drop it; but `includes/Typo.php` must exist.\n' >> "$YAY_REPO/docs/knowledge/architecture.md"
+  local out; out="$("$YAYH" knowledge check docs/knowledge/architecture.md 2>&1)"
+  case "$out" in *myaccount*) _fail "external path flagged: $out";; *) _pass;; esac
+  assert_contains "$out" "includes/Typo.php"
+}

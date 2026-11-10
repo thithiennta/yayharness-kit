@@ -29,7 +29,14 @@ JSON, not YAML, so hooks can read it with `jq`, `node` or `php` and nothing to i
 | `changelog.readme` | string | File holding `== Changelog ==`, usually `readme.txt`. |
 | `changelog.notesDir` | string | Where customer-facing release notes go. Default `docs/releases`. |
 | `checks[]` | string[] | Extra commands `/yay:build` runs on the packaged zip, with `{zip}` available. |
+| `site.wpPath` | string | Per developer, so put it in `.yay/local.json`, never in the shared config. It's the WordPress root of the local site; `/yay:debug` uses it for WP-CLI and logs. When the repo sits in `<wp>/wp-content/plugins/` it's derived automatically, and worktrees work too. |
+| `site.url` | string | Per developer. The local site's URL, for repro steps. |
+| `site.debugLog` | string | Per developer. Defaults to `<wpPath>/wp-content/debug.log`. |
 | `keep` | string[] | Paths `/yay:harness-init` must not wipe, e.g. user docs that live in `docs/`. |
+
+## Per-developer overrides: `.yay/local.json`
+
+It's gitignored, has the same shape as the shared config, and any key in it wins. Use it for machine-specific values (`site.*`), never for team conventions.
 
 ## Reading it
 

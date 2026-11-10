@@ -34,12 +34,17 @@
 - [x] T2.2 `/yay:knowledge-update` ⟵ T2.1: `yayh knowledge stale` gives stale, fresh, never, bad-ref and uncovered per doc.
 - Fixed from the real run: the debug-marker hook matched the kit's own text (only comment-form markers in non-markdown files count now); `--keep=` became a CLI option, not an env var; the skill now spells out that a hard wipe means no self-chosen restores.
 
-## P3 Dev workflow ⟵ T0.2, P2
-- [ ] T3.1 `/yay:brainstorm`
-- [ ] T3.2 `/yay:plan` ⟵ T3.1
-- [ ] T3.3 `/yay:implement` ⟵ T3.2, T1.3
-- [ ] T3.4 `/yay:debug` ⟵ T0.2, P2
-- [ ] T3.5 `/yay:fix` ⟵ T3.4, T3.3
+## P3 Dev workflow ✅ ⟵ T0.2, P2
+- [x] T3.1 `/yay:brainstorm`
+- [x] T3.2 `/yay:plan`, with `--check` and `yayh plan check` ⟵ T3.1
+- [x] T3.3 `/yay:implement` ⟵ T3.2, T1.3
+- [x] T3.4 `/yay:debug`, with the `yay:hypothesis-checker` agent ⟵ T0.2, P2
+- [x] T3.5 `/yay:fix`, including `--hotfix` from the last tag ⟵ T3.4, T3.3
+- Headless run on the YayReturns clone with a planted off-by-one (`>=` in `WithdrawalDeadline::is_past()`):
+  - debug found the commit, the line and all 5 places it surfaces, and proved it with `php -r` at both commits;
+  - fix confirmed the tests failed before and passed after (57 tests);
+  - brainstorm, plan and implement produced 7 commits with `Plan:` trailers, passed lint, typecheck and both builds, and reported the planted bug as pre-existing instead of fixing it on the feature branch.
+  - Fixed from the run: knowledge check no longer flags external template paths, and `yayh run` uses `.nvmrc` through nvm.
 
 ## P4 Ship ⟵ T0.2, T3.3 (runs in parallel with P5)
 - [ ] T4.1 `/yay:changelog`

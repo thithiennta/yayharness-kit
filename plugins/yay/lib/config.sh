@@ -2,6 +2,8 @@
 # Read .yay/config.json. See reference/config.md.
 
 yay_config_file() { printf '%s/.yay/config.json\n' "$(yay_repo_root)"; }
+# Per-developer overrides (gitignored), read before the shared config.
+yay_config_local_file() { printf '%s/.yay/local.json\n' "$(yay_repo_root)"; }
 
 # Defaults for keys a repo may omit. Prints nothing when there is no default.
 yay_config_default() {
@@ -11,13 +13,20 @@ yay_config_default() {
     changelog.readme) echo 'readme.txt' ;;
     changelog.notesDir) echo 'docs/releases' ;;
     requires.php)     echo '7.4' ;;
+    site.wpPath)      # a checkout inside <wp>/wp-content/plugins/ (worktrees included)
+      local r; r="$(yay_repo_root)"
+      case "$r" in */wp-content/plugins/*) printf '%s\n' "${r%%/wp-content/plugins/*}" ;; esac ;;
+    site.debugLog)
+      local w; w="$(yay_config_get site.wpPath 2>/dev/null)" && [ -n "$w" ] && printf '%s/wp-content/debug.log\n' "$w" ;;
   esac
+  return 0
 }
 
 # yay_config_get <key> [fallback]  -> exit 3 if missing with no default/fallback.
 yay_config_get() {
   local key="$1" file out
   file="$(yay_config_file)"
+  if out="$(yay_json_get "$(yay_config_local_file)" "$key" 2>/dev/null)"; then printf '%s\n' "$out"; return 0; fi
   if out="$(yay_json_get "$file" "$key")"; then printf '%s\n' "$out"; return 0; fi
   out="$(yay_config_default "$key")"
   if [ -n "$out" ]; then printf '%s\n' "$out"; return 0; fi
