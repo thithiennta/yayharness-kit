@@ -45,7 +45,7 @@ Implement a plan exactly, in a worktree, with one commit per task. The rules for
 4. In the branch:
    - `yayh fm set <plan> status in-progress`
    - `yayh fm set <plan> branch "$branch"`
-   - if the plan has `roadmap: R-<n>`, set that item's `- status:` line in `docs/roadmap.md` to `in-progress`
+   - if the plan has `roadmap: R-<n>`, run `yayh roadmap set R-<n> status in-progress`
 5. Run `yayh id conflicts`. If an ID clashes with the base branch, renumber this branch's artifact with `yayh id next`, then update its `id:` and every reference to it.
 6. Commit: `docs(plan): start P-<n> <title>` with the trailer `Plan: P-<n>`.
 

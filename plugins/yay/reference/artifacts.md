@@ -38,17 +38,32 @@ When you're already on a non-base branch, a skill may commit its new artifact th
 horizon: 2026-12-31
 sprint_length: 2w
 updated: 2026-11-10
+published:                      # page URL, set by /yay:roadmap --publish (hub: for a portfolio)
 ---
-# Roadmap
+# Roadmap: YayCheckout
 
 ## Sprint 1 (2026-11-10 → 2026-11-23)
 
+Goal: checkout speed before BFCM.
+
 ### R-12 Express checkout buttons
-- status: planned | brainstorming | planned-in:P-4 | in-progress | shipped:1.4.0 | dropped
-- size: S | M | L
-- why: one line on the customer value
+- status: planned
+- size: M
+- why: one line on the customer value, with its evidence (B-3, #241, a review URL)
+- editions: free, pro
+- from: BL-9
+
+## Later
+
+### R-15 Import layouts from a URL
+- status: planned
+- size: L
 ```
-The `### R-<n>` items use `- key: value` bullets instead of front-matter, because many items share one file.
+- Sections are `## Sprint <n> (<start> → <end>)` (dates are `YYYY-MM-DD`, sprints in order and not overlapping), then `## Later`.
+- Items are `### R-<n> Title` with `- key: value` bullets (no front-matter, because many items share one file). `status` and `size` are required. Optional: `why`, `editions`, `from`, `note` (e.g. why it was dropped), `shared` and `depends` (cross-plugin work).
+- `status` is one of `planned`, `brainstorming[:BS-<n>]`, `planned-in:P-<n>`, `in-progress`, `shipped:<version>`, `dropped`. `/yay:roadmap` syncs it from brainstorms and plans (`yayh roadmap links`), `/yay:implement` sets `in-progress`, and `/yay:release` sets `shipped:<version>`.
+- `size`: S (≤ 2 days), M (≤ 1 week), L (more).
+- Edit with `yayh roadmap add|set|move`, and validate with `yayh roadmap check`.
 
 ### Brainstorm: `docs/brainstorms/YYYY-MM-DD-<slug>.md`
 ```
@@ -95,7 +110,7 @@ Body: Symptoms, Environment (PHP/WP/WC/edition/theme), Repro steps, Root cause (
 ```
 id: BL-9
 title: Import layouts from a URL
-status: idea | promoted:R-15 | dropped
+status: idea | promoted:R-15 | dropped   # promoted by /yay:roadmap
 created: 2026-11-10
 ```
 

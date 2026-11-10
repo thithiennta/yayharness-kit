@@ -61,7 +61,7 @@ Git rules are in `${CLAUDE_PLUGIN_ROOT}/reference/git-conventions.md`. Only this
    - with `--wp-tested`/`--wc-tested`: `yayh version tested wp=… wc=…`
 6. **Close the loop on artifacts.** These are the commits since `$last` (from the collect output):
    - **`Fixes: B-<n>`:** `yayh fm set <bug> fixed_in "$new"`, and `status fixed` if not already.
-   - **`Roadmap: R-<n>`:** set that item's `- status:` line in `docs/roadmap.md` to `shipped:$new`.
+   - **`Roadmap: R-<n>`:** `yayh roadmap set R-<n> status "shipped:$new"`. Also do this for the `roadmap:` item of every plan shipped in this release.
    - **Plans whose commits are all in:** make sure their `status` is `done`.
 7. **Build.** Follow `/yay:build` for every edition with `--version=$new`. Any FAIL stops the release: report it and leave the branch for the fix.
 8. **Commit.**

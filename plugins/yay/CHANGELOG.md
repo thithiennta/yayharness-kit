@@ -17,5 +17,8 @@
   - `package.output` may map editions to globs.
   - `config validate` rejects edition-keyed maps that use unknown editions.
   - `yayh git merged-worktrees`.
+- `/yay:roadmap`: plan or re-plan dated sprints against capacity and freeze windows, `--status` (read-only progress, slipped items, open bugs, status drift), quick `--add`/`--move`/`--drop`, `--multi-agent` portfolio co-planning (`workflows/roadmap-portfolio.js`, one owner agent per plugin), and `--publish` as a private page.
+  - `yayh roadmap list|get|set|add|move|sprints|current|check|status|links|peers`.
+  - `/yay:implement` and `/yay:release` set item status through `yayh roadmap set`. The `roadmap` commit scope is always allowed.
 - Reliability: no `| head` or `| grep -q` pipes anywhere (a lint test enforces it), because they fail under `pipefail`. The PHP engine now prints nothing for empty arrays.
 - Hooks: they block edits to generated and kit-owned files, commits on the base branch, `--no-verify`, `yay:debug` leftovers, and tags made outside `/yay:release`; they check commit messages and branch names; at session start they flag a harness older than the kit.

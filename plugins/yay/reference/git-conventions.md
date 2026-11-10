@@ -20,7 +20,7 @@ Worktrees live at `<repo>/.claude/worktrees/<slug>/`, one per branch.
 [Conventional Commits](https://www.conventionalcommits.org): `type(scope): summary`
 
 - `type` is one of `feat fix perf refactor docs test build ci chore revert`. Add `!` for a breaking change.
-- `scope` is optional, lowercase, and from `git.scopes` when that list is non-empty.
+- `scope` is optional, lowercase, and from `git.scopes` when that list is non-empty. The kit's own scopes (`harness`, `knowledge`, `roadmap`, `changelog`, `release`) are always allowed.
 - The summary is imperative, lowercase first word, no trailing period, at most 72 characters for the whole header.
 - Trailers go at the end (`Plan: P-4`, `Fixes: B-7`, `Roadmap: R-12`). See artifacts.md.
 - Never commit `// yay:debug` or `# yay:debug` markers. They're temporary instrumentation from `/yay:debug`.
