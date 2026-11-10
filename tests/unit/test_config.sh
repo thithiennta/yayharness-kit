@@ -65,3 +65,12 @@ test_no_config_file() {
   export YAY_REPO; YAY_REPO="$(mk_repo)"
   assert_exit 1 "$YAYH" config get git.baseBranch
 }
+
+test_empty_array_prints_nothing() {
+  export YAY_REPO; YAY_REPO="$(_cfg_repo)"
+  python3 -I - "$YAY_REPO/.yay/config.json" <<'PY'
+import json,sys
+p=sys.argv[1]; c=json.load(open(p)); c["checks"]=[]; json.dump(c,open(p,"w"))
+PY
+  assert_eq "" "$("$YAYH" config get checks)"
+}

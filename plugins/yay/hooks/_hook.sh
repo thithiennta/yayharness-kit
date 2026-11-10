@@ -28,13 +28,13 @@ hook_use_repo() {
 GIT_RE='(^|[;&|(]|[[:space:]])git([[:space:]]+-C[[:space:]]+[^[:space:]]+|[[:space:]]+-c[[:space:]]+[^[:space:]]+)*[[:space:]]+'
 hook_cmd_dir() {
   local cmd="$1" dir cwd
-  dir="$(printf '%s' "$cmd" | sed -nE 's/.*git[[:space:]]+-C[[:space:]]+("([^"]+)"|([^[:space:]]+)).*/\2\3/p' | head -1)"
-  [ -n "$dir" ] || dir="$(printf '%s' "$cmd" | sed -nE 's/^[[:space:]]*cd[[:space:]]+("([^"]+)"|([^[:space:]&;]+)).*/\2\3/p' | head -1)"
+  dir="$(printf '%s' "$cmd" | sed -nE 's/.*git[[:space:]]+-C[[:space:]]+("([^"]+)"|([^[:space:]]+)).*/\2\3/p' | sed -n 1p)"
+  [ -n "$dir" ] || dir="$(printf '%s' "$cmd" | sed -nE 's/^[[:space:]]*cd[[:space:]]+("([^"]+)"|([^[:space:]&;]+)).*/\2\3/p' | sed -n 1p)"
   cwd="$(hook_get cwd)"; [ -n "$cwd" ] || cwd="$PWD"
   case "$dir" in "") dir="$cwd" ;; /*) ;; "~"*) dir="$HOME${dir#\~}" ;; *) dir="$cwd/$dir" ;; esac
   printf '%s\n' "$dir"
 }
 # Flags of the git <sub> invocation only (up to the next ; & |).
-hook_sub_args() { printf '%s' "$1" | sed -nE "s/.*git([^;&|]*[[:space:]])?$2([^;&|]*).*/\\2/p" | head -1; }
+hook_sub_args() { printf '%s' "$1" | sed -nE "s/.*git([^;&|]*[[:space:]])?$2([^;&|]*).*/\\2/p" | sed -n 1p; }
 
 hook_block() { printf 'yay: %s\n' "$*" >&2; exit 2; }

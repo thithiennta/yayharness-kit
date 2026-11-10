@@ -24,3 +24,14 @@ test_help_lists_every_group() {
   local h; h="$("$YAYH" help)"
   for g in config slug "id next" "fm get" "manifest status" "git worktree"; do assert_contains "$h" "$g"; done
 }
+
+# Under `set -o pipefail`, `producer | head` and `producer | grep -q` can fail
+# the whole pipeline when the consumer exits early (SIGPIPE) - this bit the kit
+# four times. Use `sed -n '1,Np'` and yay_in_list / case instead.
+test_no_early_exit_consumers_in_pipes() {
+  local hits
+  hits="$(grep -nE '(^|[^|])\|[[:space:]]*head([[:space:]]|$)' "$KIT"/lib/*.sh "$KIT"/hooks/*.sh "$KIT"/bin/yayh || true)"
+  assert_eq "" "$hits" "pipes into head"
+  hits="$(grep -nE '(^|[^|])\|[[:space:]]*grep[[:space:]]+-[a-zA-Z]*q' "$KIT"/lib/*.sh "$KIT"/hooks/*.sh "$KIT"/bin/yayh | grep -v "printf '%s'" | grep -v "printf ' %s" | grep -vE ':[0-9]+:[[:space:]]*#' || true)"
+  assert_eq "" "$hits" "pipes into grep -q (single printf producers are safe)"
+}

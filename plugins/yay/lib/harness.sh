@@ -72,7 +72,7 @@ print(json.dumps(m(json.load(open(sys.argv[1])),json.load(open(sys.argv[2]))),in
 
 _hdr() { # _hdr <file> <Header Name> -> value from a WP plugin/readme header
   [ -f "$1" ] || return 0
-  sed -n "s/^[[:space:]*#@]*$2:[[:space:]]*//p" "$1" | head -1 | sed 's/[[:space:]]*$//' | tr -d '\r'
+  sed -n "s/^[[:space:]*#@]*$2:[[:space:]]*//p" "$1" | sed -n 1p | sed 's/[[:space:]]*$//' | tr -d '\r'
 }
 
 _has_script() { yay_json_get "$1" "scripts.$2" >/dev/null 2>&1; }
@@ -125,7 +125,7 @@ yay_detect() {
   [ -n "$base" ] || base="$(git -C "$root" branch --show-current 2>/dev/null)"; [ -n "$base" ] || base="main"
 
   tagfmt='v{version}'
-  local lt; lt="$(git -C "$root" tag --sort=-v:refname 2>/dev/null | grep -E '^v?[0-9]+\.' | head -1 || true)"
+  local lt; lt="$(git -C "$root" tag --sort=-v:refname 2>/dev/null | grep -E '^v?[0-9]+\.' | sed -n 1p || true)"
   case "$lt" in [0-9]*) tagfmt='{version}';; esac
 
   # Commands
@@ -153,7 +153,7 @@ yay_detect() {
   local vf=""
   if [ -n "$main" ]; then
     vf="{\"file\":$(yay_json_str "$main"),\"pattern\":$(yay_json_str '^[[:space:]*]*Version:[[:space:]]*([0-9][^[:space:]]*)')}"
-    local const; const="$(grep -oE "define\([[:space:]]*'[A-Z0-9_]+_VERSION'" "$root/$main" 2>/dev/null | head -1 | grep -oE "[A-Z0-9_]+_VERSION" || true)"
+    local const; const="$(grep -oE "define\([[:space:]]*'[A-Z0-9_]+_VERSION'" "$root/$main" 2>/dev/null | sed -n 1p | grep -oE "[A-Z0-9_]+_VERSION" || true)"
     [ -n "$const" ] && vf="$vf,{\"file\":$(yay_json_str "$main"),\"pattern\":$(yay_json_str "define\\([[:space:]]*'$const',[[:space:]]*'([^']+)'")}"
   fi
   [ -f "$root/readme.txt" ] && vf="$vf${vf:+,}{\"file\":\"readme.txt\",\"pattern\":$(yay_json_str '^Stable tag:[[:space:]]*([0-9][^[:space:]]*)')}"
@@ -166,7 +166,16 @@ yay_detect() {
     fi
   done
 
-  local pkgout='null'
+  local pkgout='null' forbidden='{}' prodir
+  # Pro code must not ship in the other editions' zips.
+  for prodir in includes/Pro src/Pro pro; do
+    if [ -d "$root/$prodir" ]; then
+      # every edition except pro must not contain the Pro tree
+      forbidden="{$(printf '%s' "$editions" | tr -d '[]"' | tr ',' '\n' | grep -vx pro \
+        | while IFS= read -r e; do printf '"%s":[%s],' "$e" "$(yay_json_str "$prodir/")"; done | sed 's/,$//')}"
+      break
+    fi
+  done
   grep -qxE '/?release/?' "$root/.gitignore" 2>/dev/null && pkgout="$(yay_json_str 'release/*.zip')"
 
   {
@@ -181,7 +190,7 @@ yay_detect() {
     printf '"git":{"baseBranch":%s,"tagFormat":%s,"branchTypes":["feat","fix","chore","hotfix","docs","refactor","test"],"scopes":[]},' \
       "$(yay_json_str "$base")" "$(yay_json_str "$tagfmt")"
     printf '"commands":{%s},' "$cmds"
-    printf '"package":{"output":%s},' "$pkgout"
+    printf '"package":{"output":%s,"forbidden":%s},' "$pkgout" "$forbidden"
     printf '"versionFiles":[%s],' "$vf"
     printf '"generatedPaths":[%s],' "$gp"
     printf '"changelog":{"readme":"readme.txt","notesDir":"docs/releases"},'
@@ -209,6 +218,21 @@ yay_config_validate() {
   v="$(yay_json_get "$f" git.tagFormat 2>/dev/null)" || v="{version}"
   case "$v" in *'{version}'*) ;; *) echo "config: git.tagFormat must contain {version}" >&2; errs=$((errs+1));; esac
   yay_json_get "$f" commands >/dev/null 2>&1 || { echo "config: commands is required (use {} when none apply)" >&2; errs=$((errs+1)); }
+  # Edition-keyed maps must use real edition names (a renamed edition would
+  # otherwise silently disable its zip checks).
+  local eds key m
+  eds="$(yay_json_get "$f" editions 2>/dev/null || true)"
+  for m in package.forbidden package.output; do
+    v="$(yay_json_get "$f" "$m" 2>/dev/null)" || continue
+    case "$v" in "{"*) ;; *) continue;; esac
+    for key in $(printf '%s' "$v" | grep -oE '"[^"]+":' | tr -d '":'); do
+      yay_in_list "$key" "$eds" || { echo "config: $m has key '$key', which is not in editions ($(printf '%s' "$eds" | paste -sd, -))" >&2; errs=$((errs+1)); }
+    done
+  done
+  if [ -d "$(yay_repo_root)/includes/Pro" ] && [ "$(printf '%s\n' "$eds" | grep -c .)" -gt 1 ]; then
+    v="$(yay_json_get "$f" package.forbidden 2>/dev/null || true)"
+    case "$v" in *includes/Pro*) ;; *) echo "config: includes/Pro exists but package.forbidden doesn't keep it out of the non-Pro editions" >&2; errs=$((errs+1));; esac
+  fi
   local line file
   while IFS= read -r line; do
     [ -n "$line" ] || continue

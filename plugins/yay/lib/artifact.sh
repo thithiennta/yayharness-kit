@@ -193,7 +193,7 @@ yay_id_conflicts() {
   while IFS= read -r f; do
     [ -n "$f" ] || continue
     id="$(yay_fm_get "$root/$f" id 2>/dev/null || true)"; [ -n "$id" ] || continue
-    theirs="$(git -C "$root" grep -l -E "^(id: |### )${id}( |\$)" "$base" -- docs/ 2>/dev/null | sed "s|^$base:||" | grep -vx "$f" | head -1 || true)"
+    theirs="$(git -C "$root" grep -l -E "^(id: |### )${id}( |\$)" "$base" -- docs/ 2>/dev/null | sed "s|^$base:||" | grep -vx "$f" | sed -n 1p || true)"
     if [ -n "$theirs" ]; then printf 'conflict\t%s\t%s\t%s\n' "$id" "$f" "$theirs"; rc=1; fi
   done <<EOF
 $ours

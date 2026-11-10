@@ -38,7 +38,7 @@ yay_last_tag() {
   local fmt glob
   fmt="$(yay_config_get git.tagFormat)"
   glob="$(yay_fill "$fmt" 'version=[0-9]*')"
-  yay_git tag --list "$glob" --sort=-v:refname | head -1
+  yay_git tag --list "$glob" --sort=-v:refname | sed -n 1p
 }
 
 yay_version_of_tag() {
@@ -91,6 +91,18 @@ knowledge"; then
     fi
   fi
   return 0
+}
+
+# yay_merged_worktrees [base] -> "<path><TAB><branch>" for .claude/worktrees/*
+# whose branch is fully merged into base (safe to remove).
+yay_merged_worktrees() {
+  local base="${1:-$(yay_base_branch)}" root path br
+  root="$(yay_repo_root)"
+  yay_git worktree list --porcelain | awk '/^worktree /{p=substr($0,10)} /^branch refs\/heads\//{print p "\t" substr($0,19)}' \
+  | while IFS="$(printf '\t')" read -r path br; do
+      case "$path" in "$root"/.claude/worktrees/*) ;; *) continue;; esac
+      if yay_git merge-base --is-ancestor "$br" "$base" 2>/dev/null; then printf '%s\t%s\n' "$path" "$br"; fi
+    done
 }
 
 yay_worktree_path() { printf '%s/.claude/worktrees/%s\n' "$(yay_repo_root)" "$1"; }

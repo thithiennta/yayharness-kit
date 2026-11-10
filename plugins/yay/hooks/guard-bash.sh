@@ -7,7 +7,7 @@ cmd="$(hook_get tool_input.command)"
 [ -n "$cmd" ] || exit 0
 re="${GIT_RE}(commit|tag)([[:space:]]|\$)"
 printf '%s' "$cmd" | grep -Eq "$re" || exit 0
-sub="$(printf '%s' "$cmd" | grep -Eo "$re" | head -1 | grep -Eo '(commit|tag)([[:space:]]|$)' | tr -d '[:space:]')"
+sub="$(printf '%s' "$cmd" | grep -Eo "$re" | sed -n 1p | grep -Eo '(commit|tag)([[:space:]]|$)' | tr -d '[:space:]')"
 hook_use_repo "$(hook_cmd_dir "$cmd")"
 root="$ROOT"
 args="$(hook_sub_args "$cmd" "$sub")"
@@ -38,7 +38,7 @@ if printf ' %s ' "$args" | grep -Eq -- '[[:space:]](--all|-[a-zA-Z]*a[a-zA-Z]*)[
 else
   added="$(git -C "$root" diff --cached -- . ':(exclude)*.md' ':(exclude)*.mdx' 2>/dev/null)"
 fi
-hits="$(printf '%s\n' "$added" | grep -E '^\+([^+]|$)' | grep -E '(//|#|/\*|<!--)[[:space:]]*yay:debug' | head -3 || true)"
+hits="$(printf '%s\n' "$added" | grep -E '^\+([^+]|$)' | grep -E '(//|#|/\*|<!--)[[:space:]]*yay:debug' | sed -n '1,3p' || true)"
 [ -z "$hits" ] || hook_block "staged changes still contain yay:debug instrumentation; remove it before committing:
 $hits"
 exit 0

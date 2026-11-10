@@ -31,7 +31,7 @@ yay_fm_list() { printf '%s' "$1" | sed -e 's/^\[//' -e 's/\]$//' | tr ',' '\n' |
 yay_project_attr() { # <attr>
   local root; root="$(yay_repo_root)"
   [ -f "$root/CLAUDE.md" ] || return 3
-  sed -n "s/.*<!-- yay:project:start.* $1=\([^ ]*\).*-->.*/\1/p" "$root/CLAUDE.md" | head -1
+  sed -n "s/.*<!-- yay:project:start.* $1=\([^ ]*\).*-->.*/\1/p" "$root/CLAUDE.md" | sed -n 1p
 }
 
 # Ref a doc was last verified against ("" when never).
@@ -121,7 +121,7 @@ EOF
       IFS=$'\n'
       # shellcheck disable=SC2086
       yay_git diff --name-only "$oldest..HEAD" -- . $ex $excl $(yay_project_watch | sed 's/^/:(exclude)/') 2>/dev/null \
-        | head -50 | sed 's/^/uncovered	/'
+        | sed -n '1,50p' | sed 's/^/uncovered	/'
       IFS="$IFS_SAVE"
     fi
   fi
@@ -194,7 +194,7 @@ $(yay_knowledge_docs)"; fi
       local c
       while IFS= read -r c; do
         [ -n "$c" ] || continue
-        [ -n "$(yay_git ls-files -- "$c" | head -1)" ] || _k_issue "$f" 1 "covers '$c' matches no tracked file"
+        [ -n "$(yay_git ls-files -- "$c" | sed -n 1p)" ] || _k_issue "$f" 1 "covers '$c' matches no tracked file"
       done <<EOF
 $(yay_fm_list "$(yay_fm_get "$root/$f" covers 2>/dev/null || true)")
 EOF
@@ -224,7 +224,7 @@ GEN
           [ -e "$root/${tok%/}" ] || yay_git check-ignore -q "$tok" 2>/dev/null || _k_issue "$f" "$ln" "path \`$tok\` does not exist"
           ;;
         *)
-          [ -e "$root/$tok" ] || [ -n "$(yay_git ls-files -- "*/$tok" "$tok" | head -1)" ] || yay_git check-ignore -q "$tok" 2>/dev/null \
+          [ -e "$root/$tok" ] || [ -n "$(yay_git ls-files -- "*/$tok" "$tok" | sed -n 1p)" ] || yay_git check-ignore -q "$tok" 2>/dev/null \
             || _k_issue "$f" "$ln" "file \`$tok\` is not in the repo"
           ;;
         esac

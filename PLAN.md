@@ -46,10 +46,20 @@
   - brainstorm, plan and implement produced 7 commits with `Plan:` trailers, passed lint, typecheck and both builds, and reported the planted bug as pre-existing instead of fixing it on the feature branch.
   - Fixed from the run: knowledge check no longer flags external template paths, and `yayh run` uses `.nvmrc` through nvm.
 
-## P4 Ship ⟵ T0.2, T3.3 (runs in parallel with P5)
-- [ ] T4.1 `/yay:changelog`
-- [ ] T4.2 `/yay:build`
-- [ ] T4.3 `/yay:release` ⟵ T4.1, T4.2, T3.5
+## P4 Ship ✅ ⟵ T0.2, T3.3
+- [x] T4.1 `/yay:changelog`: copies the readme's own style (heading, bullet marker, labels) and writes customer-facing notes to `docs/releases/`
+- [x] T4.2 `/yay:build`: per-edition package and `yayh build check`
+- [x] T4.3 `/yay:release`: prepare, `--tag-only` and `--hotfix`; ties off `fixed_in`, `shipped:` and plan status; tags only with `YAY_RELEASE=1` ⟵ T4.1, T4.2, T3.5
+- Headless run on the YayReturns clone: release 1.1.0 from the merged P-1 and B-1 work.
+  - The changelog has one customer line. It correctly left out the bug that was introduced and fixed between releases, and still set `fixed_in`.
+  - Pro and Lite zips: 6/6 PASS each.
+  - `--tag-only` tagged after the simulated merge and rebuilt from the tag.
+  - Fixed from the run:
+    - `package.output` can be an edition map
+    - the baseline handles repos without tags (asks when ambiguous)
+    - `package.forbidden` follows edition names, and validate guards it
+    - merged-worktree cleanup
+    - the PHP engine printed `[]` for an empty array, which made "[]" run as a check
 
 ## P5 Roadmap ⟵ T3.1, T3.2
 - [ ] T5.1 `/yay:roadmap` for a single repo

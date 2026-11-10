@@ -14,13 +14,14 @@ YAY_LIB_DIR="$YAY_KIT_ROOT/lib"
 . "$YAY_LIB_DIR/harness.sh"
 . "$YAY_LIB_DIR/knowledge.sh"
 . "$YAY_LIB_DIR/artifact.sh"
+. "$YAY_LIB_DIR/release.sh"
 
 usage() {
   cat <<'EOF'
 yayh <command> [args]
 
 Kit
-  version                          kit version
+  version                          kit version (with a subcommand: the plugin's version, see below)
   root                             kit root (for templates and reference docs)
 
 Config (.yay/config.json)
@@ -71,6 +72,24 @@ Commands and debugging
                                    run commands.<name> from .yay/config.json in the repo root
   debug markers                    yay:debug instrumentation left in the tree (path:line:text)
 
+Versions, changelog, build
+  version current                  version from the first versionFiles match
+  version list                     every versionFiles match (file, version)
+  version check                    exit 1 unless all versionFiles agree
+  version set <x.y.z>              rewrite every versionFiles match
+  version tested wp=X.Y [wc=X.Y]   readme "Tested up to", header "WC tested up to", config tested.*
+  changelog collect [--since=<tag>] [--to=<ref>]
+                                   commits as TSV: sha type scope breaking subject pr fixes roadmap plan
+  changelog suggest [--since=<tag>] major|minor|patch|none from the commit types
+  changelog baseline               last tag, else the commit that introduced the current version
+  changelog style                  the readme's heading template, bullet marker and labels
+  changelog write <version> <bullets-file> [--date=YYYY-MM-DD] [--replace]
+                                   insert the entry under == Changelog ==
+  changelog entry <version>        print that version's bullets
+  build zip [edition=e] [version=v] newest zip matching package.output
+  build check <zip> [edition=e] [version=v]
+                                   PASS/WARN/FAIL per check; exit 1 on any FAIL
+
 Knowledge (CLAUDE.md project block + docs/knowledge/)
   knowledge docs                   list knowledge docs
   knowledge check [file...]        paths/links exist, front-matter, length budget
@@ -90,6 +109,7 @@ Git
   git version-of-tag <tag>
   git bump <current> <major|minor|patch|x.y.z>
   git worktree <branch> [from]     create or reuse .claude/worktrees/<slug>, print path
+  git merged-worktrees [base]      worktrees whose branch is merged into base (path, branch)
 
 Environment: YAY_REPO overrides the repo root, YAY_JSON_ENGINE forces jq|node|php|python3.
 EOF
@@ -97,7 +117,17 @@ EOF
 
 cmd="${1:-help}"; shift || true
 case "$cmd" in
-  version) yay_kit_version ;;
+  version)
+    if [ $# -eq 0 ]; then yay_kit_version; exit 0; fi
+    sub="$1"; shift
+    case "$sub" in
+      current) yay_version_current ;;
+      list) yay_version_list ;;
+      check) yay_version_check ;;
+      set) [ $# -eq 1 ] || yay_die "usage: yayh version set <x.y.z>"; yay_version_set "$1" ;;
+      tested) yay_tested_set "$@" ;;
+      *) yay_die "usage: yayh version [current|list|check|set|tested]" ;;
+    esac ;;
   root) printf '%s\n' "$YAY_KIT_ROOT" ;;
   slug) [ $# -gt 0 ] || yay_die "usage: yayh slug <text>"; yay_slugify "$*" ;;
   config)
@@ -147,7 +177,8 @@ case "$cmd" in
       version-of-tag) [ $# -eq 1 ] || yay_die "usage: yayh git version-of-tag <tag>"; yay_version_of_tag "$1" ;;
       bump) [ $# -eq 2 ] || yay_die "usage: yayh git bump <current> <major|minor|patch|x.y.z>"; yay_semver_bump "$1" "$2" ;;
       worktree) [ $# -ge 1 ] || yay_die "usage: yayh git worktree <branch> [from]"; yay_worktree_create "$@" ;;
-      *) yay_die "usage: yayh git base|branch-name|branch-check|commit-check|last-tag|tag-for|version-of-tag|bump|worktree" ;;
+      merged-worktrees) yay_merged_worktrees "$@" ;;
+      *) yay_die "usage: yayh git base|branch-name|branch-check|commit-check|last-tag|tag-for|version-of-tag|bump|worktree|merged-worktrees" ;;
     esac ;;
   harness)
     sub="${1:-}"; shift || true
@@ -181,6 +212,24 @@ case "$cmd" in
   run) [ $# -ge 1 ] || yay_die "usage: yayh run <command-name> [k=v...]"; yay_run "$@" ;;
   debug)
     case "${1:-}" in markers) yay_debug_markers ;; *) yay_die "usage: yayh debug markers" ;; esac ;;
+  changelog)
+    sub="${1:-}"; shift || true
+    case "$sub" in
+      collect) yay_changelog_collect "$@" ;;
+      suggest) yay_changelog_suggest "$@" ;;
+      baseline) yay_changelog_baseline ;;
+      style) yay_changelog_style ;;
+      write) [ $# -ge 2 ] || yay_die "usage: yayh changelog write <version> <bullets-file> [--date=] [--replace]"; yay_changelog_write "$@" ;;
+      entry) [ $# -eq 1 ] || yay_die "usage: yayh changelog entry <version>"; yay_changelog_entry "$1" ;;
+      *) yay_die "usage: yayh changelog collect|suggest|baseline|style|write|entry" ;;
+    esac ;;
+  build)
+    sub="${1:-}"; shift || true
+    case "$sub" in
+      zip) yay_zip_path "$@" ;;
+      check) [ $# -ge 1 ] || yay_die "usage: yayh build check <zip> [edition=e] [version=v]"; yay_zip_check "$@" ;;
+      *) yay_die "usage: yayh build zip|check" ;;
+    esac ;;
   knowledge)
     sub="${1:-}"; shift || true
     case "$sub" in

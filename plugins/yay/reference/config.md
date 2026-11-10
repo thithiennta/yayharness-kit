@@ -23,7 +23,9 @@ JSON, not YAML, so hooks can read it with `jq`, `node` or `php` and nothing to i
 | `git.branchTypes` | string[] | Allowed branch prefixes. Default `["feat","fix","chore","hotfix","docs","refactor","test"]`. |
 | `git.scopes` | string[] | Optional allowed commit scopes. Empty means any scope is allowed. |
 | `commands.<name>` | string | Shell commands run from the repo root. Known names: `install`, `dev`, `build`, `lint`, `typecheck`, `test`, `package`. Placeholders: `{version}`, `{edition}`. A missing command means the step does not apply. |
-| `package.output` | string | Glob for the built zip, e.g. `release/{slug}-{edition}-{version}.zip`. |
+| `package.output` | string \| object | Glob for the built zip, e.g. `release/{slug}-{edition}-{version}.zip`. When editions name their zips differently, use a map: `{"pro": "release/{slug}-{version}.zip", "lite": "release/{slug}-lite-{version}.zip"}`. |
+| `package.forbidden` | object | Map from edition to paths that must not appear in that edition's zip, e.g. `{"free": ["includes/Pro/"]}`. `/yay:build` fails the zip when they do. |
+| `package.allow` | string[] | Globs, relative to the zip's top folder, that are exempt from the "usually not shipped" warnings (e.g. `composer.json` when it's needed at runtime). |
 | `versionFiles[]` | object[] | `{ "file", "pattern" }`, where `pattern` is an extended regex whose first group is the version. Every match is bumped together. |
 | `generatedPaths` | string[] | Paths never hand-edited (prefix match, trailing `/` for folders). The guard hook blocks edits to them. |
 | `changelog.readme` | string | File holding `== Changelog ==`, usually `readme.txt`. |

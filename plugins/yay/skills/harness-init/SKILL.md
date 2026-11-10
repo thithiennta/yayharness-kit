@@ -42,7 +42,7 @@ Run these and stop with a clear message on any problem:
 
 ### 2. Detect
 Run `yayh harness detect > "$(mktemp)"` (remember the path) (on `--reinit`, use the existing config instead). Read the draft, then apply the overrides from the options. Then check the guesses that detection can't be sure of, using **one** AskUserQuestion with at most 4 questions. Ask only about these, and only when they're uncertain:
-- **Editions:** whether the repo builds Free and Pro from one branch, and which is the default.
+- **Editions:** whether the repo builds Free and Pro from one branch, what the repo calls them (`free`, `lite`, …, matching its build scripts), and which is the default. If you rename an edition, rename it in `package.forbidden` (and in a per-edition `package.output`) too, because `yayh config validate` rejects keys that aren't editions.
 - **wp.org slug:** whether the Free build ships to WordPress.org.
 - **Base branch:** the detected one, plus any other long-lived branches you see in `git branch -a` (e.g. `dev`, `main`, `main-lite`).
 - **Package command:** how a release zip is built. Look at `scripts/`, `bin/`, `vendor/bin/yaycommerce-*`, the `package.json` and `composer.json` scripts, and `.github/workflows/`. Offer the commands you found, using the `{version}` and `{edition}` placeholders.

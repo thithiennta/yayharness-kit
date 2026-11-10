@@ -152,7 +152,35 @@
       "additionalProperties": false,
       "properties": {
         "output": {
-          "type": "string"
+          "oneOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "object",
+              "additionalProperties": {
+                "type": "string"
+              }
+            }
+          ],
+          "description": "zip glob, or edition -> glob"
+        },
+        "forbidden": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "description": "edition -> paths that must not be in that edition's zip"
+        },
+        "allow": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "globs (relative to the zip's top folder) exempt from the dev-file warnings"
         }
       }
     },

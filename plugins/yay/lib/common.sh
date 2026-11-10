@@ -11,7 +11,7 @@ yay_warn() { printf 'yayh: %s\n' "$*" >&2; }
 # Kit version from the plugin manifest.
 yay_kit_version() {
   sed -n 's/.*"version"[[:space:]]*:[[:space:]]*"\([^"]*\)".*/\1/p' \
-    "$YAY_KIT_ROOT/.claude-plugin/plugin.json" | head -1
+    "$YAY_KIT_ROOT/.claude-plugin/plugin.json" | sed -n 1p
 }
 
 # Root of the plugin repo being worked on. Honours YAY_REPO for tests and
@@ -93,7 +93,7 @@ yay_json_get() {
         foreach(explode(".",$argv[2]) as $k){ if(!is_array($v)||!array_key_exists($k,$v)) exit(3); $v=$v[$k]; }
         if($v===null) exit(3);
         $o=function($x){ return is_string($x)?$x:(is_bool($x)?($x?"true":"false"):json_encode($x,JSON_UNESCAPED_SLASHES)); };
-        if(is_array($v) && array_keys($v)===range(0,count($v)-1)){ foreach($v as $x) echo $o($x),"\n"; }
+        if(is_array($v) && ($v===[] || array_keys($v)===range(0,count($v)-1))){ foreach($v as $x) echo $o($x),"\n"; }
         else echo $o($v),"\n";
       ' "$file" "$path"
       ;;

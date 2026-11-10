@@ -34,7 +34,7 @@ if [ "$rel" = CLAUDE.md ]; then
   if [ -n "$old" ] && [ -f "$file" ]; then
     block="$(awk '/<!-- yay:managed:start/{on=1} on{print} /<!-- yay:managed:end -->/{on=0}' "$file")"
     first="$(printf '%s\n' "$old" | sed -n '/[^[:space:]]/{p;q;}')"
-    if [ -n "$first" ] && printf '%s\n' "$block" | grep -Fq -- "$first"; then
+    if [ -n "$first" ] && case "$block" in *"$first"*) true;; *) false;; esac; then
       hook_block "that text is in the kit-managed block of CLAUDE.md. Edit the yay:project block (or outside both blocks) instead, or change the kit and run /yay:harness-update."
     fi
   fi

@@ -11,7 +11,7 @@ The kit's hooks enforce these, and `/yay:implement`, `/yay:fix` and `/yay:releas
 | `/yay:implement <plan>` | `feat/<plan-slug>` (or the type the plan names) | `git.baseBranch` |
 | `/yay:fix <bug>` | `fix/<bug-slug>` | `git.baseBranch` |
 | `/yay:fix --hotfix` | `hotfix/<bug-slug>` | the latest release tag |
-| `/yay:release` | `chore/release-<version>` | `git.baseBranch` (or the hotfix branch) |
+| `/yay:release` | `chore/release-<x-y-z>` (from `yayh git branch-name chore "release x.y.z"`; dots aren't allowed in slugs) | `git.baseBranch`. A hotfix releases from its own `hotfix/<slug>` branch. |
 
 Worktrees live at `<repo>/.claude/worktrees/<slug>/`, one per branch.
 
@@ -34,4 +34,4 @@ Worktrees live at `<repo>/.claude/worktrees/<slug>/`, one per branch.
 
 ## Tags
 
-`git.tagFormat` with `{version}` (default `v{version}`). They're annotated and made only by `/yay:release`, after the release PR merges.
+`git.tagFormat` with `{version}` (default `v{version}`). They're annotated and made only by `/yay:release`, after the release PR merges (`--tag-only`), or on the hotfix branch for a hotfix. The hook allows a tag only when the command carries `YAY_RELEASE=1`.
