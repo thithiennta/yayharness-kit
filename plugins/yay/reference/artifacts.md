@@ -103,11 +103,12 @@ Body: customer-facing notes (headline, New, Improved, Fixed). No commit hashes o
 
 ### Knowledge docs: `docs/knowledge/*.md`
 ```
-area: architecture | conventions | known-issues | decisions | <custom>
+area: architecture | conventions | integrations | known-issues | decisions | <custom>
 updated: 2026-11-10
-updated_ref: 062f792            # HEAD when last verified
+updated_ref: 062f792            # HEAD when last verified (yayh knowledge stamp)
+covers: [includes/, yaycheckout.php]   # git pathspecs this doc describes
 ```
-`/yay:knowledge-update` uses `updated_ref` to diff only what changed since.
+`yayh knowledge stale` lists files under `covers` that changed since `updated_ref`. The CLAUDE.md project block keeps the same two values on its start marker: `<!-- yay:project:start ref=062f792 updated=2026-11-10 -->`. What to write is in knowledge.md.
 
 ## Commit trailers
 

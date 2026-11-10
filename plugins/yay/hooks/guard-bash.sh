@@ -31,12 +31,14 @@ if [ -n "$br" ] && [ "$br" = "$base" ]; then
 fi
 
 # Lines being added that still carry a yay:debug marker.
+# A marker is a code comment carrying the tag (// # /* <!-- {/* forms), in a
+# non-markdown file, so docs and kit text that merely mention it don't count.
 if printf ' %s ' "$args" | grep -Eq -- '[[:space:]](--all|-[a-zA-Z]*a[a-zA-Z]*)[[:space:]]'; then
-  added="$(git -C "$root" diff HEAD 2>/dev/null)"
+  added="$(git -C "$root" diff HEAD -- . ':(exclude)*.md' ':(exclude)*.mdx' 2>/dev/null)"
 else
-  added="$(git -C "$root" diff --cached 2>/dev/null)"
+  added="$(git -C "$root" diff --cached -- . ':(exclude)*.md' ':(exclude)*.mdx' 2>/dev/null)"
 fi
-hits="$(printf '%s\n' "$added" | grep -E '^\+[^+].*yay:debug|^\+yay:debug' | head -3 || true)"
+hits="$(printf '%s\n' "$added" | grep -E '^\+([^+]|$)' | grep -E '(//|#|/\*|<!--)[[:space:]]*yay:debug' | head -3 || true)"
 [ -z "$hits" ] || hook_block "staged changes still contain yay:debug instrumentation; remove it before committing:
 $hits"
 exit 0

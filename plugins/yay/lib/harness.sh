@@ -222,7 +222,8 @@ EOF
 
 # ---------- inventory & wipe ----------
 
-# _is_kept <path> -> 0 when path is (inside) an always-keep, config.keep or $YAY_KEEP entry.
+# _is_kept <path> -> 0 when path is (inside) an always-keep, config.keep or
+# --keep=<path> entry (inventory/wipe options; YAY_KEEP env works too).
 _is_kept() {
   local p="$1" k
   for k in $(yay_always_keep) $(yay_config_get keep 2>/dev/null || true) ${YAY_KEEP:-}; do
@@ -237,6 +238,7 @@ _is_kept() {
 #   keep<TAB><path><TAB><reason>
 #   untracked<TAB><path>
 yay_inventory() {
+  local a; for a in "$@"; do case "$a" in --keep=*) YAY_KEEP="${YAY_KEEP:-}${YAY_KEEP:+ }${a#--keep=}";; *) yay_die "inventory: unknown option $a";; esac; done
   local root t n f
   root="$(yay_repo_root)"
   for t in $(yay_wipe_targets); do
@@ -267,7 +269,11 @@ EOF
 yay_wipe() {
   local yes=0 allow_base=0 a root br base t
   for a in "$@"; do
-    case "$a" in --yes) yes=1;; --allow-base) allow_base=1;; *) yay_die "wipe: unknown option $a";; esac
+    case "$a" in
+      --yes) yes=1;; --allow-base) allow_base=1;;
+      --keep=*) YAY_KEEP="${YAY_KEEP:-}${YAY_KEEP:+ }${a#--keep=}";;
+      *) yay_die "wipe: unknown option $a";;
+    esac
   done
   [ "$yes" = 1 ] || yay_die "wipe deletes files; show 'yayh harness inventory' to the user, then pass --yes"
   root="$(yay_repo_root)"

@@ -223,3 +223,11 @@ test_version_stamped_only_when_nothing_unresolved() {
   assert_eq "current $("$YAYH" version)" "$("$YAYH" harness status)"
   assert_ok "$YAYH" harness sync --check
 }
+
+test_keep_option_on_inventory_and_wipe() {
+  export YAY_REPO; YAY_REPO="$(_fixture legacy-rich)"
+  assert_contains "$("$YAYH" harness inventory --keep=docs/backlog)" "keep	docs/backlog/idea.md"
+  "$YAYH" harness wipe --yes --keep=docs/backlog >/dev/null
+  assert_file "$YAY_REPO/docs/backlog/idea.md"
+  assert_no_file "$YAY_REPO/docs/plans/old-plan.md"
+}

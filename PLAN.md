@@ -29,9 +29,10 @@
 - [x] T1.3 Hooks: edit guard (generated paths, kit files, the managed block of CLAUDE.md), commit guard (base branch, `--no-verify`, `yay:debug`, tags), post-commit message and branch check, session-start version notice ⟵ T0.3
 - [x] T1.4 `/yay:harness-update`: manifest re-sync with `--check`, `--diff`, `--force` and `--only`. The kit version is stamped only when nothing is left unresolved ⟵ T1.2. A headless run with simulated drift passed.
 
-## P2 Knowledge ⟵ P1
-- [ ] T2.1 `/yay:knowledge-init`
-- [ ] T2.2 `/yay:knowledge-update` ⟵ T2.1
+## P2 Knowledge ✅ ⟵ P1
+- [x] T2.1 `/yay:knowledge-init`: the `yay:knowledge-scout` agent runs in parallel per area; `yayh knowledge check|stamp`; writing guide in `reference/knowledge.md`. Headless run on a YayReturns clone: 9 docs, the check passes, a 60-line block.
+- [x] T2.2 `/yay:knowledge-update` ⟵ T2.1: `yayh knowledge stale` gives stale, fresh, never, bad-ref and uncovered per doc.
+- Fixed from the real run: the debug-marker hook matched the kit's own text (only comment-form markers in non-markdown files count now); `--keep=` became a CLI option, not an env var; the skill now spells out that a hard wipe means no self-chosen restores.
 
 ## P3 Dev workflow ⟵ T0.2, P2
 - [ ] T3.1 `/yay:brainstorm`

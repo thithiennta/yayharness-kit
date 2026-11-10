@@ -12,6 +12,7 @@ YAY_LIB_DIR="$YAY_KIT_ROOT/lib"
 . "$YAY_LIB_DIR/manifest.sh"
 . "$YAY_LIB_DIR/git.sh"
 . "$YAY_LIB_DIR/harness.sh"
+. "$YAY_LIB_DIR/knowledge.sh"
 
 usage() {
   cat <<'EOF'
@@ -43,12 +44,23 @@ Manifest (.yay/manifest.json)
 Harness
   harness status                   not-initialized | no-manifest | current X | outdated X -> Y
   harness detect                   print a proposed .yay/config.json for this repo
-  harness inventory                old-harness files: wipe/keep/untracked (TSV)
-  harness wipe --yes [--allow-base] git rm the old harness (needs a clean tree, not on base)
+  harness inventory [--keep=<path>]...
+                                   old-harness files: wipe/keep/untracked (TSV)
+  harness wipe --yes [--keep=<path>]... [--allow-base]
+                                   git rm the old harness (needs a clean tree, not on base)
   harness sync [--check] [--force] [--diff] [--only=claude-md,rules,settings,github,docs]
                                    write kit-owned files; prints <action>\t<entry>
   harness files                    kit-written paths that exist (stage these, never git add -A)
   harness render <template>        render one template with this repo's config
+
+Knowledge (CLAUDE.md project block + docs/knowledge/)
+  knowledge docs                   list knowledge docs
+  knowledge check [file...]        paths/links exist, front-matter, length budget
+  knowledge stale [--since=<ref|tag|YYYY-MM-DD>]
+                                   stale|fresh|never|bad-ref|uncovered per doc (exit 1 if any stale)
+  knowledge stamp <doc|CLAUDE.md> [ref]
+                                   record the commit a doc was verified against (default HEAD)
+  knowledge block                  print the CLAUDE.md project block
 
 Git
   git base                         base branch
@@ -123,12 +135,22 @@ case "$cmd" in
     case "$sub" in
       status) yay_harness_status ;;
       detect) yay_detect ;;
-      inventory) yay_inventory ;;
+      inventory) yay_inventory "$@" ;;
       wipe) yay_wipe "$@" ;;
       sync) yay_sync "$@" ;;
       files) yay_harness_files | sort -u ;;
       render) [ $# -eq 1 ] || yay_die "usage: yayh harness render <template>"; yay_render "$YAY_TEMPLATES/$1" ;;
       *) yay_die "usage: yayh harness status|detect|inventory|wipe|sync|render" ;;
+    esac ;;
+  knowledge)
+    sub="${1:-}"; shift || true
+    case "$sub" in
+      docs) yay_knowledge_docs ;;
+      check) yay_knowledge_check "$@" ;;
+      stale) yay_knowledge_stale "$@" ;;
+      stamp) [ $# -ge 1 ] || yay_die "usage: yayh knowledge stamp <doc|CLAUDE.md> [ref]"; yay_knowledge_stamp "$@" ;;
+      block) yay_project_block ;;
+      *) yay_die "usage: yayh knowledge docs|check|stale|stamp|block" ;;
     esac ;;
   help|-h|--help) usage ;;
   *) usage >&2; exit 2 ;;

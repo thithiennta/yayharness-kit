@@ -129,3 +129,22 @@ test_session_start_reports_outdated() {
   sed -i.bak 's/"kitVersion": *"[^"]*"/"kitVersion": "0.0.1"/' "$r/.yay/manifest.json"
   assert_contains "$(_bash session-start.sh "$r" '')" "/yay:harness-update"
 }
+
+test_debug_check_ignores_mentions_and_markdown() {
+  local r; r="$(_repo)"
+  printf '# notes\nUse `// yay:debug` markers.\n' > "$r/docs/x.md"
+  printf '<?php\n// Run /yay:debug first; see yay:debug docs.\n' > "$r/includes/Doc.php"
+  git -C "$r" add -A
+  assert_exit 0 _bash guard-bash.sh "$r" 'git commit -m "docs: x"'
+  for m in '// yay:debug' '# yay:debug' '/* yay:debug */' '<!-- yay:debug -->' '{/* yay:debug */}'; do
+    printf 'x %s\n' "$m" > "$r/includes/M.php"; git -C "$r" add includes/M.php
+    assert_exit 2 _bash guard-bash.sh "$r" 'git commit -m "fix: x"'
+  done
+}
+
+test_kit_install_is_committable_through_hooks() {
+  local r; r="$(_repo)"
+  echo "tweak" > "$r/new.txt"; git -C "$r" add -A
+  YAY_REPO="$r" "$YAYH" harness sync --force >/dev/null; git -C "$r" add -A
+  assert_exit 0 _bash guard-bash.sh "$r" 'git commit -m "chore(harness): update"'
+}

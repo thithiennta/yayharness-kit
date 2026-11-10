@@ -50,7 +50,7 @@ Run `yayh harness detect > "$(mktemp)"` (remember the path) (on `--reinit`, use 
 Don't ask about values that are clearly right (slug, main file, PHP floor).
 
 ### 3. Inventory
-Run `yayh harness inventory` (with `YAY_KEEP="<space-separated --keep paths>"` set in the environment). Group the output for the user:
+Run `yayh harness inventory --keep=<path>` (one `--keep=` per `--keep` option). Group the output for the user:
 - **Will be deleted:** each `wipe` target, with its count of tracked files. Expand `docs/` by listing its top-level entries (`git ls-files docs | cut -d/ -f1-2 | sort -u`), so nobody loses user docs by surprise.
 - **Kept:** the `keep` lines.
 - **Untracked (not touched):** the `untracked` lines. Say that the user decides about these.
@@ -64,7 +64,7 @@ Show the plan in one short block: the branch, the config summary (name, slug, ed
 If you're not already on the target branch, create it from the base: `git switch -c <branch> <base>`. If it already exists, `git switch <branch>`.
 
 ### 6. Wipe
-Unless `--no-wipe` was passed: `YAY_KEEP="<keep paths>" yayh harness wipe --yes`. It refuses on the base branch or with a dirty tree. If it refuses, fix the cause and don't force it.
+Unless `--no-wipe` was passed: `yayh harness wipe --yes --keep=<path> …` (the same `--keep=` options). It refuses on the base branch or with a dirty tree. If it refuses, fix the cause and don't force it.
 
 ### 7. Write the config
 Write the confirmed config to `.yay/config.json`, pretty-printed with 2-space indents and the `--keep` paths in `keep`. Run `yayh config validate` and fix anything it reports.
@@ -89,6 +89,11 @@ Report in a few lines:
 Then the next steps:
 1. **`/yay:knowledge-init`** writes the project block of `CLAUDE.md` and `docs/knowledge/`. Without it, Claude knows the workflow but not the plugin.
 2. Teammates install the plugin once with `claude plugin install yay@yayharness`. The repo's settings only register the marketplace.
+
+## Hard wipe means hard wipe
+The team chose to delete the whole old harness, `docs/` included, and rebuild from code. Everything stays reachable in git history on the base branch. So:
+- The delete list is the inventory minus `--keep`, `config.keep` and the always-kept personal files. Nothing else. Never decide on your own to keep, restore or re-add old files, even ones that look valuable or sit at a path the kit reuses (such as `docs/roadmap.md` or `docs/backlog/`).
+- If something looks worth keeping, say so in step 4 and offer **Keep more paths**. With `--yes`, don't ask. Name it in the report instead, with the command that brings it back: `git checkout <base> -- <path>`.
 
 ## Don'ts
 - Never wipe without showing the inventory first, never wipe on the base branch, and never use `git rm` by hand for paths the inventory didn't list.
