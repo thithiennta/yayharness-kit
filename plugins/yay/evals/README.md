@@ -12,6 +12,7 @@ Behaviour checks for the `/yay:*` skills, run with `claude plugin eval`. Each ca
 | `code-leaves-unrelated-comments` | A threshold change leaves the docblock and inline comment alone, and adds no inline comments. |
 | `code-reuses-existing-helpers` | Showing a fee at checkout calls `Support\\Format::price()` rather than an inline `wc_price()`. |
 | `plan-decides-without-stopping` | A plain "write the plan for R-2" request: at most one question, the plan marked ready by Claude, and its own decisions listed (`reference/asking.md`). |
+| `go-routes-symptom-to-debug` | `/yay:go` with a plain-words symptom routes to `/yay:debug` (cause unknown, so not `/yay:fix`), and no product code is edited. |
 | `plan-from-request` | A plan request fires `/yay:plan`, which writes `docs/plans/` with tasks and Verify checks, and no code. |
 
 ## Run

@@ -6,6 +6,7 @@ This repo uses the **yay** harness. Work through its skills so every developer a
 
 | Step | Skill | Writes |
 |---|---|---|
+| Not sure? Say it in plain words | `/yay:go` | nothing: shows what's next, or picks the skill below |
 | Plan the horizon | `/yay:roadmap` | `docs/roadmap.md` (`R-<n>`) |
 | Explore an idea | `/yay:brainstorm` | `docs/brainstorms/` (`BS-<n>`) |
 | Design a UI | `/yay:design` | `docs/designs/` (`UX-<n>`) |

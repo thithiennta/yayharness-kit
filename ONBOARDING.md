@@ -1,6 +1,6 @@
 # Working on a Yay plugin with Claude: onboarding
 
-Every Yay plugin repo runs the same Claude Code harness, the **`yay`** plugin. It gives each repo the same rules, hooks and settings, project knowledge written from that repo's own code, and 15 `/yay:*` skills that take work from idea to tagged release in the same way for everyone.
+Every Yay plugin repo runs the same Claude Code harness, the **`yay`** plugin. It gives each repo the same rules, hooks and settings, project knowledge written from that repo's own code, and 19 `/yay:*` skills that take work from idea to tagged release in the same way for everyone.
 
 This page is what a new developer needs. The kit internals are in [`plugins/yay/README.md`](plugins/yay/README.md).
 
@@ -31,6 +31,15 @@ A repo's `.claude/settings.json` enables the plugin, but that alone does **not**
 - `CLAUDE.local.md`: your own notes for Claude.
 
 ## 3. The workflow
+
+**Don't remember the skills? Use `/yay:go`.**
+```text
+/yay:go                                    # what's in flight, then the next step
+/yay:go fix the coupon field that disappears after changing shipping   # → /yay:debug "…"
+/yay:go build R-12                         # → /yay:implement R-12
+/yay:go ship it, dry run                   # → /yay:release --dry-run
+```
+It shows the work in flight, or sends your request to the right skill with the right options. Everything below is what it routes to.
 
 ```
 Feature   /yay:roadmap ─► /yay:brainstorm ─► (/yay:design) ─► /yay:plan ─► /yay:implement ─┐
@@ -166,10 +175,11 @@ When a hook blocks something, its message says why and what to do instead. Claud
 | knowledge | The `yay:project` block of `CLAUDE.md`, `docs/knowledge/` | `/yay:knowledge-update`, or by hand. Keep the facts verifiable. |
 | workflow | `docs/roadmap.md`, brainstorms, plans, bugs, backlog, releases | Through the skills. |
 
-## 7. All 18 skills
+## 7. All 19 skills
 
 | Skill | Most-used options |
 |---|---|
+| `/yay:go` | nothing (what's next), an id, or what you want in plain words |
 | `/yay:harness-init` | `--dry-run`, `--keep=<path>`, `--editions=free,pro` |
 | `/yay:harness-update` | `--check`, `--diff`, `--only=rules,settings` |
 | `/yay:knowledge-init` | `--depth=quick\|full`, `--agents=N` |
