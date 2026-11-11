@@ -108,7 +108,13 @@ The gates are soft, and each change gets as much planning as it needs:
 | **small** | an S item, one area, about 3 tasks | a short plan: Goal, Tasks, Verify |
 | **standard** | everything else | the full plan: approach, reuse, tests, e2e, risks |
 
-Claude picks the lane and says which one it chose. Pass `--lane=` to override it. You can still skip a brainstorm for an obvious change, or fix a tiny bug without `/yay:debug`.
+Claude picks the lane and says which one it chose. Pass `--lane=` to override it.
+
+How strict a repo is can be set in `.yay/config.json` (or for yourself in `.yay/local.json`): `"workflow": { "strictness": "relaxed" | "standard" | "strict" }`. A **strict** repo has no tiny lane or small plans, asks before any plan change, and blocks on commit style. A **relaxed** one skips the Reuse, Tests and E2E checks in plans. The safety blocks are the same in all three.
+
+**Done means checked.** A plan's Verify items written as ``- `<command>` → <expected>`` are run by `yayh verify P-<n> --run` before the PR, so "it works" is checked by the machine, not just claimed.
+
+**Lessons.** When something gets in the way (a hook, a missing tool, a blocked item), Claude logs one line with `yayh lessons add`. `/yay:knowledge-update` turns the ones that keep coming back into knowledge, and lists the ones about the kit for this repo. You can still skip a brainstorm for an obvious change, or fix a tiny bug without `/yay:debug`.
 
 ### Tests: which layer for each task
 ```text
@@ -200,7 +206,7 @@ When a hook blocks something, its message says why and what to do instead. Claud
 | `/yay:brainstorm` | `--from=R-<n>\|BL-<n>\|B-<n>`, `--quick`, `--research` |
 | `/yay:design` | `--from=BS-<n>\|R-<n>\|P-<n>`, `--quick`, `--mockup`, `--check` |
 | `/yay:plan` | `--from=BS-<n>`, `--check`, `--tests=auto\|none` |
-| `/yay:implement` | `P-<n>`, `"<requirement>"` or `R-<n>` (plans it first), `--task=T3`, `--continue`, `--no-pr`, `--draft` |
+| `/yay:implement` | `P-<n>`, `"<requirement>"` or `R-<n>` (plans it first; `--explore` brainstorms first too), `--lane=tiny\|small\|standard`, `--task=T3`, `--continue`, `--no-pr`, `--draft` |
 | `/yay:autopilot` | `--sprint=current`, `R-<n>…`, `--ready`, `--parallel=N`, `--plan-only`, `--no-ask`, `--no-pr` |
 | `/yay:debug` | `--area=<path>`, `--bisect=<good-ref>`, `--repro`, `--report-only` |
 | `/yay:fix` | `B-<n>`, `--hotfix`, `--test`, `--no-pr` |
