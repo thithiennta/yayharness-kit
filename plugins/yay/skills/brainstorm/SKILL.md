@@ -1,6 +1,6 @@
 ---
 name: brainstorm
-description: Explore a problem or idea for a Yay plugin before committing to a plan - grounds it in the code and project knowledge, lays out 2-4 options with tradeoffs and sizes, recommends one, and records the decision in docs/brainstorms/ (BS-<n>). Use when starting a roadmap item, a backlog idea, a feature request or an unclear bug fix, or when the user says "brainstorm", "explore options", "how should we approach", "what are our options for".
+description: Explore options for a Yay plugin change before planning. Use when the user says "brainstorm", "explore options", "how should we approach", or starts a roadmap item, backlog idea or unclear fix. Grounds 2-4 options in the code with tradeoffs and sizes, recommends one, and records it as docs/brainstorms/ BS-<n>.
 argument-hint: "<topic> [--from=R-<n>|BL-<n>|B-<n>] [--options=2-4] [--quick] [--research] [--decide] [--commit]"
 allowed-tools: Bash(yayh *), Bash(git *), Read, Grep, Glob, Write, Edit, Agent, AskUserQuestion, WebSearch
 ---

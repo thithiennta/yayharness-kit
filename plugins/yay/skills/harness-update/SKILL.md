@@ -1,6 +1,6 @@
 ---
 name: harness-update
-description: Re-sync the kit-owned files of a yay harness repo (the managed CLAUDE.md block, .claude/rules/yay-*.md, .claude/settings.json, the PR template, the docs skeleton) to the installed yay plugin version. Only touches kit-owned files; never project knowledge or workflow docs. Use when the session-start notice says the harness is outdated, after updating the plugin, after editing .yay/config.json or .yay/settings.extra.json, or when the user says "update the harness", "resync", "harness drift".
+description: Re-sync a repo's kit-owned yay files to the installed plugin version. Use when the session notice says the harness is outdated, after updating the plugin or editing .yay/config.json or .yay/settings.extra.json, or when the user says "update the harness", "resync", "harness drift". Touches only the managed CLAUDE.md block, yay rules, settings, PR template and docs skeleton.
 argument-hint: "[--check] [--diff] [--force] [--only=claude-md|rules|settings|github|docs[,…]] [--no-commit]"
 allowed-tools: Bash(yayh *), Bash(git *), Read, AskUserQuestion
 ---

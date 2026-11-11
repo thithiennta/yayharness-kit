@@ -1,3 +1,4 @@
 .DS_Store
 tests/.tmp/
 *.log
+plugins/yay/evals/results/

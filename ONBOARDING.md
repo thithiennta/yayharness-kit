@@ -1,0 +1,130 @@
+# Working on a Yay plugin with Claude: onboarding
+
+Every Yay plugin repo runs the same Claude Code harness, the **`yay`** plugin. It gives each repo the same rules, hooks and settings, project knowledge written from that repo's own code, and 13 `/yay:*` skills that take work from idea to tagged release in the same way for everyone.
+
+This page is what a new developer needs. The kit internals are in [`plugins/yay/README.md`](plugins/yay/README.md).
+
+## 1. Install once (5 minutes)
+
+You need `git`, `bash`, `gh` (logged in) and one of `jq`, `node`, `php` or `python3`.
+
+```bash
+claude plugin marketplace add ~/yayharness       # for now; later: YayCommerce/yayharness on GitHub
+claude plugin install yay@yayharness
+```
+
+To check it worked, open any harnessed plugin repo and run `claude`. Typing `/yay:` lists the skills, and `yayh version` prints the kit version.
+
+A repo's `.claude/settings.json` enables the plugin, but that alone does **not** install it. Every teammate runs the install command once.
+
+## 2. Your first session in a plugin repo
+
+| The repo… | Do this |
+|---|---|
+| has `.yay/config.json` | Nothing. Start working. If the session starts with "harness is outdated", run `/yay:harness-update`. |
+| has no `.yay/config.json` | One person runs `/yay:harness-init`, then `/yay:knowledge-init`, and merges the PR. Don't do it on several machines at once. |
+| has knowledge older than the code | `/yay:knowledge-update`. Other skills suggest it when they notice drift. |
+
+**Your personal settings** stay out of git:
+- `.yay/local.json`: your own values, which override the shared config. Mostly `site.wpPath` and `site.url` for your local WordPress. When the repo sits in `wp-content/plugins/`, `site.wpPath` is worked out for you.
+- `.claude/settings.local.json`: your own permissions.
+- `CLAUDE.local.md`: your own notes for Claude.
+
+## 3. The workflow
+
+```
+Feature   /yay:roadmap ─► /yay:brainstorm ─► /yay:plan ─► /yay:implement ─┐
+Bug       /yay:debug ─► /yay:fix ─────────────────────────────────────────┼─► /yay:release ─► (merge) ─► /yay:release --tag-only
+Hotfix    /yay:fix B-<n> --hotfix ─► /yay:release --hotfix ───────────────┘
+```
+
+**A feature, start to finish**
+```text
+/yay:roadmap --status                      # what's in this sprint, what slipped
+/yay:brainstorm --from=R-12                # 2-4 options, a recommendation → BS-3
+/yay:plan --from=BS-3                      # tasks, tests, verify checks → P-4
+/yay:implement P-4                         # its own worktree + branch, a commit per task, PR assigned to you
+```
+
+**A bug**
+```text
+/yay:debug "Coupon field disappears after changing shipping"   # root cause with file:line evidence → B-7
+/yay:fix B-7                                                   # minimal fix + regression test, PR
+```
+
+**A release**
+```text
+/yay:release --dry-run          # preview the version, changelog and build plan
+/yay:release                    # changelog, version bump, zips checked, release PR
+/yay:release --tag-only         # after the PR merges: tag it and build the final zips from the tag
+```
+
+Each step leaves a markdown artifact in `docs/`, so the next step (or the next person) picks up where it stopped:
+
+| ID | What | Where |
+|---|---|---|
+| `R-<n>` | Roadmap item | `docs/roadmap.md` |
+| `BS-<n>` | Brainstorm | `docs/brainstorms/` |
+| `P-<n>` | Plan | `docs/plans/` |
+| `B-<n>` | Bug report | `docs/bugs/` |
+| `BL-<n>` | Backlog idea | `docs/backlog/` |
+
+Brainstorms, plans and bug reports start as untracked files in your checkout. `/yay:implement` and `/yay:fix` carry them into the work's branch, so they're committed with the code they describe.
+
+The gates are soft. You can skip a brainstorm for an obvious change, or fix a tiny bug without `/yay:debug`, and the skills say so when they think you shouldn't.
+
+## 4. Git rules (hooks enforce these)
+
+- **Branches:** `<type>/<slug>`, e.g. `feat/express-checkout` or `fix/coupon-field-vanishes`. There's no owner prefix; the PR is assigned to you instead (`gh pr create --assignee @me`). Release branches are `chore/release-1-4-0`.
+- **Commits:** [Conventional Commits](https://www.conventionalcommits.org), `type(scope): summary`, at most 72 characters, no final period. Trailers link the work: `Plan: P-4`, `Fixes: B-7`, `Roadmap: R-12`.
+- **Blocked by the hooks:** commits on the base branch, `--no-verify`, leftover `yay:debug` markers in staged code, tags made outside `/yay:release`, and hand edits to kit-owned or generated files.
+- **Worktrees:** each task gets one under `.claude/worktrees/<slug>`. `/yay:release --tag-only` offers to remove the merged ones.
+- **Pushing:** skills push only when you say so, or when you pass `--pr`.
+
+When a hook blocks something, its message says why and what to do instead. Claude reads it and corrects course. Don't work around it.
+
+## 5. What you can and can't edit
+
+| Owner | Files | How to change them |
+|---|---|---|
+| kit | The `yay:managed` block of `CLAUDE.md`, `.claude/rules/yay-*.md`, `.claude/settings.json`, `.github/pull_request_template.md` | Not by hand. Extra settings go in `.yay/settings.extra.json`; then run `/yay:harness-update`. Changes for every repo go into this kit. |
+| team | `.yay/config.json`: commands, editions, version files, package checks | Edit it in a PR, then run `/yay:harness-update`. |
+| knowledge | The `yay:project` block of `CLAUDE.md`, `docs/knowledge/` | `/yay:knowledge-update`, or by hand. Keep the facts verifiable. |
+| workflow | `docs/roadmap.md`, brainstorms, plans, bugs, backlog, releases | Through the skills. |
+
+## 6. All 13 skills
+
+| Skill | Most-used options |
+|---|---|
+| `/yay:harness-init` | `--dry-run`, `--keep=<path>`, `--editions=free,pro` |
+| `/yay:harness-update` | `--check`, `--diff`, `--only=rules,settings` |
+| `/yay:knowledge-init` | `--depth=quick\|full`, `--agents=N` |
+| `/yay:knowledge-update` | `--since=<tag>`, `--check`, `--doc=<file>` |
+| `/yay:roadmap` | `--status`, `--horizon=eoy`, `--capacity=8`, `--freeze=a..b`, `--add="…"`, `--multi-agent --plugins=a,b`, `--publish` |
+| `/yay:brainstorm` | `--from=R-<n>\|BL-<n>\|B-<n>`, `--quick`, `--research` |
+| `/yay:plan` | `--from=BS-<n>`, `--check`, `--tests=ask\|none` |
+| `/yay:implement` | `P-<n>`, `--task=T3`, `--continue`, `--pr`, `--draft` |
+| `/yay:debug` | `--area=<path>`, `--bisect=<good-ref>`, `--repro`, `--report-only` |
+| `/yay:fix` | `B-<n>`, `--hotfix`, `--test`, `--pr` |
+| `/yay:changelog` | `--dry-run`, `--since=<tag>` |
+| `/yay:build` | `--edition=pro`, `--zip=<path>` |
+| `/yay:release` | `minor`, `--dry-run`, `--wc-tested=X.Y`, `--tag-only`, `--hotfix` |
+
+Every skill shows its full option list as you type it, and explains each option at the top of its `SKILL.md`.
+
+## 7. Troubleshooting
+
+| Symptom | Fix |
+|---|---|
+| `/yay:` shows nothing | The plugin isn't installed: `claude plugin install yay@yayharness`, then restart `claude`. |
+| "harness is outdated" at session start | `/yay:harness-update`. It only touches kit-owned files. |
+| A commit is rejected | Read the hook's message. Usually the header is too long, the scope isn't in `git.scopes`, you're on the base branch, or a `yay:debug` marker is left in the code. |
+| Two branches created the same ID | `/yay:implement` and `/yay:fix` check this before the PR (`yayh id conflicts`), and the later branch renumbers. |
+| "version files disagree" | Run `yayh version list`, then fix them through `/yay:release`, or correct `versionFiles` in `.yay/config.json`. |
+| The build fails a check | `/yay:build` says which file and why. Fix the package script or `package.forbidden`, never the zip. |
+| Wrong Node version for builds | Add `.nvmrc`. `yayh run` uses it through nvm. |
+| JSON errors from `yayh` | Install `jq`, or force an engine with `YAY_JSON_ENGINE=php`. |
+
+## 8. Updating the kit
+
+Kit changes go through a PR on this repo, with tests (`./tests/run.sh`) and `claude plugin validate plugins/yay`. Bump the version in `plugins/yay/.claude-plugin/plugin.json` and add a `plugins/yay/CHANGELOG.md` entry. After that, `/yay:harness-update` in each repo shows what changed. Teammates update with `claude plugin marketplace update yayharness && claude plugin update yay@yayharness`.

@@ -211,6 +211,7 @@ yay_roadmap_add() {
   local f to="later" id kv k v bullets="" have_status=0
   f="$(_yay_roadmap_need)"
   [ -n "$title" ] || yay_die "title is empty"
+  case "$title" in -*) yay_die "title '$title' looks like an option";; esac
   for kv in "$@"; do
     k="${kv%%=*}"; v="${kv#*=}"
     [ "$k" != "$kv" ] || yay_die "expected key=value, got '$kv'"

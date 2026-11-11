@@ -1,6 +1,6 @@
 ---
 name: build
-description: Build and verify a Yay plugin's distributable zip for one or all editions - runs the repo's declared build and package commands, finds the zip, and checks it (single top folder, no dev files like .claude/.yay/CLAUDE.md/node_modules, no Pro code in Free/Lite zips, version headers and Stable tag match, PHP parses, repo-defined checks). Use before a release (/yay:release calls it), to hand a test build to QA or support, or when the user says "build the zip", "package it", "make a build", "check the zip".
+description: Build and verify a Yay plugin zip per edition. Use when the user says "build the zip", "package it", "make a build", "check the zip", before handing a build to QA, or from /yay:release. Runs the repo's declared build and package commands, then checks the zip - one top folder, no dev files, no Pro code in Free/Lite, matching versions, PHP parses.
 argument-hint: "[--edition=<name>|all] [--version=x.y.z] [--no-build] [--no-checks] [--zip=<path>]"
 allowed-tools: Bash, Read
 ---

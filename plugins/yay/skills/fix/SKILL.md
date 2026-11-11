@@ -1,6 +1,6 @@
 ---
 name: fix
-description: Fix a diagnosed bug in a Yay plugin on its own branch and worktree - takes a B-<n> report (or diagnoses a small bug inline first), makes the minimal change, agrees a regression test, verifies, commits fix(scope) with a Fixes trailer, records it in known issues when it's a trap, and opens a PR assigned to its owner; --hotfix branches from the latest release tag for a patch release; escalates to /yay:plan when the fix grows. Use when the user says "fix B-7", "fix this bug", "hotfix", "patch this".
+description: Fix a diagnosed Yay plugin bug on its own branch and worktree. Use when the user says "fix B-7", "fix this bug", "patch this", "hotfix". Makes the minimal change, agrees a regression test, verifies, commits fix(scope) with a Fixes trailer and opens a PR assigned to its owner. --hotfix branches from the last release tag; grows into /yay:plan when the fix does.
 argument-hint: "<B-<n>|bug-slug|description> [--hotfix] [--from=<tag>] [--test|--no-test] [--no-worktree] [--escalate] [--pr|--no-pr] [--draft] [--no-push]"
 allowed-tools: Bash, Read, Grep, Glob, Write, Edit, Agent, AskUserQuestion
 ---

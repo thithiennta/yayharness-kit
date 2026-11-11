@@ -1,7 +1,7 @@
 ---
 name: plan
-description: Write or review an implementation plan for a Yay plugin change - turns a brainstorm decision, roadmap item, bug or request into docs/plans/<slug>.md (P-<n>) with goal, approach, numbered tasks that name their files, an agreed Tests line and exact Verify checks; --check reviews an existing plan. Use before any non-trivial change, when the user says "plan this", "write a plan", "break this down", "review the plan", or when /yay:fix escalates.
-argument-hint: "<topic|BS-<n>|R-<n>|B-<n>|P-<n>> [--from=<id>] [--check] [--split] [--type=feat|fix|chore|refactor|perf] [--tests=ask|none] [--edition=free|pro|all] [--commit]"
+description: Write or review a Yay plugin implementation plan. Use when the user says "plan this", "write a plan", "break this down", "review the plan", before any non-trivial change, or when /yay:fix escalates. Turns a brainstorm, roadmap item, bug or request into docs/plans/ P-<n> with goal, approach, tasks naming their files, an agreed Tests line and exact Verify checks. --check reviews one.
+argument-hint: "<topic|BS-<n>|R-<n>|B-<n>|P-<n>> [--from=<id>] [--check] [--split] [--type=feat|fix|chore|refactor|perf] [--tests=ask|none] [--edition=<name>|all] [--commit]"
 allowed-tools: Bash(yayh *), Bash(git *), Read, Grep, Glob, Write, Edit, Agent, AskUserQuestion
 ---
 

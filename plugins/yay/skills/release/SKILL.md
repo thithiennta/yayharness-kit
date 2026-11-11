@@ -1,6 +1,6 @@
 ---
 name: release
-description: Release a Yay plugin version end to end - picks the version from commit types, writes the changelog and release notes, bumps every version file and the tested-up-to values, marks fixed bugs and shipped roadmap items, builds and checks every edition's zip, commits chore(release) on a release branch and opens the PR assigned to its owner; after merge, --tag-only tags the released commit; --hotfix releases a patch straight from a hotfix branch. Use when the user says "release", "cut a release", "ship 1.4.0", "prepare the release", "tag the release", "hotfix release".
+description: Release a Yay plugin version end to end. Use when the user says "release", "cut a release", "ship 1.4.0", "tag the release", "hotfix release". Picks the version, writes changelog and notes, bumps version files, marks fixed bugs and shipped roadmap items, builds and checks every zip, and opens the release PR. --tag-only tags it after merge; --hotfix releases a patch from a hotfix branch.
 argument-hint: "[major|minor|patch|x.y.z] [--edition=<name>|all] [--wp-tested=X.Y] [--wc-tested=X.Y] [--hotfix] [--tag-only] [--date=YYYY-MM-DD] [--dry-run] [--pr|--no-pr] [--no-push] [--draft]"
 allowed-tools: Bash, Read, Write, Edit, AskUserQuestion
 ---
@@ -37,6 +37,7 @@ Git rules are in `${CLAUDE_PLUGIN_ROOT}/reference/git-conventions.md`. Only this
    - Run `yayh version check`. The version files must agree, and normally equal the last tag's version (`yayh git version-of-tag "$(yayh git last-tag)"`). If they don't, ask before going on.
    - Run `yayh knowledge stale --since=<last tag>`. If anything is stale, suggest `/yay:knowledge-update` first. Don't block on it.
    - Look for open work: `yayh artifact list plan --status=in-progress`. Mention it, since it isn't in this release.
+   - Run the tests: `yayh run test`. A failure stops the release, so report it and suggest `/yay:debug`. If `commands.test` isn't set, say that the kit ran no tests. Also run `yayh run lint` when it's set, and report failures without blocking: lint debt often predates the release.
 2. **Version.**
    - Run `yayh changelog baseline`. It prints `<ref> <how>`, and the next step depends on `<how>`:
      - **`tag`:** normal. `last=<ref>`.
@@ -80,15 +81,15 @@ Git rules are in `${CLAUDE_PLUGIN_ROOT}/reference/git-conventions.md`. Only this
 1. Be on the base branch, clean, and run `git pull --ff-only`. HEAD must contain `chore(release): <v>`: find `<v>` from `yayh version current` and check that `yayh changelog entry <v>` isn't empty.
 2. `tag="$(yayh git tag-for <v>)"`. It must not exist yet (`git rev-parse -q --verify "refs/tags/$tag"`).
 3. Find the release commit: `git log --format=%H --grep="^chore(release): <v>$" -1`. Then `YAY_RELEASE=1 git tag -a "$tag" -m "<plugin name> <v>" <commit>`.
-4. Ask, then `git push origin "$tag"`.
+4. Push the tag per `--pr`/`--no-push` (ask by default): `git push origin "$tag"`.
 5. Build the final zips **from the tag**: `/yay:build --version=<v>` in a detached worktree of the tag (`git worktree add --detach <tmp> "$tag"`). Report the paths. Remove the temporary worktree when you're done.
 6. Tidy up: `yayh git merged-worktrees` lists the worktrees whose branches are now merged (the release branch, and the features and fixes it shipped). Offer to remove them with `git worktree remove <path>`. Keep the branches, which the remote may still need.
 
 ## `--hotfix`
 
 1. Be on a `hotfix/*` branch with a clean tree, branched from a release tag (`git describe --tags --abbrev=0` equals `yayh git last-tag`, or the tag given to `/yay:fix`). The bump is always `patch`.
-2. Run the Prepare steps 2, 4–7 on **this** branch (no new branch): changelog since that tag, version, artifacts and build.
-3. Commit `chore(release): <v>`. Ask, then tag that commit right away (`YAY_RELEASE=1 git tag -a …`), since it's exactly what ships, and push the branch and the tag.
+2. Run the tests (Prepare step 1), then the Prepare steps 2, 4–7 on **this** branch (no new branch): changelog since that tag, version, artifacts and build.
+3. Commit `chore(release): <v>` and tag that commit right away (`YAY_RELEASE=1 git tag -a …`), since it's exactly what ships. A local tag is safe, so don't ask first. Pushing the branch and the tag follows `--pr`/`--no-push` (ask by default).
 4. Open the merge-back PR into the base branch: `gh pr create --base <base> --assignee @me --title "chore(release): <v> (hotfix)"`. In its body, warn that `readme.txt` and the version files will conflict if the base has moved on. Resolve them by keeping the base's newer entries plus this hotfix's entry.
 5. Report the tag, the zips and the merge-back PR.
 

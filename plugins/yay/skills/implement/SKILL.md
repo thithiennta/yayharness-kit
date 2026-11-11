@@ -1,6 +1,6 @@
 ---
 name: implement
-description: Build a Yay plugin plan task by task in its own git worktree and branch - carries the plan and its brainstorm into the branch, implements each task, verifies it, ticks it, commits with conventional messages and a Plan trailer, runs the full checks, updates knowledge it made stale, and opens a PR assigned to its owner. Use when a plan is ready, or the user says "implement P-4", "build this plan", "start on the plan", "continue the implementation".
+description: Build a ready Yay plugin plan task by task in its own worktree and branch. Use when the user says "implement P-4", "build this plan", "start on the plan", "continue the implementation". Implements, verifies and ticks each task, commits with a Plan trailer, runs the full checks, refreshes knowledge it made stale, and opens a PR assigned to its owner.
 argument-hint: "<P-<n>|plan-slug> [--task=T<n>] [--continue] [--no-worktree] [--base=<branch>] [--pr|--no-pr] [--draft] [--no-push]"
 allowed-tools: Bash, Read, Grep, Glob, Write, Edit, Agent, AskUserQuestion
 ---

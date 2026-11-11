@@ -1,6 +1,6 @@
 ---
 name: knowledge-init
-description: Write a Yay plugin's project knowledge from its code and git history - the yay:project block of CLAUDE.md (what it is, layout, commands, hard rules, tests, read-when links) and docs/knowledge/ (architecture, conventions, integrations, known issues, decisions), every fact verified and cited. Use right after /yay:harness-init, when the project block is still the placeholder, when docs/knowledge/ is empty, or when the user says "write the project docs", "document this plugin", "init knowledge", "onboard Claude to this repo".
+description: Write a Yay plugin's project knowledge from its code and history. Use right after /yay:harness-init, when the CLAUDE.md project block is a placeholder or docs/knowledge/ is empty, or when the user says "document this plugin", "init knowledge", "onboard Claude to this repo". Writes the yay:project block and docs/knowledge/ (architecture, conventions, integrations, known issues, decisions), every fact cited.
 argument-hint: "[--depth=quick|full] [--agents=N] [--area=<path>] [--run-commands] [--mine-history] [--force] [--no-commit]"
 allowed-tools: Bash(yayh *), Bash(git *), Bash(ls *), Bash(wc *), Read, Grep, Glob, Write, Edit, Agent, AskUserQuestion
 ---

@@ -1,7 +1,7 @@
 ---
 name: roadmap
-description: Plan, re-plan or report a Yay plugin's roadmap in docs/roadmap.md - gathers evidence (open bugs, backlog ideas, known issues, readme compat, git history, GitHub issues, optionally wp.org reviews and competitors), sizes items S/M/L, schedules them into dated sprints against team capacity and freeze windows, keeps R-<n> ids stable, syncs item status from brainstorms and plans, and commits on a docs branch. --status reports progress, slipped items and open bugs read-only; --multi-agent co-plans several plugins with one owner agent each; --publish shares it as a page. Use when the user says "roadmap", "plan the next sprints", "what should we build next", "re-plan", "sprint status", "where are we", "add to the roadmap".
-argument-hint: "[--status] [--horizon=<YYYY-MM-DD|<n>sprints|eoq|eoy>] [--sprint-length=2w] [--start=YYYY-MM-DD] [--capacity=<dev-days/sprint>] [--freeze=YYYY-MM-DD..YYYY-MM-DD] [--focus=\"<theme>\"] [--web] [--add=\"<title>\" [--sprint=<n|later>] [--size=S|M|L]] [--move=R-<n>:<n|later>] [--drop=R-<n>] [--multi-agent] [--plugins=<a,b|all>] [--rounds=1|2] [--publish] [--dry-run] [--pr|--no-pr]"
+description: Plan, re-plan or report a Yay plugin roadmap (docs/roadmap.md). Use when the user says "roadmap", "plan the next sprints", "what should we build next", "sprint status", "where are we", "add to the roadmap". Schedules evidenced R-<n> items into dated sprints against capacity and freezes. --status reports read-only; --multi-agent co-plans several plugins; --publish shares a page.
+argument-hint: "[--status] [--horizon=<YYYY-MM-DD|<n>sprints|eoq|eoy>] [--sprint-length=2w] [--start=YYYY-MM-DD] [--capacity=<dev-days/sprint>] [--freeze=YYYY-MM-DD..YYYY-MM-DD] [--focus=\"<theme>\"] [--web] [--add=\"<title>\" [--sprint=<n|later>] [--size=S|M|L]] [--move=R-<n>:<n|later>] [--drop=R-<n>] [--multi-agent] [--plugins=<a,b|all>] [--rounds=1|2] [--publish] [--dry-run] [--pr|--no-pr] [--draft]"
 allowed-tools: Bash(yayh *), Bash(git *), Bash(gh *), Read, Grep, Glob, Write, Edit, Agent, AskUserQuestion, WebSearch, WebFetch, Workflow, Skill, Artifact
 ---
 
@@ -25,11 +25,11 @@ Always edit through `yayh roadmap` where a command exists (`add`, `set`, `move`)
 | `--freeze=a..b` | A window with hotfix-class work only (fixes, compat, docs), e.g. around BFCM. Repeatable. |
 | `--focus="…"` | A theme to favour (e.g. "conversion before BFCM"). |
 | `--web` | Also research wordpress.org (reviews, support forum) and 3–5 competitors. |
-| `--add`, `--move`, `--drop` | Quick edits. See **Quick edits**. |
+| `--add="<title>"` (with `--sprint=<n\|later>`, `--size=S\|M\|L`), `--move=R-<n>:<n\|later>`, `--drop=R-<n>` | Quick edits. See **Quick edits**. |
 | `--multi-agent` / `--plugins=a,b\|all` / `--rounds=1\|2` | Co-plan several plugins. See **Multi-agent**. |
 | `--publish` | Publish the roadmap as a private page. See **Publish**. |
 | `--dry-run` | Show the proposed roadmap and change nothing. |
-| `--pr` / `--no-pr` | Push and open the PR without asking / never. Default: ask. |
+| `--pr` / `--no-pr`, `--draft` | As in `/yay:implement`: push and open the PR without asking, or never; draft PR. Default: ask. |
 
 ## Where the edit happens
 

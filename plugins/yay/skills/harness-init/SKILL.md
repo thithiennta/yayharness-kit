@@ -1,6 +1,6 @@
 ---
 name: harness-init
-description: Install the yay harness in a Yay WordPress plugin repo. Detects the stack, wipes the old harness (CLAUDE.md, AGENTS.md, .claude skills/rules/hooks/docs, all of docs/) on a branch after confirmation, writes .yay/config.json and the kit-owned files, and commits. Use when a repo has no .yay/config.json, or the user says "init harness", "set up yay", "install the harness", "replace our CLAUDE.md".
+description: Install the yay harness in a Yay WordPress plugin repo. Use when a repo has no .yay/config.json, or the user says "init harness", "set up yay", "install the harness", "replace our CLAUDE.md". Detects the stack, hard-wipes the old harness (CLAUDE.md, AGENTS.md, .claude, docs/) on a branch after confirmation, writes .yay/config.json and the kit files, and commits.
 argument-hint: "[--dry-run] [--yes] [--keep=<path>]... [--no-wipe] [--branch=<name>] [--editions=free,pro] [--wporg-slug=<slug>|--no-wporg] [--base=<branch>] [--no-commit] [--reinit]"
 disable-model-invocation: true
 allowed-tools: Bash(yayh *), Bash(git *), Read, Write, Edit, AskUserQuestion

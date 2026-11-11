@@ -195,3 +195,10 @@ PY
   NVM_DIR="$fake" "$YAYH" run build >/dev/null 2>&1
   assert_no_file "$fake/called"
 }
+
+test_help_flag_never_creates_an_artifact() {
+  export YAY_REPO; YAY_REPO="$(_arepo)"
+  assert_contains "$("$YAYH" artifact new bug --help)" "yayh <command>"
+  assert_exit 1 "$YAYH" artifact new bug -x
+  assert_eq "" "$(cd "$YAY_REPO" && git status --porcelain -- docs/)"
+}

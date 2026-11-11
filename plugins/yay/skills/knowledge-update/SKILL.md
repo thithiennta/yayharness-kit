@@ -1,6 +1,6 @@
 ---
 name: knowledge-update
-description: Keep a Yay plugin's project knowledge true - finds the CLAUDE.md project block and docs/knowledge/ docs made stale by code changes since each was last verified (or since a ref/tag/date), re-verifies only what changed, fixes it, and re-stamps. Use after merging features or fixes, before a release, when /yay:implement, /yay:fix or /yay:release suggests it, when `yayh knowledge stale` reports drift, or when the user says "update the docs", "refresh knowledge", "CLAUDE.md is out of date".
+description: Bring stale Yay plugin knowledge back in line with the code. Use when the user says "update the docs", "refresh knowledge", "CLAUDE.md is out of date", after merges, before a release, or when yayh knowledge stale or another yay skill reports drift. Re-verifies only the CLAUDE.md project block and docs/knowledge/ parts whose covered files changed, fixes them, and re-stamps.
 argument-hint: "[--since=<ref|tag|YYYY-MM-DD>] [--doc=<docs/knowledge/x.md|CLAUDE.md>] [--all] [--check] [--agents=N] [--no-commit]"
 allowed-tools: Bash(yayh *), Bash(git *), Read, Grep, Glob, Write, Edit, Agent, AskUserQuestion
 ---

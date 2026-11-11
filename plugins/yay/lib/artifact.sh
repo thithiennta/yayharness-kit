@@ -34,6 +34,7 @@ yay_render_vars() {
 yay_artifact_new() {
   local type="$1" title="$2"; shift 2 || yay_die "usage: yayh artifact new <type> \"<title>\" [key=value...]"
   [ -n "$title" ] || yay_die "a title is required"
+  case "$title" in -*) yay_die "title '$title' looks like an option; give the title first: yayh artifact new $type \"<title>\" [key=value...]";; esac
   case "$title" in *$'\n'*) yay_die "title must be one line";; esac
   local prefix id slug rel root from="" roadmap="" ptype="feat" severity="medium" editions kv
   prefix="$(_art_prefix "$type")"

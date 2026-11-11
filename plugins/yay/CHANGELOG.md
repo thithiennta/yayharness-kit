@@ -20,5 +20,11 @@
 - `/yay:roadmap`: plan or re-plan dated sprints against capacity and freeze windows, `--status` (read-only progress, slipped items, open bugs, status drift), quick `--add`/`--move`/`--drop`, `--multi-agent` portfolio co-planning (`workflows/roadmap-portfolio.js`, one owner agent per plugin), and `--publish` as a private page.
   - `yayh roadmap list|get|set|add|move|sprints|current|check|status|links|peers`.
   - `/yay:implement` and `/yay:release` set item status through `yayh roadmap set`. The `roadmap` commit scope is always allowed.
+- Hardening:
+  - skill descriptions lead with their trigger phrases and stay under 420 characters, so the skill listing never cuts them off
+  - `yayh … --help` anywhere prints usage and changes nothing, and artifact or roadmap titles that look like options are rejected
+  - `/yay:release` runs `commands.test` first (lint only warns), and a hotfix release tags locally without asking
+  - an eval suite in `evals/` (5 cases with a no-plugin baseline)
+  - `ONBOARDING.md` for the team
 - Reliability: no `| head` or `| grep -q` pipes anywhere (a lint test enforces it), because they fail under `pipefail`. The PHP engine now prints nothing for empty arrays.
 - Hooks: they block edits to generated and kit-owned files, commits on the base branch, `--no-verify`, `yay:debug` leftovers, and tags made outside `/yay:release`; they check commit messages and branch names; at session start they flag a harness older than the kit.

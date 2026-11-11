@@ -132,6 +132,10 @@ Environment: YAY_REPO overrides the repo root, YAY_JSON_ENGINE forces jq|node|ph
 EOF
 }
 
+# `-h`/`--help` anywhere prints usage and changes nothing (so `artifact new bug --help`
+# can never create an artifact titled "--help").
+for _a in "$@"; do case "$_a" in -h|--help) usage; exit 0 ;; esac; done
+
 cmd="${1:-help}"; shift || true
 case "$cmd" in
   version)

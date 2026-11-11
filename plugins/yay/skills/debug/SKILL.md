@@ -1,6 +1,6 @@
 ---
 name: debug
-description: Find the root cause of a bug in a Yay plugin without fixing it - takes a symptom, support ticket, log or B-<n>, gathers environment and logs, forms hypotheses, checks them in parallel with read-only agents, optionally reproduces with WP-CLI or bisects, and writes a bug report in docs/bugs/ (B-<n>) with file:line evidence, confidence, fix options and a regression test proposal. Use when something is broken, a customer reports an error, a test fails unexpectedly, or the user says "debug", "why does", "investigate", "find the cause", "root cause".
+description: Find the root cause of a Yay plugin bug without fixing it. Use when the user says "debug", "why does", "investigate", "find the cause", or reports an error, ticket or failing test. Tests hypotheses with parallel read-only agents (optionally WP-CLI repro or bisect) and writes docs/bugs/ B-<n> with file:line evidence, confidence, fix options and a regression test idea.
 argument-hint: "<symptom|ticket text|log-path|B-<n>> [--area=<path>] [--since=<ref|version>] [--bisect=<good-ref>] [--logs] [--repro] [--agents=N] [--severity=critical|high|medium|low] [--quick] [--report-only]"
 allowed-tools: Bash, Read, Grep, Glob, Write, Edit, Agent, AskUserQuestion
 ---

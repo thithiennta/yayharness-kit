@@ -65,8 +65,8 @@
 - [x] T5.1 `/yay:roadmap` for a single repo
 - [x] T5.2 `--multi-agent` and `--publish` ⟵ T5.1 (workflow script ready; a live multi-plugin run waits for the pilot choice)
 
-## P6 Hardening ⟵ all
-- [ ] T6.1 Audit all 13 skills' hints and descriptions
-- [ ] T6.2 `claude plugin eval` suites
-- [ ] T6.3 End-to-end fixture run, including debug → fix → hotfix release
-- [ ] T6.4 Team onboarding README
+## P6 Hardening ✅ ⟵ all
+- [x] T6.1 Audit all 13 skills' hints and descriptions
+- [x] T6.2 `claude plugin eval` suites
+- [x] T6.3 End-to-end fixture run, including debug → fix → hotfix release
+- [x] T6.4 Team onboarding README

@@ -1,6 +1,6 @@
 ---
 name: changelog
-description: Write a Yay plugin's changelog from git history - collects conventional commits (and their PR, Fixes, Plan, Roadmap links) since the last release tag, rewrites the customer-visible ones in plain merchant language in the readme.txt == Changelog == style the repo already uses, and writes customer-facing release notes to docs/releases/<version>.md. Use before a release (/yay:release calls it), when the user says "changelog", "release notes", "what changed since", "what's in the next release".
+description: Write a Yay plugin changelog and release notes from git history. Use when the user says "changelog", "release notes", "what changed since", "what's in the next release", or from /yay:release. Rewrites customer-visible conventional commits in merchant language, in the readme.txt style the repo already uses, plus docs/releases/<version>.md.
 argument-hint: "[--version=x.y.z] [--since=<tag|ref>] [--date=YYYY-MM-DD] [--no-readme] [--no-notes] [--replace] [--dry-run]"
 allowed-tools: Bash(yayh *), Bash(git *), Bash(gh *), Read, Write, Edit, AskUserQuestion
 ---
