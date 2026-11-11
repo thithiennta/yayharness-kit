@@ -65,7 +65,7 @@ Re-running the same command resumes: each item's stage comes from its brainstorm
 ```text
 /yay:release --bundle           # a test bundle for QA (1.5.0-rc.1): zips, checks, plugins-page screenshots
 /yay:release --dry-run          # preview the version, changelog, release checks and build plan
-/yay:release                    # Stable tag, versions, changelog, zips, size vs last release, plugins page → your yes → release PR
+/yay:release                    # Stable tag, versions, changelog, zips, size vs last release, plugin links → you confirm each link → release PR
 /yay:release --tag-only         # after the PR merges: tag it and rebuild the final bundle from the tag
 ```
 Every mode ends in `release/bundles/<slug>-<version>/`: the zips, `MANIFEST.txt` (sha256), a `README.md` for the tester, and `ui/` screenshots. Send that folder.
@@ -162,7 +162,7 @@ Every skill shows its full option list as you type it, and explains each option 
 | "version files disagree" | Run `yayh version list`, then fix them through `/yay:release`, or correct `versionFiles` in `.yay/config.json`. |
 | The build fails a check | `/yay:release` says which file and why. Fix the package script or `package.forbidden`, never the zip. |
 | The release asks about the size | The zip moved more than 25% or 1 MB against the last release, or has a file over 2 MB. The report lists the largest files. Tune it with `release.sizeChangePct` / `sizeChangeKb` / `largeFileKb`. |
-| The UI check is skipped | It needs `/yay:e2e-init` (wp-env and Playwright installed) and Docker running. Without them, the release asks you to check the plugins page by hand. |
+| The UI check is skipped | It needs `/yay:e2e-init` (wp-env and Playwright installed) and Docker running. Without them, the release lists the plugin's links from the code and asks you to click each one on a test site. |
 | Wrong Node version for builds | Add `.nvmrc`. `yayh run` uses it through nvm. |
 | JSON errors from `yayh` | Install `jq`, or force an engine with `YAY_JSON_ENGINE=php`. |
 

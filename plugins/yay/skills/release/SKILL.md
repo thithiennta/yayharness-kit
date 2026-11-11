@@ -53,11 +53,13 @@ Every mode uses this. It needs a version `v` (the version the zips carry) and a 
    4. `yayh build check "$zip" edition=<e> version=<v>`. This checks for one top folder, no dev files, no forbidden paths for the edition, the right version header and Stable tag, PHP that parses, and the repo's `checks`. Any FAIL means the build is **not shippable**: stop and say what to fix. A dev file means fixing the package script's excludes or `.distignore`. Forbidden paths mean fixing the edition strip step. A version mismatch means fixing `versionFiles`. Never fix a check by editing the zip. WARN lines are judgment calls; a legitimate one is silenced with `package.allow`.
    5. `yayh release size "$zip" edition=<e> version=<b>`. Keep any `UNUSUAL` lines: a size or file count that moved more than 25% or 1 MB against the last release that recorded its size, or a single file over 2 MB (`release.sizeChangePct`, `release.sizeChangeKb`, `release.largeFileKb`). A `WARN baseline` line only means nothing was recorded yet.
 3. **Bundle.** `bundle="$(yayh release bundle <v> <e>=<zip>… [--replace])"`, run in the main checkout. Use `--replace` only when rebuilding the same version (`--tag-only`, or a release re-run).
-4. **UI check**, unless `--no-ui`. For each edition: `yayh release ui "$zip" out="$bundle/ui/<e>" edition=<e> [--keep]`. It installs **the built zip** (not the source) in its own throwaway wp-env site, then:
-   - logs in, checks that the plugin is listed, and activates it from its row (recording where activation lands)
-   - opens every row action link and meta link on the same site (Settings and so on), checking for a 4xx/5xx, a fatal error or a "not allowed" page
-   - deactivates it (noting a deactivation-feedback dialog)
-   - screenshots every step and scans `debug.log` for PHP errors from the plugin's folder
+4. **Plugin links check** (the UI check), unless `--no-ui`. For each edition: `yayh release ui "$zip" out="$bundle/ui/<e>" edition=<e> [--keep]`. It installs **the built zip** (not the source) in its own throwaway wp-env site, then on the WordPress Plugins page:
+   - checks that the plugin is listed, and activates it from its row (recording where activation lands)
+   - collects every **action link** (under the plugin's name: Settings, Upgrade to Pro…) and **meta link** (next to the version: Docs, Support, View details…) of the now-active plugin
+   - follows each one. An internal link must answer without a 4xx/5xx, a fatal error or a "not allowed" page; it records the page's heading and a screenshot. An external link is requested, redirects followed: 404/410/5xx is a FAIL; 403/429 or unreachable is a WARN (sites often block automated checks)
+   - deactivates it (noting a deactivation-feedback dialog), and scans `debug.log` for PHP errors from the plugin's folder
+
+   `ui/<e>/links.tsv` is the table the developer confirms: kind, text, URL, status, where it lands (page heading, or final URL after redirects), result.
 
    Exit 1 is a FAIL: stop, show the lines and the screenshot, and suggest `/yay:debug`. Exit 3 means it couldn't run (no e2e setup or no Docker): say why. The release then gets a manual check instead (Prepare step 9).
 5. **Bundle README.** Write `$bundle/README.md`:
@@ -65,7 +67,7 @@ Every mode uses this. It needs a version `v` (the version the zips carry) and a 
    - what changed: the changelog entry, or for an rc, a short merchant-language list from `yayh changelog collect --since=<last tag>`
    - the build-check results per edition
    - the size against the baseline, with every UNUSUAL line and the largest files
-   - the UI-check lines, naming each step's screenshot
+   - the plugin's links (`links.tsv`) and the other UI-check lines, naming each step's screenshot, so the tester can confirm each link goes where it should
    - the manual checks left: the `## Verify` items needing a browser or a human, from the plans shipped since the last tag (`Plan:` trailers)
    - how to install it: upload the zip under Plugins → Add New → Upload, or `wp plugin install <zip> --force`
 6. **Tidy up.** Compare `git status` with step 1. If a package script rewrote tracked files that this mode doesn't commit, restore them (`git checkout -- <files>`) and say so.
@@ -109,7 +111,7 @@ Every mode uses this. It needs a version `v` (the version the zips carry) and a 
    A FAIL from steps 4–5 (a missing entry, a version file that `versionFiles` doesn't cover) gets fixed here, then the gate runs again. Anything else stops the release, with the line.
 8. **Build the bundle** (above) with `v=$new`, `b=$new`.
 9. **Confirm: the developer always signs off on a release.** One AskUserQuestion, asked even when nothing else is open:
-   - **The plugins page** (always first). If the UI check ran, summarize its lines (activation and where it landed, each link with its HTTP status, deactivation, PHP log) and give the screenshot folder. Ask: "Is the plugins page for `<plugin> $new` correct?" Options: "Correct, release it" / "Something's wrong, stop". If it didn't run, give the steps instead: install the zip on a test site, activate it, open each link in its row, deactivate it. Ask "Did all of that work?" with the same options.
+   - **The plugin's links** (always first). Show `links.tsv` for each edition as a table: every action and meta link of the active plugin, with its URL, where it lands and its result, plus where activation lands. The question is whether **each link goes where it should** (the right settings tab, the right docs page, the right upgrade URL with its tracking parameters), not only whether it loads. Ask: "Are these the right links for `<plugin> $new`?" Options: "All correct, release it" / "A link is wrong, stop". A WARN link (blocked or unreachable from here) is named in the question so the developer opens it by hand. If the check didn't run, list the links from the plugin's `plugin_action_links_*` and `plugin_row_meta` filters in the code instead, ask the developer to activate the zip on a test site and click each one, and ask the same question.
    - **Size**, only when step 8 had UNUSUAL lines. Show them, with the largest new files. Ask: "Is this size change expected?" Options: "Expected" / "Not expected, stop".
    - **Any hard question held from step 2.**
 

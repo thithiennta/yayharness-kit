@@ -331,6 +331,7 @@ yay_release_ui() {
   printf '%s\n' "$mine" | { grep -E 'PHP (Fatal|Parse) error' || true; } | sed -n '1,5p' | sed 's/^/FAIL	php-log	/'
   printf '%s\n' "$mine" | { grep -E 'PHP (Warning|Notice|Deprecated)' || true; } | sed -n '1,5p' | sed 's/^/WARN	php-log	/'
   printf '%s' "$mine" | grep -qE 'PHP (Warning|Notice|Deprecated|Fatal|Parse)' || printf 'PASS\tphp-log\tno PHP errors, warnings or notices from %s/ in debug.log\n' "$folder"
+  [ ! -f "$out/links.tsv" ] || printf 'INFO\tlinks\t%s (kind, text, url, status, lands on, result: the developer confirms these)\n' "$out/links.tsv"
   printf 'INFO\tscreenshots\t%s\n' "$out"
   if [ -n "$keep" ]; then printf 'INFO\tsite\t%s (admin / password), stop with: yayh release ui-stop\n' "$url"
   else (cd "$site" && "$wpenv" stop >/dev/null 2>&1) || true; fi

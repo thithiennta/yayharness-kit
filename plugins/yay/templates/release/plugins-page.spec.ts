@@ -83,36 +83,48 @@ test( 'plugins page actions', async ( { page, baseURL } ) => {
 		record( 'INFO', 'active-row', await shot( page, 'active-row' ) );
 	} );
 
-	await test.step( 'row action and meta links', async () => {
+	await test.step( 'action and meta links of the active plugin', async () => {
 		await openPluginsPage( page );
 		const links = await row( page ).locator( '.row-actions a, .plugin-version-author-uri a' ).evaluateAll( ( els ) =>
 			els.map( ( a ) => ( {
-				text: ( a.textContent ?? '' ).trim(),
+				kind: a.closest( '.row-actions' ) ? 'action' : 'meta',
+				text: ( a.textContent ?? '' ).replace( /\s+/g, ' ' ).trim(),
 				href: ( a as HTMLAnchorElement ).href,
+				target: a.getAttribute( 'target' ) ?? '',
 				deactivate: !! a.closest( 'span.deactivate' ),
 				dialog: a.getAttribute( 'href' ) === '#' || ( a.getAttribute( 'href' ) ?? '' ).startsWith( 'javascript:' ),
 			} ) )
 		);
+		const table: string[] = [ 'kind\ttext\turl\tstatus\tlands on\tresult' ];
+		const addRow = ( l: { kind: string; text: string; href: string }, status: string, lands: string, result: string ) =>
+			table.push( [ l.kind, l.text, l.href.replace( origin, '' ), status, lands, result ].join( '\t' ) );
+
 		for ( const l of links.filter( ( x ) => ! x.deactivate ) ) {
 			if ( l.dialog ) {
-				record( 'INFO', 'link', `"${ l.text }" opens something on the page (no URL), not followed` );
+				addRow( l, '-', 'opens on the page (no URL)', 'INFO' );
+				record( 'INFO', 'link', `${ l.kind } "${ l.text }" opens something on the page (no URL)` );
 				continue;
 			}
 			if ( ! l.href.startsWith( origin ) ) {
-				record( 'INFO', 'link', `"${ l.text }" → ${ l.href } (external, not followed)` );
+				const res = await page.request.get( l.href, { maxRedirects: 5, timeout: 15_000, failOnStatusCode: false } ).catch( () => null );
+				const status = res?.status() ?? 0;
+				const lands = res ? res.url() : 'unreachable';
+				const result = ! res ? 'WARN' : [ 404, 410 ].includes( status ) || status >= 500 ? 'FAIL' : status >= 400 ? 'WARN' : 'PASS';
+				addRow( l, String( status || '-' ), lands, result );
+				record( result as 'PASS' | 'WARN' | 'FAIL', 'link', `${ l.kind } "${ l.text }" → ${ l.href }${ lands !== l.href ? ` → ${ lands }` : '' } (${ res ? `HTTP ${ status }` : 'unreachable from here' }${ result === 'WARN' && res ? ', the site may block automated checks' : '' })${ l.target === '_blank' ? ', new tab' : '' }` );
 				continue;
 			}
 			const response = await page.goto( l.href );
 			const status = response?.status() ?? 0;
 			const error = await errorOnPage( page );
+			const title = ( await page.locator( '.wrap h1, .wrap h2, h1' ).first().innerText().catch( () => '' ) ).trim() || ( await page.title() );
 			const file = await shot( page, `link-${ l.text }` );
-			if ( status >= 400 || error ) {
-				record( 'FAIL', 'link', `"${ l.text }" → ${ l.href.replace( origin, '' ) }: ${ error || `HTTP ${ status }` } — ${ file }` );
-			} else {
-				record( 'PASS', 'link', `"${ l.text }" → ${ l.href.replace( origin, '' ) } (HTTP ${ status }) — ${ file }` );
-			}
+			const result = status >= 400 || error ? 'FAIL' : 'PASS';
+			addRow( l, String( status ), `"${ title }" (${ file })`, result );
+			record( result, 'link', `${ l.kind } "${ l.text }" → ${ l.href.replace( origin, '' ) } ${ error ? `: ${ error }` : `(HTTP ${ status })` }, page "${ title }" — ${ file }` );
 		}
-		if ( ! links.some( ( x ) => ! x.deactivate ) ) record( 'INFO', 'link', 'no row action or meta links besides Deactivate' );
+		if ( ! links.some( ( x ) => ! x.deactivate ) ) record( 'INFO', 'link', 'no action or meta links besides Deactivate' );
+		fs.writeFileSync( path.join( OUT, 'links.tsv' ), table.join( '\n' ) + '\n' );
 	} );
 
 	await test.step( 'deactivate', async () => {
