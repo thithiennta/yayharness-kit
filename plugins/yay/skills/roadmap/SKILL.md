@@ -88,7 +88,7 @@ With `--trello`, sync only the item that changed (`reference/roadmap-extras.md`,
    - Front-matter: `horizon`, `sprint_length`, `updated` (today). Keep any other keys (`published`, `hub`).
    - Add the new sprint headings from `yayh roadmap sprints … --md`, each followed by its `Goal:` line. Never rewrite past sprints' headings.
    - Existing items: `yayh roadmap move R-<n> <sprint|later>`, and for each `links` drift, `yayh roadmap set R-<n> status <suggested>`.
-   - New items: `yayh roadmap add "<title>" sprint=<n|later> size=… "why=…" ["editions=free, pro"] [from=…]`. It prints the id. Write `editions` with the config's edition names, comma and space separated.
+   - New items: `yayh roadmap add "<title>" sprint=<n|later> size=… "why=…" ["editions=free, pro"] [from=…] ["depends=R-<a>, R-<b>"]`. It prints the id. Every dependency you scheduled around goes in `depends=` (and `yayh roadmap set R-<n> depends "…"` for existing items), because `/yay:autopilot` and `yayh status` order work by it. Write `editions` with the config's edition names, comma and space separated.
    - Backlog ideas that became items: `yayh fm set docs/backlog/<file> status promoted:R-<n>`. A deferred note that became an item: `yayh fm set <file> affects "[R-<n>]"`, so the item's plan picks it up (it stays `open` until a plan takes it).
    - `yayh roadmap check` must have no errors.
 7. **Trello** (only with `--trello`): sync before committing, so the saved card URLs go in the same commit. See `reference/roadmap-extras.md`.

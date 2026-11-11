@@ -114,6 +114,14 @@ test_next_follows_each_chain() {
   assert_exit 1 "$YAYH" next P-99
 }
 
+test_status_before_the_first_sprint_shows_the_next_one() {
+  export YAY_REPO; YAY_REPO="$(_srepo)"
+  local out; out="$("$YAYH" status --today=2026-10-20)"
+  # Sprint 1 starts 2026-10-27: its item is the current sprint's, not slipped
+  assert_contains "$out" "sprint	R-1	brainstorm	/yay:brainstorm --from=R-1	Old item"
+  case "$out" in *"sprint	R-2"*) _fail "Sprint 2 shown before Sprint 1 started" ;; *) _pass ;; esac
+}
+
 test_status_without_roadmap_and_nothing_to_do() {
   export YAY_REPO; YAY_REPO="$(mk_repo)"
   git -C "$YAY_REPO" commit -q --allow-empty -m init
