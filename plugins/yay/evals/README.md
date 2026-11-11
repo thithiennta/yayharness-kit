@@ -13,6 +13,7 @@ Behaviour checks for the `/yay:*` skills, run with `claude plugin eval`. Each ca
 | `code-reuses-existing-helpers` | Showing a fee at checkout calls `Support\\Format::price()` rather than an inline `wc_price()`. |
 | `plan-decides-without-stopping` | A plain "write the plan for R-2" request: at most one question, the plan marked ready by Claude, and its own decisions listed (`reference/asking.md`). |
 | `go-routes-symptom-to-debug` | `/yay:go` with a plain-words symptom routes to `/yay:debug` (cause unknown, so not `/yay:fix`), and no product code is edited. |
+| `review-catches-missing-capability` | `yay:bug-reviewer` on a branch whose settings handler has no nonce and no capability check: it flags a security blocker with the fix, and edits nothing. |
 | `plan-from-request` | A plan request fires `/yay:plan`, which writes `docs/plans/` with tasks and Verify checks, and no code. |
 
 ## Run

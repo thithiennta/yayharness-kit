@@ -24,7 +24,7 @@ Each step that runs a subagent can use a different model and reasoning effort. `
 | `feasibility` | `/yay:brainstorm` Explore agent per option | `veryfast` |
 | `revise` | autopilot: apply decision-sheet answers | `fast` |
 | `resolve` | autopilot: fix review findings, push, PR | `fast` |
-| `review` | `yay:code-reviewer` (implement, fix, autopilot) | `balanced` |
+| `review` | `yay:bug-reviewer` and `yay:code-reviewer` (implement, fix, autopilot) | `balanced` |
 | `hypothesis` | `/yay:debug` hypothesis checkers | `balanced` |
 | `portfolio-research` | `/yay:roadmap --multi-agent` owner research | `balanced` |
 | `cowork` | `/yay:roadmap --multi-agent` co-work round | `balanced` |

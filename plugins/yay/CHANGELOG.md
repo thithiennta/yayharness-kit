@@ -10,6 +10,15 @@
   - `/yay:implement`: planning a requirement and the tiny lane go to `reference/implement-unplanned.md` (152 → 132).
 
   Nothing in what the skills do has changed.
+- **Correctness review before every PR: `yay:bug-reviewer`.** A new read-only agent runs next to `yay:code-reviewer` in `/yay:implement` (step 4.5), `/yay:fix` (every fix) and autopilot builds. It gets only the diff, the base branch and the plan's Goal (for a fix, the symptom and root cause), and checks:
+  - logic
+  - security: nonce and capability on every handler, a REST `permission_callback`, sanitize in, escape out, `$wpdb->prepare`
+  - compatibility: HPOS through the WooCommerce CRUD, block and classic checkout, the PHP floor
+  - editions: Pro code reaching Free
+  - data: defaults, upgrades, uninstall
+  - whether the diff meets the goal
+
+  Each finding has a severity (`blocker`, `bug` or `risk`), `path:line`, and the input that fails. A blocker is fixed before the PR, or the PR opens as a draft with the blocker first. Everything else is fixed or answered. The PR template's "Reuse and comments review" section becomes **Review**. Both reviewers use the `review` model step.
 - **Words work as options.** A new asking rule: plain words in a `/yay:*` argument that name an option mean that option (`/yay:roadmap status`, `/yay:release dry run`).
 
 ## Unreleased (0.4.0)

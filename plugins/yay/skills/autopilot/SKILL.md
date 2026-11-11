@@ -58,7 +58,7 @@ With no scope at all, use `--sprint=current`.
    - waits for its `after` items (a blocked dependency skips it, with the reason)
    - applies its answer to the brainstorm and plan (revise)
    - follows `/yay:implement` in its own worktree, branched from `base` or, when stacked, from the dependency's branch (other dependencies are merged in)
-   - runs `yay:code-reviewer`, then fixes or answers each finding
+   - runs `yay:bug-reviewer` (correctness) and `yay:code-reviewer` (reuse and comments) in parallel, then fixes or answers each finding (a security or data-loss blocker is fixed, or the PR goes up as a draft)
    - unless `--no-pr`, pushes and opens the PR (based on the dependency's branch for a stacked item)
 
    A blocked item leaves its branch with whatever was committed, and the run goes on with everything that doesn't depend on it. Nothing in this step asks the user.

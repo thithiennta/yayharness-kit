@@ -27,7 +27,7 @@ Implement a plan exactly, in a worktree, with one commit per task. Given a requi
 | `--no-pr` | Stop after the last commit, and print the push and PR commands. Default: push the branch and open the PR, assigned to you. |
 | `--draft` | Open the PR as a draft. |
 | `--no-push` | Same as `--no-pr`. |
-| `--no-review` | Skip the reuse and comments review (step 4.5). For throwaway branches only. |
+| `--no-review` | Skip the reviews (step 4.5). For throwaway branches only. |
 
 ## Steps
 
@@ -92,14 +92,18 @@ For each unticked task in order (or only `--task`):
 2. **E2E** (when the plan's `**E2E:**` line isn't `none` and `commands.e2e` is set): follow `/yay:e2e P-<n>` steps 1–5 in this worktree. Write the specs, tagged `@P-<n>`. Run `yayh e2e run --grep "@P-<n>|@smoke"` against this worktree's own site (`yayh e2e env start` gives it its own port). Classify any failure: a product bug is yours to fix now, since it's this branch's code. Commit as `test(e2e): <flow>` with the `Plan:` trailer. Without Docker, write and commit the specs anyway, and list them as **not run** in the PR. When you're done, stop the site with `yayh e2e env stop`.
 3. Walk through the plan's **Verify** list (it includes the design's Acceptance checks). Do each check you can (CLI, WP-CLI against `yayh config get site.wpPath`, reading the output). List the checks only a human can do (browser flows) for the PR.
 4. Run `yayh debug markers`. It must be empty.
-5. **Review for reuse and comments** (skip with `--no-review`):
+5. **Review: correctness, then reuse and comments** (skip with `--no-review`):
    - Run `yayh review diff <base> --plan=P-<n>`.
-   - Spawn one `yay:code-reviewer` agent, with the model and effort from `yayh model resolve review --plan=P-<n>` (model routing: `${CLAUDE_PLUGIN_ROOT}/reference/models.md`). Its brief: the worktree path, the base branch, `P-<n>`, and "review this branch". Don't pass your own reasoning, so its read stays independent.
+   - Spawn two read-only agents in parallel (one message), each with the model and effort from `yayh model resolve review --plan=P-<n>` (model routing: `${CLAUDE_PLUGIN_ROOT}/reference/models.md`). Don't pass your own reasoning to either, so their reads stay independent.
+     - `yay:bug-reviewer`. Its brief: the worktree path, the base branch, and the plan's **Goal** paragraph copied as it is, and "review this branch for correctness".
+     - `yay:code-reviewer`. Its brief: the worktree path, the base branch, `P-<n>`, and "review this branch".
    - For each finding, either fix it or answer it:
-     - **Fix:** call the existing helper, delete or restore the comment. Commit `refactor(<scope>): reuse <helper>` or `style(<scope>): restore comments` with the `Plan:` trailer, then re-run the checks the change touches.
-     - **Answer:** you disagree, with a reason. It goes in the PR under "Reuse and comments review".
+     - **Fix:** the change the finding names. Commit `fix(<scope>): <what>` for a correctness finding, or `refactor(<scope>): reuse <helper>` / `style(<scope>): restore comments`, with the `Plan:` trailer, then re-run the checks the change touches. A bug fix gets a test at the cheapest layer that proves it, when it's a real risk.
+     - **Answer:** you disagree, with a reason. It goes in the PR under "Review".
+   - **A `blocker`** (a security hole, or data lost or corrupted) is fixed before the PR, never answered away. If you can't fix it, open the PR as a draft and put the blocker first in its body.
+   - Each reviewer's **Questions**: check the ones you can, and list the rest for the human reviewer.
 
-   The review flags, it never blocks.
+   Apart from blockers, the reviews flag and never block.
 6. Run `yayh knowledge stale --since=<base>`. For each doc this branch made wrong, update it now on this branch, following `/yay:knowledge-update`'s rules. Then `yayh knowledge check` must pass, and you run `yayh knowledge stamp <doc>`. Commit it as `docs(knowledge): …`.
 7. Run `yayh fm set <plan> status done` and commit it as `docs(plan): complete P-<n>`.
 
@@ -118,7 +122,7 @@ Fill the PR body from `.github/pull_request_template.md`:
 - write a customer-facing release note line, or "internal"
 - under "Decided": the choices you made where the plan was silent
 - under "Open decisions and later work": every note this branch wrote or left open (`BL-<n>`, the question, the default built), and every note it settled
-- under "Reuse and comments review": the findings you fixed (one line each), and the ones you answered, with your reason
+- under "Review": the correctness and the reuse and comments findings you fixed (one line each), the ones you answered with your reason, and the open questions
 
 Then record the PR number with `yayh fm set <plan> pr <number>`, and commit and push that.
 

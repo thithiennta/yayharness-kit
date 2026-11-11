@@ -14,8 +14,8 @@
 ## Open decisions and later work
 <!-- Backlog notes this branch wrote, left open or settled: BL-<n>, the question or the work, and the default built. "none" if none. -->
 
-## Reuse and comments review
-<!-- From `yayh review diff` and the yay:code-reviewer agent: findings fixed (one line each), and findings answered, with the reason. "clean" if none. -->
+## Review
+<!-- yay:bug-reviewer (correctness, security, compat, editions, data) and yay:code-reviewer (reuse, comments), plus `yayh review diff`: findings fixed (one line each), findings answered with the reason, open questions for the human reviewer. "clean" if none. -->
 
 ## Editions
 <!-- {{editions}}: which ones does this touch? -->

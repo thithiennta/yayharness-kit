@@ -6,7 +6,7 @@ export const meta = {
     { title: 'Prepare', detail: 'brainstorm and plan each item; return only the hard calls' },
     { title: 'Revise', detail: 'apply the decision-sheet answers to brainstorms and plans' },
     { title: 'Implement', detail: 'one item at a time, or --parallel=N; dependents stack on their dependency branch' },
-    { title: 'Review', detail: 'yay:code-reviewer on each finished branch' },
+    { title: 'Review', detail: 'yay:bug-reviewer and yay:code-reviewer on each finished branch' },
     { title: 'Resolve', detail: 'fix or answer the review findings; push and open the PR (not with --no-pr)' },
   ],
 }
@@ -169,21 +169,32 @@ function resolvePrompt(it, built, findings, prBase) {
 
 Branch \`${built.branch}\` (worktree ${built.worktree}) builds ${it.artifact} for ${it.id} ${it.title}. Work only in that worktree.
 
-1. The yay:code-reviewer returned:
+1. The reviewers returned:
 ${findings}
-   For each finding: fix it (call the existing helper, delete or restore the comment; commit \`refactor(<scope>): reuse <helper>\` or \`style(<scope>): restore comments\` with the \`Plan: ${it.artifact}\` trailer, then re-run the checks the change touches), or answer it with a reason. The review flags, it never blocks.
+   For each finding: fix it (the change the finding names; commit \`fix(<scope>): <what>\` for a correctness finding, \`refactor(<scope>): reuse <helper>\` or \`style(<scope>): restore comments\` for the others, with the \`Plan: ${it.artifact}\` trailer, then re-run the checks the change touches), or answer it with a reason. A \`blocker\` (security hole, data lost or corrupted) must be fixed, never answered; if you can't fix it, open the PR as a draft with the blocker first in its body. Nothing else blocks. List the reviewers' open questions for the human reviewer.
 2. ${PR
-    ? `Push and open the PR as in the "Push and PR" section of ${KIT}/skills/implement/SKILL.md: \`git push -u origin ${built.branch}\` and \`gh pr create --base ${prBase} --head ${built.branch} --assignee @me${A.draft ? ' --draft' : ''}\`. Fill the body from .github/pull_request_template.md. Under "Decided" list: ${JSON.stringify(built.decided)}. Under "Reuse and comments review", the fixed and answered findings.${prBase !== A.base ? ` Start the body with "Stacked on ${prBase}: merge that first."` : ''} Then \`yayh fm set <plan> pr <number>\`, commit and push.`
+    ? `Push and open the PR as in the "Push and PR" section of ${KIT}/skills/implement/SKILL.md: \`git push -u origin ${built.branch}\` and \`gh pr create --base ${prBase} --head ${built.branch} --assignee @me${A.draft ? ' --draft' : ''}\`. Fill the body from .github/pull_request_template.md. Under "Decided" list: ${JSON.stringify(built.decided)}. Under "Review", the fixed and answered findings and the open questions.${prBase !== A.base ? ` Start the body with "Stacked on ${prBase}: merge that first."` : ''} Then \`yayh fm set <plan> pr <number>\`, commit and push.`
     : `Don't push. Return the exact commands instead: \`git push -u origin ${built.branch}\` and the \`gh pr create --base ${prBase} --head ${built.branch} --assignee @me …\` line.`}`
 }
 
-async function review(it, built, prBase) {
-  const brief = `Worktree: ${built.worktree}. Base branch: ${prBase}. Plan: ${it.artifact}. Review this branch.`
+// One reviewer agent; falls back to a general agent told to follow the definition
+// when the plugin's agent type isn't available in this run.
+async function reviewer(type, brief, it) {
+  const opts = { label: `${type}:${it.id}`, phase: 'Review', ...route('review', it.size) }
   try {
-    return await agent(brief, { label: `review:${it.id}`, phase: 'Review', agentType: 'yay:code-reviewer', ...route('review', it.size) })
+    return await agent(brief, { ...opts, agentType: `yay:${type}` })
   } catch (e) {
-    return await agent(`${brief}\nYou are the reviewer defined in ${KIT}/agents/code-reviewer.md: read it and follow it exactly. Read-only.`, { label: `review:${it.id}`, phase: 'Review', ...route('review', it.size) })
+    return await agent(`${brief}\nYou are the reviewer defined in ${KIT}/agents/${type}.md: read it and follow it exactly. Read-only.`, opts)
   }
+}
+
+async function review(it, built, prBase) {
+  const where = `Worktree: ${built.worktree}. Base branch: ${prBase}.`
+  const [bugs, reuse] = await Promise.all([
+    reviewer('bug-reviewer', `${where} Goal: the "## Goal" section of plan ${it.artifact} (docs/plans/ in the worktree); read only that section of the plan. Review this branch for correctness.`, it),
+    reviewer('code-reviewer', `${where} Plan: ${it.artifact}. Review this branch.`, it),
+  ])
+  return `### yay:bug-reviewer (correctness)\n${bugs || '(returned nothing)'}\n\n### yay:code-reviewer (reuse and comments)\n${reuse || '(returned nothing)'}`
 }
 
 const results = {}
@@ -213,7 +224,7 @@ for (const it of ITEMS) {
       if (built.status !== 'done') return (results[it.id] = { ...built, base: baseBranch })
 
       const findings = await review(it, built, baseBranch)
-      const resolved = await agent(resolvePrompt(it, built, findings || '(the reviewer returned nothing)', baseBranch), { label: `resolve:${it.id}`, phase: 'Resolve', schema: RESOLVED, ...route('resolve') })
+      const resolved = await agent(resolvePrompt(it, built, findings, baseBranch), { label: `resolve:${it.id}`, phase: 'Resolve', schema: RESOLVED, ...route('resolve') })
       return (results[it.id] = { ...built, base: baseBranch, review: resolved })
     } finally {
       release()

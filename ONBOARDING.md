@@ -145,7 +145,18 @@ Three things check this, and none of them block:
 - `yayh review diff`, at any time
 - the `yay:code-reviewer` agent, before every PR from `/yay:implement` and `/yay:fix`
 
-Findings are fixed, or answered in the PR's "Reuse and comments review" section.
+Findings are fixed, or answered in the PR's "Review" section.
+
+### Correctness review before every PR
+
+Before each PR from `/yay:implement`, `/yay:fix` and `/yay:autopilot`, a second read-only agent, `yay:bug-reviewer`, reads the diff and the plan's goal, and nothing else. It looks for:
+- logic bugs
+- security gaps: nonces, capabilities, escaping, sanitizing, `$wpdb->prepare`
+- WooCommerce compatibility: HPOS, block checkout, the PHP floor
+- Pro code that reaches Free
+- data that upgrades or uninstall would lose
+
+Each finding cites `file:line` and the input that breaks. A **blocker** (a security hole, or data lost or corrupted) is fixed before the PR, or the PR opens as a draft with the blocker first. Other findings are fixed or answered, and open questions go to the human reviewer.
 
 ### Asking less, blocking less
 
