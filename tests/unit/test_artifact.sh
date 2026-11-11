@@ -63,7 +63,7 @@ _plan_with_tasks() {
 import sys
 p=sys.argv[1]; s=open(p).read()
 s=s.replace("- [ ] T1 <what> — `path/to/file.php`", "- [ ] T1 Add the setting — `includes/Plugin.php`\n  - detail bullet\n- [ ] T2 Wire the UI (no files)\n- [ ] T10 Docs — `readme.txt`")
-s=s.replace("## Verify\n<!-- Exact checks: the command or UI path, and the result that means it passed. -->\n-", "## Verify\n- Open Settings → see the toggle.")
+s=s.replace("## Verify\n<!-- Exact checks. A command check: - `<command>` → exit 0 | <text the output contains> (yayh verify runs it). Otherwise the UI path and the result that means it passed. -->\n-", "## Verify\n- Open Settings → see the toggle.")
 open(p,'w').write(s)
 PY
   printf '%s\n' "$p"
