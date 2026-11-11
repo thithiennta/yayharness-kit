@@ -8,6 +8,12 @@
 - **Every skill ends with one next step.** A new asking rule (loaded at session start): a `/yay:*` report ends with `Next: <command>` from `yayh next <id>`, plus at most 2 alternatives. Replying "go", "next", "continue" or "yes" runs it. Brainstorm, debug, design, plan, implement, fix, roadmap, autopilot, test and e2e point their report at this rule.
 - **Hooks hint about commit style instead of blocking.** After a commit, only a header the changelog can't read (not `type(scope): summary`) still blocks. A header over 72 characters, a final period, a scope outside `git.scopes` and a branch name that isn't `<type>/<slug>` now come back as a non-blocking hint, and the commit stands. These are still blocked: commits on the base branch, `--no-verify`, `yay:debug` leftovers, tags outside `/yay:release`, and edits to generated and kit-owned files. `yayh git commit-check` is still strict, for CI. New `lib/git.sh` checks: `yay_commit_shape` (blocking) and `yay_commit_style` (hints).
 - **Implement adapts the plan instead of stopping.** When the code forces a change that keeps the plan's goal, scope and customer-visible behaviour (a moved file, a renamed hook, an equivalent approach, one more file), `/yay:implement` and autopilot builds edit the task text in the same commit and list the change under **Decided**. They stop to ask only when the scope or what customers see would change. The workflow rule "Plans are the contract" now says the same thing.
+- **Three lanes: tiny, small, standard.** Each change gets as much planning as it needs.
+  - **Tiny** (one or two files, about 30 lines, no customer-visible decision, no data change): `/yay:implement "<change>"` builds it with no plan file. The PR holds a one-line Goal and the Verify checks.
+  - **Small** (an S item, one area, about 3 tasks): a plan with `lane: small` and only Goal, Tasks and Verify (template `artifacts/plan-small.md`, `yayh artifact new plan … lane=small`). `yayh plan check` skips the Reuse, Tests and E2E checks for it.
+  - **Standard:** the full plan, as before.
+
+  `/yay:plan` and `/yay:implement` pick the lane and list it under **Decided**, and `--lane=` overrides it. The workflow rule "Start from an artifact" becomes "Plan as much as the work needs". New optional plan key: `lane`.
 
 ## 0.3.0
 - **Model and effort per step.** Each agent step can run on its own model and effort, set in `.yay/config.json` (or `.yay/local.json`) under `models`:

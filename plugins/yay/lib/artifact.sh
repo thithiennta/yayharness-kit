@@ -31,27 +31,31 @@ yay_render_vars() {
 }
 
 # yay_artifact_new <type> "<title>" [key=value...] -> path of the new file.
-# Known keys: from, roadmap, type (plan branch type), severity, editions;
-# for backlog: kind (idea|decision|deferred), affects, default.
+# Known keys: from, roadmap, type (plan branch type), lane (plan: standard|small),
+# severity, editions; for backlog: kind (idea|decision|deferred), affects, default.
 yay_artifact_new() {
   local type="$1" title="$2"; shift 2 || yay_die "usage: yayh artifact new <type> \"<title>\" [key=value...]"
   [ -n "$title" ] || yay_die "a title is required"
   case "$title" in -*) yay_die "title '$title' looks like an option; give the title first: yayh artifact new $type \"<title>\" [key=value...]";; esac
   case "$title" in *$'\n'*) yay_die "title must be one line";; esac
   local prefix id slug rel root from="" roadmap="" ptype="feat" severity="medium" editions kv
-  local bl_kind=idea affects="" default=""
+  local bl_kind=idea affects="" default="" lane="" tpl
   prefix="$(_art_prefix "$type")"
   editions="$(yay_config_get editions 2>/dev/null | paste -sd, - | sed 's/,/, /g')"
   for kv in "$@"; do
     case "$kv" in
       from=*) from="${kv#from=}" ;; roadmap=*) roadmap="${kv#roadmap=}" ;;
       type=*) ptype="${kv#type=}" ;; severity=*) severity="${kv#severity=}" ;;
-      editions=*) editions="${kv#editions=}" ;;
+      editions=*) editions="${kv#editions=}" ;; lane=*) lane="${kv#lane=}" ;;
       kind=*) bl_kind="${kv#kind=}" ;; affects=*) affects="${kv#affects=}" ;; default=*) default="${kv#default=}" ;;
-      *) yay_die "unknown key '${kv%%=*}' (from, roadmap, type, severity, editions, kind, affects, default)" ;;
+      *) yay_die "unknown key '${kv%%=*}' (from, roadmap, type, lane, severity, editions, kind, affects, default)" ;;
     esac
   done
   case "$ptype" in feat|fix|chore|refactor|perf|docs|test) ;; *) yay_die "plan type must be feat, fix, chore, refactor, perf, docs or test";; esac
+  case "$lane" in ''|standard|small) ;; *) yay_die "lane must be standard or small (a tiny change has no plan file)";; esac
+  [ -z "$lane" ] || [ "$type" = plan ] || yay_die "lane is for plans only"
+  tpl="$YAY_TEMPLATES/artifacts/$type.md"
+  [ "$lane" != small ] || tpl="$YAY_TEMPLATES/artifacts/plan-small.md"
   case "$severity" in critical|high|medium|low) ;; *) yay_die "severity must be critical, high, medium or low";; esac
   case "$bl_kind" in idea|decision|deferred) ;; *) yay_die "backlog kind must be idea, decision or deferred";; esac
   case "$default$affects" in *$'\n'*) yay_die "default and affects must be one line";; esac
@@ -68,7 +72,7 @@ yay_artifact_new() {
   yay_id_lock
   trap yay_id_unlock EXIT
   id="$(yay_id_next "$prefix")"
-  yay_render_vars "$YAY_TEMPLATES/artifacts/$type.md" \
+  yay_render_vars "$tpl" \
     "id=$id" "title=$title" "slug=$slug" "from=$from" "roadmap=$roadmap" "ptype=$ptype" \
     "severity=$severity" "artifact_editions=$editions" "bl_kind=$bl_kind" \
     "bl_status=$([ "$bl_kind" = idea ] && echo idea || echo open)" "affects=$affects" "default=$default" > "$root/$rel"
@@ -151,6 +155,10 @@ yay_plan_check() {
   for k in id title status created; do yay_fm_get "$f" "$k" >/dev/null 2>&1 || _pe "front-matter is missing '$k'"; done
   st="$(yay_fm_get "$f" status 2>/dev/null || true)"
   case "$st" in draft|ready|in-progress|done|dropped) ;; *) _pe "status '$st' is not draft|ready|in-progress|done|dropped";; esac
+  # A small plan (lane: small) needs only Goal, Tasks and Verify; the Reuse, Tests
+  # and E2E checks are for standard plans.
+  local lane; lane="$(yay_fm_get "$f" lane 2>/dev/null || true)"
+  case "$lane" in ''|standard|small) ;; *) _pe "lane '$lane' is not standard or small";; esac
   grep -q '^## Goal' "$f" || _pe "no '## Goal' section"
   grep -q '^## Tasks' "$f" || _pe "no '## Tasks' section"
   local tasks; tasks="$(yay_plan_tasks "$rel")"
@@ -168,7 +176,7 @@ EOF
   awk '/^## /{intasks=($0 ~ /^## Tasks/)} intasks && /^- \[[ xX]\] T[0-9]+/ { if ($0 !~ /`/ && $0 !~ /\(no files\)/) { match($0, /T[0-9]+/); print substr($0, RSTART, RLENGTH) } }' "$f" \
     | while read -r t; do [ -n "$t" ] && echo "warn: task $t names no files (backtick the paths, or write '(no files)')"; done
   # Every task says what existing code it reuses (or why it adds new code).
-  awk '
+  [ "$lane" = small ] || awk '
     function done_task() { if (t != "") { if (!reuse) print t "\tmissing"; else if (none && !why) print t "\tnowhy" } }
     /^## / { if (intasks) done_task(); intasks = ($0 ~ /^## Tasks/); t = ""; next }
     intasks && /^- \[[ xX]\] T[0-9]+/ { done_task(); match($0, /T[0-9]+/); t = substr($0, RSTART, RLENGTH); reuse = 0; none = 0; why = 0; next }
@@ -197,7 +205,7 @@ EOF
       esac
     done ;;
   esac
-  grep -Eq '^\*\*Tests:\*\*[[:space:]]*[^[:space:]]' "$f" || _pe "no '**Tests:** <tests or none>' line"
+  [ "$lane" = small ] || grep -Eq '^\*\*Tests:\*\*[[:space:]]*[^[:space:]]' "$f" || _pe "no '**Tests:** <tests or none>' line"
   # Each test names the layer it runs at (reference/testing.md): [unit], [integration], [js] or [manual].
   sed -nE 's/^\*\*Tests:\*\*[[:space:]]*//p' "$f" | sed -n 1p | tr ';' '\n' | sed -E 's/^[[:space:]]+//; s/[[:space:]]+$//' \
     | while IFS= read -r t; do
@@ -206,7 +214,7 @@ EOF
         esac
       done
   # Repos with e2e set up decide per plan which flows get a browser spec.
-  if yay_config_get commands.e2e >/dev/null 2>&1 && ! grep -Eq '^\*\*E2E:\*\*[[:space:]]*[^[:space:]]' "$f"; then
+  if [ "$lane" != small ] && yay_config_get commands.e2e >/dev/null 2>&1 && ! grep -Eq '^\*\*E2E:\*\*[[:space:]]*[^[:space:]]' "$f"; then
     _pw "no '**E2E:** <browser-only flows, or none>' line (this repo has e2e set up)"
   fi
   if ! awk '/^## Verify/{on=1; next} /^## /{on=0} on && /[^[:space:]]/ && !/^<!--/ && !/^[[:space:]]*([-*]|[0-9]+\.)[[:space:]]*$/{found=1} END{exit !found}' "$f"; then

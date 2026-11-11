@@ -1,7 +1,7 @@
 ---
 name: implement
 description: Build a Yay plugin plan task by task in its own worktree and branch, or plan a requirement first and then build it. Use when the user says "implement P-4", "build this plan", "start on the plan", "continue the implementation", or "implement <a requirement>" / "implement R-12" when no plan exists yet. Implements, verifies and ticks each task, commits with a Plan trailer, runs the full checks, refreshes knowledge it made stale, and opens a PR assigned to its owner.
-argument-hint: "<P-<n>|plan-slug|\"<requirement>\"|R-<n>|BS-<n>|B-<n>> [--type=feat|fix|chore|refactor|perf] [--task=T<n>] [--continue] [--no-worktree] [--base=<branch>] [--no-pr] [--draft] [--no-review]"
+argument-hint: "<P-<n>|plan-slug|\"<requirement>\"|R-<n>|BS-<n>|B-<n>> [--type=feat|fix|chore|refactor|perf] [--task=T<n>] [--continue] [--lane=tiny|small|standard] [--no-worktree] [--base=<branch>] [--no-pr] [--draft] [--no-review]"
 allowed-tools: Bash, Read, Grep, Glob, Write, Edit, Agent, AskUserQuestion
 ---
 
@@ -20,6 +20,7 @@ Implement a plan exactly, in a worktree, with one commit per task. Given a requi
 | `R-<n>` / `BS-<n>` / `B-<n>` | Build the plan made from this source, or plan it first when there is none (step 0). |
 | `--type=<t>` | Branch and commit type for a plan written in step 0 (default `feat`; `fix` for a bug). |
 | `--task=T<n>` | Do only this task, then stop (still verify, tick and commit it). |
+| `--lane=tiny\|small\|standard` | How much planning a requirement gets in step 0. Default: you pick (see step 0). |
 | `--continue` | Resume an `in-progress` plan in its existing worktree, starting at the first unticked task. |
 | `--no-worktree` | Create the branch in the current checkout (`git switch -c`) instead of a worktree. |
 | `--base=<branch>` | Branch from here instead of `git.baseBranch`. |
@@ -30,8 +31,13 @@ Implement a plan exactly, in a worktree, with one commit per task. Given a requi
 
 ## Steps
 
-### 0. No plan yet: plan it first
+### 0. No plan yet: pick the lane, then plan it
 Skip this when the argument is a plan: a `P-<n>`, or text that `yayh artifact resolve` finds under `docs/plans/`.
+
+**Pick the lane** from the requirement and the code it touches (or take `--lane`), and say which one under **Decided**:
+- **tiny:** one or two files, about 30 changed lines or fewer, no customer-visible decision, and no data, storage or settings change. A label, a typo, a guard clause, a small compat fix. **No plan file.** Go to **Tiny lane** below.
+- **small:** an S item or a clear change in one area (at most about 3 tasks). Write a small plan (`/yay:plan`'s **Lanes**, `lane=small`) in substep 2, then build it as usual.
+- **standard:** everything else. Follow substeps 1–3 below.
 1. **Find an existing plan.** For `R-<n>`, `BS-<n>` or `B-<n>`, look for a plan made from it: `yayh roadmap queue R-<n>` (its artifact column is a `P-<n>` once one exists), or `yayh artifact list plan` and match the plan's `from:`. For text, check `yayh artifact list plan` for a plan on the same topic. Ignore `done` and `dropped` plans. Found one: use it and go to step 1.
 2. **Write the plan.** Follow `/yay:plan` (`${CLAUDE_PLUGIN_ROOT}/skills/plan/SKILL.md`): steps 1–6 with the requirement as the topic (or `--from=<id>`), the `--type` given (`fix` for a `B-<n>`), and `roadmap=` when the source is a roadmap item. Ground it in the code as usual: open every file the tasks name, give each task its `Reuse:` line, and get `yayh plan check` to no errors.
    - Don't run `/yay:plan`'s question round. Carry its hard questions (tests when the repo's rules need approval, the one biggest open design decision) into step 1's round, so the whole run still asks **at most one round**.
@@ -39,6 +45,14 @@ Skip this when the argument is a plan: a `P-<n>`, or text that `yayh artifact re
    - More than about 8 tasks, or unrelated areas: plan with `--split`. Build the first slice now, and list the others in the report with `/yay:autopilot P-<a> P-<b>…` to build them.
    - When step 1's round leaves nothing open, mark it ready: `yayh fm set <plan> status ready`.
 3. The plan is a new, untracked file in the main checkout, like any plan. It's carried into the branch in step 2, so it's committed with the code. Report it as "planned by /yay:implement".
+
+### Tiny lane (no plan)
+1. Find the code and the existing helpers it should call, as for any task (step 3.1's reuse rules).
+2. Branch as in step 2.1–2.2, with a branch type that fits the change (`fix`, `chore`, `feat`). There's nothing to carry or set.
+3. Make the change. Verify as in step 3.2: lint, plus the existing tests that cover those files. Add a test only for a real risk, at the cheapest layer.
+4. Commit: `<type>(<scope>): <summary>`, with `Roadmap: R-<n>` or `Fixes: B-<n>` when the change came from one.
+5. Finish with step 4.1 (the checks), 4.4 (debug markers) and 4.5 (review), then step 5. The PR body says "tiny lane, no plan", and puts the **Goal** (one line) and the exact **Verify** checks in place of the plan link.
+6. If the change grows past the tiny limits while you work, stop and write a small plan whose ticked T1 is what's done. Then continue from step 1.
 
 ### 1. Load and gate
 - `plan="$(yayh artifact resolve <arg>)"` (or the plan step 0 found or wrote) and read it in full.

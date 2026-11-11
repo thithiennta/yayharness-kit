@@ -241,3 +241,21 @@ P-5
 P-6
 P-7" "$(grep -h '^id:' "$YAY_REPO"/docs/plans/parallel-*.md | sed 's/^id: //' | sort -t- -k2 -n)"
 }
+
+test_small_plan_needs_only_goal_tasks_and_verify() {
+  export YAY_REPO; YAY_REPO="$(_arepo)"
+  local q out; q="$("$YAYH" artifact new plan "Rename label" lane=small roadmap=R-2)"
+  assert_eq "small" "$("$YAYH" fm get "$YAY_REPO/$q" lane)"
+  assert_eq "R-2" "$("$YAYH" fm get "$YAY_REPO/$q" roadmap)"
+  # fill the template's placeholders and drop the Tests line: still no errors, no Reuse warnings
+  sed -i.bak -e 's|^- \[ \] T1 .*|- [ ] T1 Rename the label — `includes/Admin.php`|' -e '/^\*\*Tests:\*\*/d' -e 's|^-$|- Settings shows "Gift note"|' "$YAY_REPO/$q"
+  out="$("$YAYH" plan check "$q")"; assert_eq 0 $?
+  case "$out" in *Reuse*|*Tests*|*E2E*) _fail "small plan got standard-plan findings: $out" ;; *) _pass ;; esac
+  # the same plan as a standard one is held to the full checks
+  "$YAYH" fm set "$YAY_REPO/$q" lane standard >/dev/null
+  assert_fails "$YAYH" plan check "$q"
+  "$YAYH" fm set "$YAY_REPO/$q" lane huge >/dev/null
+  assert_contains "$("$YAYH" plan check "$q")" "lane 'huge' is not standard or small"
+  assert_fails "$YAYH" artifact new plan "X" lane=tiny
+  assert_fails "$YAYH" artifact new bug "X" lane=small
+}

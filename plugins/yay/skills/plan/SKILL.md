@@ -1,7 +1,7 @@
 ---
 name: plan
 description: Write or review a Yay plugin implementation plan. Use when the user says "plan this", "write a plan", "break this down", "review the plan", before any non-trivial change, or when /yay:fix escalates. Turns a brainstorm, roadmap item, bug or request into docs/plans/ P-<n> with goal, approach, tasks naming their files, an agreed Tests line and exact Verify checks. --check reviews one; --trello (optional) adds the tasks to a Trello card.
-argument-hint: "<topic|BS-<n>|R-<n>|B-<n>|UX-<n>|P-<n>> [--from=<id>] [--check] [--split] [--type=feat|fix|chore|refactor|perf] [--tests=ask|none] [--edition=<name>|all] [--commit] [--trello]"
+argument-hint: "<topic|BS-<n>|R-<n>|B-<n>|UX-<n>|P-<n>> [--from=<id>] [--check] [--split] [--type=feat|fix|chore|refactor|perf] [--tests=ask|none] [--edition=<name>|all] [--lane=small|standard] [--commit] [--trello]"
 allowed-tools: Bash(yayh *), Bash(git *), Read, Grep, Glob, Write, Edit, Agent, AskUserQuestion, mcp__trello__trelloReadBoard, mcp__trello__trelloReadList, mcp__trello__trelloReadCard, mcp__trello__trelloReadChecklist, mcp__trello__trelloReadMember, mcp__trello__trelloWriteCard, mcp__trello__trelloWriteChecklist
 ---
 
@@ -22,8 +22,18 @@ A plan is the contract `/yay:implement` follows task by task. The format is in `
 | `--type=<t>` | Branch and commit type for `/yay:implement` (default `feat`; `fix` for bugs; `refactor` for no behavior change). |
 | `--tests=auto\|none` | `auto` (default; `ask` is accepted as the same): pick the tests yourself, one per risk at the right layer, and ask only if the repo's rules require approval for tests. `none`: write `**Tests:** none` and verify by manual checks. |
 | `--edition=<e>` | Which editions the plan touches. Default: inferred from where the code lives. |
+| `--lane=small\|standard` | How much plan the work needs. Default: picked in step 2 (see **Lanes**). |
 | `--commit` | Commit the plan when you're on a non-base branch. |
 | `--trello` | Optional. After the plan is written, add its tasks to Trello as a checklist. Off unless given. See step 8. |
+
+## Lanes
+
+Match the plan to the work. Pick the lane yourself in step 2, once you've read the code, and say which one under **Decided**.
+- **small:** an S roadmap item, or a clear change in one area: at most about 3 tasks, no data or storage change, no new screen. Create it with `lane=small`. It has only Goal, Tasks (each naming its files) and Verify. Leave out Non-goals, Approach, Risks, the design step, the `Reuse:` lines and the Tests and E2E lines. Add a `Reuse:` line or a test when there's a real reuse or a real risk; `plan check` doesn't require them. Skip step 6's self-review, apart from its reuse question.
+- **standard:** everything else. All the steps below apply.
+- A change smaller than a small plan (one or two files, about 30 lines, no customer-visible decision) needs no plan at all: `/yay:implement "<the change>"` builds it in the **tiny** lane.
+
+When a small plan turns out bigger than that, switch it to standard (`yayh fm set <plan> lane standard`) and fill in the missing sections.
 
 ## Steps
 
@@ -56,7 +66,7 @@ A plan is the contract `/yay:implement` follows task by task. The format is in `
    - **E2E** (only when `yayh config get commands.e2e` is set): pick the acceptance criteria that **only a browser can prove**, by the test in `${CLAUDE_PLUGIN_ROOT}/reference/e2e.md` ("When a flow deserves a spec"). Usually that's 0–2: a customer-facing flow, or a JS-rendered admin screen that must save and reload. Read the **Flows** table in `docs/knowledge/e2e.md` first: when the change touches a flow that already has a spec, name that flow (its spec gets extended), and a touched `candidate` row is a strong reason to add it. Write them on the `**E2E:**` line as `<flow>: <the outcome to assert>`, separated by `;`, or write `**E2E:** none`. Decide this yourself; it's not a question.
    - **Verify:** exact checks, each with the command or the UI path, the input, and the result that means it passed. With a design, its **Acceptance** checks go here, and the browser-only ones are candidates for the E2E line. Cover every edition the plan touches. A Verify item covered by a test says its layer: `(unit)`, `(integration)`, `(js)` or `(e2e)`.
 6. **Write it.**
-   - `yayh artifact new plan "<title>" from=<id> roadmap=<R-n or empty> type=<type>`, then fill in every section.
+   - `yayh artifact new plan "<title>" from=<id> roadmap=<R-n or empty> type=<type> [lane=small]`, then fill in every section.
    - With `--split`, create one plan per shippable slice, each with `from:` pointing at the source.
    - Run `yayh plan check <P-n>` and fix every `error`. Fix the `warn`s too, unless there's a reason not to.
    - Then **self-review** as a skeptical senior reviewer:

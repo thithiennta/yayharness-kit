@@ -91,7 +91,15 @@ Each step leaves a markdown artifact in `docs/`, so the next step (or the next p
 
 Brainstorms, plans and bug reports start as untracked files in your checkout. `/yay:implement` and `/yay:fix` carry them into the work's branch, so they're committed with the code they describe.
 
-The gates are soft. You can skip a brainstorm for an obvious change, or fix a tiny bug without `/yay:debug`, and the skills say so when they think you shouldn't.
+The gates are soft, and each change gets as much planning as it needs:
+
+| Lane | When | What you get |
+|---|---|---|
+| **tiny** | one or two files, about 30 lines, no customer-visible decision | `/yay:implement "rename the Gift note label"`: a branch, a commit and a PR. No plan file. |
+| **small** | an S item, one area, about 3 tasks | a short plan: Goal, Tasks, Verify |
+| **standard** | everything else | the full plan: approach, reuse, tests, e2e, risks |
+
+Claude picks the lane and says which one it chose. Pass `--lane=` to override it. You can still skip a brainstorm for an obvious change, or fix a tiny bug without `/yay:debug`.
 
 ### Tests: which layer for each task
 ```text

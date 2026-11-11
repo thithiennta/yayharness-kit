@@ -87,12 +87,13 @@ roadmap: R-12
 design: UX-2                    # the UI it builds, when it has one
 trello:                         # card URL, set by /yay:plan --trello (optional)
 type: feat                      # branch type for /yay:implement (feat fix chore refactor perf docs test)
+lane: small                     # optional: small plans need only Goal, Tasks and Verify (default standard)
 branch: feat/express-checkout   # set by /yay:implement
 pr:                             # PR number, set by /yay:implement
 editions: [free, pro]
 created: 2026-11-10
 ```
-Body: Goal, Non-goals, Approach, `## Tasks` as `- [ ] T1 …` checkboxes, each naming the files it touches and followed by an indented `- Reuse: …` line (the existing code it calls, `none, new X() because …`, or `n/a`). A task may end with a tier tag, `[tier: veryfast]`, which makes `/yay:implement` delegate it to a subagent on that tier (`reference/models.md`). Then come a `**Tests:**` line (tests the user accepted, or `none`) and a `## Verify` section with exact manual checks. `/yay:implement` ticks the boxes as it goes.
+Body: Goal, Non-goals, Approach, `## Tasks` as `- [ ] T1 …` checkboxes, each naming the files it touches and followed by an indented `- Reuse: …` line (the existing code it calls, `none, new X() because …`, or `n/a`). A task may end with a tier tag, `[tier: veryfast]`, which makes `/yay:implement` delegate it to a subagent on that tier (`reference/models.md`). Then come a `**Tests:**` line (tests the user accepted, or `none`) and a `## Verify` section with exact manual checks. `/yay:implement` ticks the boxes as it goes. A `lane: small` plan (`yayh artifact new plan … lane=small`) has only Goal, Tasks and Verify; `yayh plan check` skips its Reuse, Tests and E2E checks. A tiny change has no plan file at all (`/yay:implement`'s tiny lane).
 
 ### Design: `docs/designs/<slug>.md`
 ```
