@@ -184,7 +184,7 @@ EOF
   local tag
   while IFS="$(printf '\t')" read -r t _ k; do
     tag="$(printf '%s' "$k" | sed -nE 's/.*\[tier:[[:space:]]*([^]]*)\].*/\1/p' | sed -E 's/[[:space:]]+$//')"
-    [ -z "$tag" ] || _yay_model_tier_known "$tag" || _pe "task $t has unknown tier '$tag' (one of: $YAY_MODEL_ORDER, or a models.tiers key)"
+    [ -z "$tag" ] || _yay_model_tier_known "$tag" || _pw "task $t has unknown tier '$tag'; it will run as $YAY_MODEL_FALLBACK (one of: $YAY_MODEL_ORDER, or a models.tiers key)"
   done <<EOF
 $tasks
 EOF

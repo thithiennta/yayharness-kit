@@ -1,6 +1,8 @@
 # Model and effort routing
 
-Each step that runs a subagent can use a different model and reasoning effort. `yayh` resolves the choice from `.yay/config.json` (and `.yay/local.json`, which wins key by key), so skills and workflow scripts never pick a model by hand. With no `models` key, every step inherits the session's model, the same as before routing existed.
+Each step that runs a subagent can use a different model and reasoning effort. `yayh` resolves the choice from `.yay/config.json` (and `.yay/local.json`, which wins key by key), so skills and workflow scripts never pick a model by hand. With no `models` key, each step runs on its default tier from the table below.
+
+**When in doubt, use Opus at medium effort (`balanced`).** That covers an unknown step, an unknown tier or tag, a tier that leaves out its model or effort, a workflow run without the table, and a task whose difficulty is hard to judge. `yayh` warns on stderr and falls back to `balanced`. It never fails the run. If `yayh model resolve` itself fails, spawn on `opus` with `medium` effort.
 
 ## Tiers
 
@@ -15,7 +17,7 @@ Each step that runs a subagent can use a different model and reasoning effort. `
 
 ## Steps
 
-| Step | Where it runs | Recommended |
+| Step | Where it runs | Default |
 |---|---|---|
 | `scout` | knowledge-init, knowledge-update, test-init, e2e-init scouts | `veryfast` |
 | `web-research` | `/yay:roadmap --web` research agent | `veryfast` |
@@ -31,18 +33,18 @@ Each step that runs a subagent can use a different model and reasoning effort. `
 | `synthesis` | `/yay:roadmap --multi-agent` final schedule | `deep` |
 | `task` | `/yay:implement` per-task delegation | `inherit` |
 
-The rule behind the recommendations: spend where a mistake spreads downstream (a plan, the only review of an unattended build), and save where a step only gathers facts the main session checks anyway.
+The rule behind the defaults: spend where a mistake spreads downstream (a plan, the only review of an unattended build), and save where a step only gathers facts the main session checks anyway.
 
-To opt in, copy this into `.yay/config.json` and change what you need:
+These are the built-in defaults. Override any step in `.yay/config.json` (or `.yay/local.json`); for example, to send every step back to the session's model:
 ```json
 "models": {
   "steps": {
-    "scout": "veryfast", "web-research": "veryfast", "feasibility": "veryfast",
-    "revise": "fast", "resolve": "fast",
-    "review": "balanced", "hypothesis": "balanced",
-    "portfolio-research": "balanced", "cowork": "balanced",
-    "prepare": "balanced", "implement": "balanced",
-    "synthesis": "deep", "task": "inherit"
+    "scout": "inherit", "web-research": "inherit", "feasibility": "inherit",
+    "revise": "inherit", "resolve": "inherit",
+    "review": "inherit", "hypothesis": "inherit",
+    "portfolio-research": "inherit", "cowork": "inherit",
+    "prepare": "inherit", "implement": "inherit",
+    "synthesis": "inherit", "task": "inherit"
   }
 }
 ```
@@ -67,7 +69,7 @@ A step's value is a tier name, `inherit` (the session's model), or an inline `{ 
 
 ## Per-task delegation in `/yay:implement`
 
-A plan task may end with a tier tag: `- [ ] T3 Rename the option — \`includes/Plugin.php\` [tier: veryfast]`. `/yay:plan` adds a tag only when a task is clearly mechanical (`veryfast`: renames, copy, config) or clearly hard (`deep`). Most tasks have none. `yayh plan check` rejects unknown tiers.
+A plan task may end with a tier tag: `- [ ] T3 Rename the option — \`includes/Plugin.php\` [tier: veryfast]`. `/yay:plan` adds a tag only when a task is clearly mechanical (`veryfast`: renames, copy, config) or clearly hard (`deep`). Most tasks have none. When a task's difficulty is hard to judge, leave the tag off, or tag it `[tier: balanced]` to delegate it on Opus medium. `yayh plan check` warns about an unknown tier, which runs as `balanced`.
 
 In the task loop, `yayh model resolve task --plan=P-n --task=Tn`:
 - `{}`: do the task inline, as always.

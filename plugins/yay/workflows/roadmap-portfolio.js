@@ -21,10 +21,12 @@ const CAPACITY = A.capacity || 8
 
 // Model routing (reference/models.md): A.models is `yayh model table --json`.
 // route(step, size) -> { model, effort } options for agent(), or {} to inherit.
+// Anything it can't determine (no table, an unknown step) runs on Opus medium.
 function route(step, size) {
   const M = A.models
   const s = M && M.steps && M.steps[step]
-  if (!s || s.tier === 'inherit') return {}
+  if (!s) return (M && M.tiers && M.tiers[M.fallback]) || { model: 'opus', effort: 'medium' }
+  if (s.tier === 'inherit') return {}
   let tier = s.tier
   if (size && (M.sized || []).includes(step) && (M.order || []).includes(tier)) {
     const i = Math.min(M.order.length - 1, Math.max(0, M.order.indexOf(tier) + Number((M.sizeBump || {})[size] || 0)))
@@ -177,7 +179,7 @@ Rules:
 - Capacity per plugin per sprint is about ${CAPACITY} dev-days (S=1.5, M=4, L=8). Freeze sprints hold hotfix-class items only. Move overflow to "later" or mark it cut.
 - Turn conflicts into explicit conventions or plugin risks.
 - Keep every existing_id, why and evidence. Include every plugin: ${PLUGINS.map(p => p.name).join(', ')}.`,
-  { label: 'synthesis', phase: 'Synthesis', schema: ROADMAP, effort: 'high', ...route('synthesis') }
+  { label: 'synthesis', phase: 'Synthesis', schema: ROADMAP, ...route('synthesis') }
 )
 
 return { briefs, rounds, roadmap }

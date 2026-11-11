@@ -13,7 +13,7 @@ yay_config_default() {
     changelog.readme) echo 'readme.txt' ;;
     changelog.notesDir) echo 'docs/releases' ;;
     requires.php)     echo '7.4' ;;
-    # Model tiers (lib/model.sh, reference/models.md). Steps default to inherit.
+    # Model tiers (lib/model.sh, reference/models.md). Step defaults live in lib/model.sh.
     models.tiers.veryfast.model) echo sonnet ;;  models.tiers.veryfast.effort) echo medium ;;
     models.tiers.fast.model)     echo opus ;;    models.tiers.fast.effort)     echo low ;;
     models.tiers.balanced.model) echo opus ;;    models.tiers.balanced.effort) echo medium ;;

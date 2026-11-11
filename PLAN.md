@@ -94,7 +94,7 @@ Goal: browser tests the flow uses in a targeted way. A plan names the 0–2 flow
 
 ## P12 Model and effort per step ✅ ⟵ P11
 Goal: each agent step runs on a model and effort that fits it (cheap fan-out on Sonnet, planning and review on Opus, synthesis and large items deeper), chosen by a deterministic, testable router rather than by hand.
-- [x] T12.1 `lib/model.sh` + `yayh model resolve|table`: tiers (veryfast Sonnet medium, fast Opus low, balanced Opus medium, deep Opus high), steps, size bump for sized steps, `--plan`/`--task` lookups, `config validate` checks; config keys and schema
+- [x] T12.1 `lib/model.sh` + `yayh model resolve|table`: tiers (veryfast Sonnet medium, fast Opus low, balanced Opus medium, deep Opus high), steps, size bump for sized steps, `--plan`/`--task` lookups, built-in step defaults, anything undetermined falls back to Opus medium, `config validate` checks; config keys and schema
 - [x] T12.2 Skills pass the resolved model and effort on every Agent spawn; autopilot and roadmap-portfolio workflows take `yayh model table --json` and route each `agent()` ⟵ T12.1
 - [x] T12.3 Per-task delegation: plan tasks may carry `[tier: …]`, `/yay:implement` delegates tagged tasks, `plan check` rejects unknown tiers; `reference/models.md` ⟵ T12.1
 - [x] T12.4 Unit tests (`test_model.sh`) ⟵ all

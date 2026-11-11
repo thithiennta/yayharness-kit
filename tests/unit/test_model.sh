@@ -19,11 +19,38 @@ EOF
 
 _r() { "$YAYH" model resolve "$@"; }
 
-test_steps_inherit_by_default() {
+test_built_in_step_defaults() {
   export YAY_REPO; YAY_REPO="$(mk_repo)"
-  assert_eq "{}" "$(_r review)"
-  assert_eq "{}" "$(_r implement --size=L)"
-  assert_eq "{}" "$(_r task)"
+  assert_eq '{"model":"sonnet","effort":"medium"}' "$(_r scout)"
+  assert_eq '{"model":"opus","effort":"low"}' "$(_r resolve)"
+  assert_eq '{"model":"opus","effort":"medium"}' "$(_r review)"
+  assert_eq '{"model":"opus","effort":"high"}' "$(_r implement --size=L)"
+  assert_eq '{"model":"opus","effort":"high"}' "$(_r synthesis)"
+  assert_eq "{}" "$(_r task)"                                           # inline unless tagged
+  mkdir -p "$YAY_REPO/.yay"; printf '{"models":{"steps":{"review":"inherit"}}}\n' > "$YAY_REPO/.yay/local.json"
+  assert_eq "{}" "$(_r review)"                                         # explicit inherit is honoured
+}
+
+test_undetermined_falls_back_to_opus_medium() {
+  export YAY_REPO; YAY_REPO="$(_mrepo)"
+  local om='{"model":"opus","effort":"medium"}'
+  assert_eq "$om" "$(_r mystery 2>/dev/null)"
+  assert_contains "$(_r mystery 2>&1 >/dev/null)" "unknown step 'mystery'; using balanced"
+  assert_eq "$om" "$(_r task --tier=turbo 2>/dev/null)"
+  assert_eq "$om" "$(_r review --size=XL 2>/dev/null)"                 # bad size: no bump
+  python3 -I - "$YAY_REPO/.yay/config.json" <<'PY'
+import json,sys
+p=sys.argv[1]; c=json.load(open(p))
+c["models"]["steps"]["hypothesis"]="nope"
+c["models"]["steps"]["revise"]={"effort":"low"}
+c["models"]["tiers"]={"half":{"model":"sonnet"}}
+json.dump(c,open(p,"w"))
+PY
+  assert_eq "$om" "$(_r hypothesis 2>/dev/null)"                       # unknown tier in config
+  assert_eq '{"model":"opus","effort":"low"}' "$(_r revise)"            # inline without a model
+  assert_eq '{"model":"sonnet","effort":"medium"}' "$(_r task --tier=half)"  # tier without an effort
+  assert_contains "$("$YAYH" model table)" "hypothesis	balanced	opus	medium"
+  assert_contains "$("$YAYH" model table --json)" '"fallback":"balanced"'
 }
 
 test_tier_lookup_and_inline_object() {
@@ -50,7 +77,6 @@ json.dump(c,open(p,"w"))
 PY
   assert_eq '{"model":"opus","effort":"high"}' "$(_r prepare --size=L)"
   assert_eq '{"model":"sonnet","effort":"medium"}' "$(_r prepare --size=S)"
-  assert_fails _r prepare --size=XL
 }
 
 test_tier_tag_wins_and_is_not_bumped() {
@@ -58,7 +84,6 @@ test_tier_tag_wins_and_is_not_bumped() {
   assert_eq '{"model":"sonnet","effort":"medium"}' "$(_r task --tier=veryfast)"
   assert_eq '{"model":"opus","effort":"high"}' "$(_r task --tier=deep --size=S)"
   assert_eq '{"model":"sonnet","effort":"medium"}' "$(_r review --tier=veryfast --size=L)"
-  assert_fails _r task --tier=turbo
 }
 
 test_custom_tiers_and_partial_overrides() {
@@ -82,12 +107,11 @@ test_local_json_wins() {
   assert_eq '{"model":"opus","effort":"low"}' "$(_r revise)"      # the rest still from config.json
 }
 
-test_unknown_step_fails() {
+test_usage_errors_fail() {
   export YAY_REPO; YAY_REPO="$(_mrepo)"
-  assert_fails _r reviewer
   assert_fails _r
   assert_fails _r review --bogus
-  assert_contains "$(_r reviewer 2>&1)" "unknown step 'reviewer'"
+  assert_fails _r review scout
 }
 
 test_table_tsv_and_json() {
@@ -95,10 +119,11 @@ test_table_tsv_and_json() {
   local t; t="$("$YAYH" model table)"
   assert_contains "$t" "scout	veryfast	sonnet	medium"
   assert_contains "$t" "task	inherit	-	-"
+  assert_contains "$t" "hypothesis	balanced	opus	medium"                # unset: built-in default
   assert_contains "$t" "cowork	custom	sonnet	high"
   local j; j="$("$YAYH" model table --json)"
   assert_contains "$j" '"review":{"tier":"balanced","model":"opus","effort":"medium"}'
-  assert_contains "$j" '"implement":{"tier":"inherit"}'
+  assert_contains "$j" '"task":{"tier":"inherit"}'
   assert_contains "$j" '"deep":{"model":"opus","effort":"high"}'
   assert_contains "$j" '"order":["veryfast","fast","balanced","deep"]'
   assert_contains "$j" '"sizeBump":{"S":-1,"M":0,"L":1}'
@@ -140,7 +165,7 @@ PY
   assert_eq '{}' "$(_r task --plan=P-1 --task=T2)"                                  # untagged: inline
 }
 
-test_plan_check_rejects_unknown_tier_tag() {
+test_plan_check_warns_on_unknown_tier_tag() {
   export YAY_REPO; YAY_REPO="$(fixture_repo bare merged)"
   local p; p="$("$YAYH" artifact new plan "Tagged plan")"
   python3 -I - "$YAY_REPO/$p" <<'PY'
@@ -150,7 +175,7 @@ s=s.replace("- [ ] T1 <what> — `path/to/file.php`", "- [ ] T1 Rename — `a.ph
 open(p,'w').write(s)
 PY
   local out; out="$("$YAYH" plan check P-1 2>&1 || true)"
-  assert_contains "$out" "error: task T2 has unknown tier 'turbo'"
+  assert_contains "$out" "warn: task T2 has unknown tier 'turbo'; it will run as balanced"
   case "$out" in *"task T1 has unknown tier"*) _fail "T1's tier is valid" ;; *) _pass ;; esac
 }
 

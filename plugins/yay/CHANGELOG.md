@@ -5,7 +5,8 @@
 ## 0.3.0
 - **Model and effort per step.** Each agent step can run on its own model and effort, set in `.yay/config.json` (or `.yay/local.json`) under `models`:
   - **Tiers:** `veryfast` (Sonnet, medium), `fast` (Opus, low), `balanced` (Opus, medium) and `deep` (Opus, high).
-  - **Steps:** `scout`, `web-research`, `feasibility`, `revise`, `resolve`, `review`, `hypothesis`, `portfolio-research`, `cowork`, `prepare`, `implement`, `synthesis` and `task`. Each takes a tier, `inherit` (the default, so nothing changes until a repo opts in), or an inline `{ model, effort }`.
+  - **Steps:** `scout`, `web-research`, `feasibility`, `revise`, `resolve`, `review`, `hypothesis`, `portfolio-research`, `cowork`, `prepare`, `implement`, `synthesis` and `task`. Each takes a tier, `inherit` (the session's model), or an inline `{ model, effort }`. The defaults are: scout, web-research and feasibility use `veryfast`; revise and resolve use `fast`; synthesis uses `deep`; task runs inline; every other step uses `balanced`.
+  - **Fallback:** whatever can't be determined runs on Opus at medium effort (`balanced`), with a warning, and the run doesn't fail. That covers an unknown step, tier or task tag, a bad size, a tier missing its model or effort, and a workflow run without the table.
   - **Size bump:** `prepare`, `implement`, `review` and `task` move one tier down for an S roadmap item and one up for an L item (`models.sizeBump`).
   - **Commands:** `yayh model resolve <step> [--size] [--tier] [--plan] [--task]` and `yayh model table [--json]`. `yayh config validate` checks the block.
   - **Where it applies:** every skill that spawns an agent passes the resolved model and effort. `/yay:autopilot` and `/yay:roadmap --multi-agent` pass `yayh model table --json` to their workflows, which route each `agent()` call.

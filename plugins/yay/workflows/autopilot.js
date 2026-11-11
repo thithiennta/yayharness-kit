@@ -25,10 +25,12 @@ if (!ITEMS.length) throw new Error('no items')
 
 // Model routing (reference/models.md): A.models is `yayh model table --json`.
 // route(step, size) -> { model, effort } options for agent(), or {} to inherit.
+// Anything it can't determine (no table, an unknown step) runs on Opus medium.
 function route(step, size) {
   const M = A.models
   const s = M && M.steps && M.steps[step]
-  if (!s || s.tier === 'inherit') return {}
+  if (!s) return (M && M.tiers && M.tiers[M.fallback]) || { model: 'opus', effort: 'medium' }
+  if (s.tier === 'inherit') return {}
   let tier = s.tier
   if (size && (M.sized || []).includes(step) && (M.order || []).includes(tier)) {
     const i = Math.min(M.order.length - 1, Math.max(0, M.order.indexOf(tier) + Number((M.sizeBump || {})[size] || 0)))
