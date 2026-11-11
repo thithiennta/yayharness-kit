@@ -82,4 +82,8 @@ test_plan_check_warns_about_open_notes() {
   "$YAYH" backlog settle BL-1 decided "custom copy" >/dev/null
   out="$("$YAYH" plan check P-1 2>&1 || true)"
   case "$out" in *BL-1*) _fail "settled note still warned: $out" ;; *) _pass ;; esac
+  # a plan that answers a note with a Settles: line isn't warned about it either
+  printf '\n## Risks\n- Settles: BL-2 planned P-1\n' >> "$YAY_REPO/$("$YAYH" artifact resolve P-1)"
+  out="$("$YAYH" plan check P-1 2>&1 || true)"
+  case "$out" in *BL-2*) _fail "note answered by a Settles: line still warned: $out" ;; *) _pass ;; esac
 }

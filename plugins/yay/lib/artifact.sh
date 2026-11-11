@@ -199,6 +199,8 @@ EOF
   # Notes left for this plan (lib/backlog.sh): settle them or keep their default on purpose.
   case "$st" in draft|ready|in-progress)
     yay_backlog_open --for="$(yay_fm_get "$f" id 2>/dev/null || echo -)" 2>/dev/null | while IFS="$(printf '\t')" read -r k kind _ _ def ti _; do
+      # already answered in the plan: /yay:implement settles it on the branch
+      grep -Eq "^[[:space:]]*([-*][[:space:]]*)?Settles:[[:space:]]*$k([^0-9]|\$)" "$f" && continue
       case "$kind" in
         decision) echo "warn: open decision $k ($ti) affects this plan; it follows the default \"$def\" until settled (yayh backlog settle $k decided …)" ;;
         deferred) echo "warn: deferred work $k ($ti) affects this plan: take it as a task (yayh backlog settle $k planned <P-n>) or leave it for later" ;;
