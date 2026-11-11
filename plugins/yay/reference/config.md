@@ -45,6 +45,7 @@ JSON, not YAML, so hooks can read it with `jq`, `node` or `php` and nothing to i
 | `tests.js` | string | JS tests folder. Default `tests/js`. |
 | `tests.jsRunner` | string | `vitest`, `jest`, `wp-scripts` or `none`. Default: what `package.json` uses. |
 | `e2e.wpEnvArgs` | string | Extra wp-env arguments for `yayh e2e cli`, e.g. `--config=.wp-env.single.json` in adopted setups. |
+| `workflow.strictness` | string | Optional. `relaxed`, `standard` (default) or `strict`. **relaxed:** `plan check` skips the Reuse, Tests and E2E checks for every plan. **strict:** every plan is held to the standard checks (no small plans), `/yay:implement` has no tiny lane and asks before any change to the plan, and commit-style problems (length, period, scope, branch name) block again. Safety blocks are the same in every mode. A developer may set it in `.yay/local.json` for themselves. |
 | `trello.board` | string | Optional. The Trello board (URL or ARI) that `/yay:roadmap --trello` and `/yay:plan --trello` sync to. Shared in this file, or per developer in `.yay/local.json`. See `trello.md`. |
 | `trello.list` | string | Optional. The list for plan cards whose roadmap item has no card. Default `To Do`. |
 | `models.steps.<step>` | string or object | Optional. The tier (`veryfast`, `fast`, `balanced`, `deep`), `inherit` (the session's model), or `{ "model", "effort" }` for one agent step. Unset steps use the defaults in `models.md`; anything unknown runs on `balanced` (Opus medium). |

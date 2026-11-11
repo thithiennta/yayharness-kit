@@ -5,7 +5,7 @@ Read by `/yay:implement` when its argument is a requirement, or an `R-`/`BS-`/`B
 ## Pick the lane, then plan it
 Skip this when the argument is a plan: a `P-<n>`, or text that `yayh artifact resolve` finds under `docs/plans/`.
 
-**Pick the lane** from the requirement and the code it touches (or take `--lane`), and say which one under **Decided**:
+**Pick the lane** from the requirement and the code it touches (or take `--lane`), and say which one under **Decided**. Check the repo's mode with `yayh config get workflow.strictness standard`. In a `strict` repo there is no tiny lane and no small plan: every change gets a standard plan.
 - **tiny:** one or two files, about 30 changed lines or fewer, no customer-visible decision, and no data, storage or settings change. A label, a typo, a guard clause, a small compat fix. **No plan file.** Go to **Tiny lane** below.
 - **small:** an S item or a clear change in one area (at most about 3 tasks). Write a small plan (`/yay:plan`'s **Lanes**, `lane=small`) in step 2 below, then build it as usual.
 - **standard:** everything else. Follow steps 1–3 below.

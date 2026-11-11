@@ -27,6 +27,10 @@ if [ -n "$br" ] && ! yay_branch_check "$br"; then
 }branch '$br' doesn't follow <type>/<slug> (types: $(yay_config_get git.branchTypes | tr '\n' ' ')). Rename it with 'git branch -m <type>/<slug>' if it's yours and not pushed yet."
 fi
 [ -n "$hints" ] || exit 0
+if [ "$(yay_strictness)" = strict ]; then
+  printf 'yay: the last commit breaks the git conventions (.claude/rules/yay-git.md; this repo is strict):\n%s\nFix it with: git commit --amend -m "<type>(<scope>): <summary>" (keep the trailers).\n' "$hints" >&2
+  exit 2
+fi
 msg="yay git hints (not blocking; amend with git commit --amend -m \"…\" if it's still local, keeping the trailers): $(printf '%s' "$hints" | tr '\n' ' ' | sed 's/ $//')"
 esc="$(printf '%s' "$msg" | sed -e 's/\\/\\\\/g' -e 's/"/\\"/g' | tr -d '\r' | tr '\t' ' ')"
 printf '{"hookSpecificOutput":{"hookEventName":"PostToolUse","additionalContext":"%s"}}\n' "$esc"

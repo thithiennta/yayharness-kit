@@ -33,6 +33,8 @@ Match the plan to the work. Pick the lane yourself in step 2, once you've read t
 - **standard:** everything else. All the steps below apply.
 - A change smaller than a small plan (one or two files, about 30 lines, no customer-visible decision) needs no plan at all: `/yay:implement "<the change>"` builds it in the **tiny** lane.
 
+In a `strict` repo (`yayh config get workflow.strictness standard`), every plan is standard. In a `relaxed` one, `plan check` doesn't ask for Reuse, Tests or E2E lines on any plan, but write them where they help.
+
 When a small plan turns out bigger than that, switch it to standard (`yayh fm set <plan> lane standard`) and fill in the missing sections.
 
 ## Steps

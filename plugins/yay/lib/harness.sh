@@ -241,6 +241,8 @@ yay_config_validate() {
   done <<EOF
 $(yay_json_get "$f" versionFiles 2>/dev/null)
 EOF
+  v="$(yay_json_get "$f" workflow.strictness 2>/dev/null)" || v=standard
+  case "$v" in relaxed|standard|strict) ;; *) echo "config: workflow.strictness must be relaxed, standard or strict (got '$v')" >&2; errs=$((errs+1));; esac
   yay_model_validate || errs=$((errs+1))
   [ "$errs" -eq 0 ]
 }

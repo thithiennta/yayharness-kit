@@ -279,3 +279,20 @@ test_artifact_where_and_tidy_leftover_copies() {
   assert_contains "$("$YAYH" artifact tidy --yes)" "removed	$p"
   assert_no_file "$YAY_REPO/$p"
 }
+
+test_strictness_changes_what_plan_check_asks() {
+  export YAY_REPO; YAY_REPO="$(_arepo)"
+  local q; q="$("$YAYH" artifact new plan "Mode plan")"
+  sed -i.bak -e 's|^- \[ \] T1 .*|- [ ] T1 Rename the label — `includes/Admin.php`|' -e '/^\*\*Tests:\*\*/d' -e 's|^-$|- Settings shows "Gift note"|' "$YAY_REPO/$q"
+  assert_fails "$YAYH" plan check "$q"                       # standard: a standard plan needs its Tests line
+  printf '{ "workflow": { "strictness": "relaxed" } }\n' > "$YAY_REPO/.yay/local.json"
+  assert_ok "$YAYH" plan check "$q"
+  case "$("$YAYH" plan check "$q")" in *Reuse*) _fail "relaxed still asks for Reuse lines" ;; *) _pass ;; esac
+  "$YAYH" fm set "$YAY_REPO/$q" lane small >/dev/null
+  printf '{ "workflow": { "strictness": "strict" } }\n' > "$YAY_REPO/.yay/local.json"
+  assert_fails "$YAYH" plan check "$q"                       # strict: small plans get the standard checks
+  assert_contains "$("$YAYH" plan check "$q" || true)" "this repo is strict"
+  rm -f "$YAY_REPO/.yay/local.json"
+  python3 -I -c 'import json,sys; p=sys.argv[1]; d=json.load(open(p)); d["workflow"]={"strictness":"loose"}; json.dump(d,open(p,"w"))' "$YAY_REPO/.yay/config.json"
+  assert_fails "$YAYH" config validate
+}

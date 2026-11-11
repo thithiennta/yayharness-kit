@@ -159,6 +159,11 @@ yay_plan_check() {
   # and E2E checks are for standard plans.
   local lane; lane="$(yay_fm_get "$f" lane 2>/dev/null || true)"
   case "$lane" in ''|standard|small) ;; *) _pe "lane '$lane' is not standard or small";; esac
+  # workflow.strictness: strict holds every plan to the standard checks, relaxed to the small ones.
+  case "$(yay_strictness)" in
+    strict) [ "$lane" != small ] || _pw "this repo is strict (workflow.strictness): the plan is checked as a standard one"; lane=standard ;;
+    relaxed) lane=small ;;
+  esac
   grep -q '^## Goal' "$f" || _pe "no '## Goal' section"
   grep -q '^## Tasks' "$f" || _pe "no '## Tasks' section"
   local tasks; tasks="$(yay_plan_tasks "$rel")"

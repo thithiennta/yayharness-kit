@@ -55,3 +55,9 @@ yay_fill() {
   done
   printf '%s\n' "$s"
 }
+
+# yay_strictness -> relaxed | standard | strict (workflow.strictness; anything else is standard)
+yay_strictness() {
+  local v; v="$(yay_config_get workflow.strictness 2>/dev/null || true)"
+  case "$v" in relaxed|strict) printf '%s\n' "$v" ;; *) printf 'standard\n' ;; esac
+}

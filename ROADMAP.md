@@ -130,6 +130,7 @@ Goal: measure quality, so every later change can show it helped. *(8 / 8)*
 - what: write the artifact directly into the work branch once one exists, show `yayh artifact where <id>` across worktrees, and clean up leftover copies automatically.
 
 ### R-17 Strictness setting in config
+- status: built on `feat/later-items` (not merged)
 - size: M · goal: 3
 - why: some repos want stricter rules than R-4, R-5 and R-6 leave (for example, client work with required approvals).
 - what: `workflow.strictness: relaxed | standard | strict`, read by the hooks, by `plan check` and by the lane choice.

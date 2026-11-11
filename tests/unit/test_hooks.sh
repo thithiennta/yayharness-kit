@@ -121,6 +121,10 @@ test_post_commit_checks_message_and_branch() {
   assert_exit 0 _bash check-commit.sh "$r" 'git commit -am x'
   assert_contains "$(_bash check-commit.sh "$r" 'git commit -am x')" "must not end with a period"
   assert_eq "" "$(git -C "$r" commit -q --amend -m "feat(core): clean" --no-verify; _bash check-commit.sh "$r" 'git commit --amend')"
+  # a strict repo blocks on style again
+  printf '{ "workflow": { "strictness": "strict" } }\n' > "$r/.yay/local.json"
+  git -C "$r" commit -q --amend -m "feat(core): ends with a period." --no-verify
+  assert_exit 2 _bash check-commit.sh "$r" 'git commit --amend'
   assert_exit 0 _bash check-commit.sh "$r" 'git status'
 }
 

@@ -356,6 +356,14 @@
         }
       }
     },
+    "workflow": {
+      "type": "object",
+      "description": "How strictly the workflow applies here (reference/config.md).",
+      "properties": {
+        "strictness": { "enum": ["relaxed", "standard", "strict"], "description": "relaxed: no Reuse/Tests/E2E warnings in plan check; standard: lanes as usual; strict: every plan is standard, no tiny lane, commit style blocks, any plan change asks first." }
+      },
+      "additionalProperties": false
+    },
     "trello": {
       "type": "object",
       "additionalProperties": false,
