@@ -5,8 +5,10 @@ The marketplace for **`yay`**, the shared Claude Code harness for YayCommerce Wo
 **New to the team? Start with [`ONBOARDING.md`](ONBOARDING.md)**: install, the daily workflow, git rules and troubleshooting.
 
 ```bash
-./tests/run.sh                 # all tests, once per available JSON engine
-./tests/run.sh git             # only tests/unit/*git*
+./tests/run.sh --quick         # while editing: only the tests covering your uncommitted changes, jq only
+./tests/run.sh                 # before committing: all tests, once per available JSON engine, in parallel
+./tests/run.sh git hooks       # only tests/unit/*git* and *hooks*
+./tests/run.sh --changed=main  # what this branch changed, on every engine
 claude plugin validate .       # marketplace manifest
 claude plugin validate plugins/yay
 ```

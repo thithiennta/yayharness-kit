@@ -3,8 +3,7 @@
 FIX="${KIT%/plugins/yay}/tests/fixtures/build.sh"
 
 _fixture() { # kind -> path; leaves you on chore/yay-harness
-  local d="$T_TMP/$1.$RANDOM"
-  "$FIX" "$1" "$d" >/dev/null
+  local d; d="$(fixture_repo "$1")" || return 1
   git -C "$d" switch -q -c chore/yay-harness
   printf '%s\n' "$d"
 }

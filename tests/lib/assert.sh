@@ -39,3 +39,45 @@ mk_repo() {
   printf '%s\n' "$d"
 }
 commit_all() { git -C "$1" add -A && git -C "$1" commit -q -m "${2:-chore: init}" --no-verify; }
+
+# fixture_repo <kind> [state] -> path of a fresh copy of a fixture repo (tests/fixtures/build.sh <kind>).
+# Each kind+state is built once per run and JSON engine, then copied (a copy is ~30x cheaper).
+#   raw         as build.sh leaves it, on dev
+#   configured  + .yay/config.json from harness detect, committed on dev
+#   harnessed   + harness wipe, detect and sync, committed on chore/yay-harness
+#   merged      harnessed, with dev fast-forwarded to it; on dev
+fixture_repo() {
+  local kind="$1" state="${2:-raw}" root c d
+  root="${YAY_FIXTURE_CACHE:-$T_TMP/.fixtures}/${YAY_JSON_ENGINE:-default}"
+  c="$root/$kind.$state"
+  mkdir -p "$root"
+  if [ ! -d "$c" ]; then
+    # One builder per kind+state across parallel test files; the others wait for it.
+    until mkdir "$c.lock" 2>/dev/null; do sleep 0.1; done
+    [ -d "$c" ] || { _fixture_build "$kind" "$state" "$c.tmp" && mv "$c.tmp" "$c"; }
+    rm -rf "$c.tmp"; rmdir "$c.lock"
+  fi
+  [ -d "$c" ] || { echo "fixture_repo: could not build $kind $state" >&2; return 1; }
+  d="$(mktemp -d "${T_TMP:?}/fx.XXXXXX")/repo"
+  cp -R "$c" "$d"
+  printf '%s\n' "$d"
+}
+
+_fixture_build() { # kind state dest
+  local fix="${KIT%/plugins/yay}/tests/fixtures/build.sh"
+  "$fix" "$1" "$3" >/dev/null || return 1
+  case "$2" in
+    raw) ;;
+    configured)
+      mkdir -p "$3/.yay"; YAY_REPO="$3" "$YAYH" harness detect 2>/dev/null > "$3/.yay/config.json"
+      commit_all "$3" "chore(harness): config" ;;
+    harnessed|merged)
+      git -C "$3" switch -q -c chore/yay-harness
+      YAY_REPO="$3" "$YAYH" harness wipe --yes >/dev/null
+      mkdir -p "$3/.yay"; YAY_REPO="$3" "$YAYH" harness detect 2>/dev/null > "$3/.yay/config.json"
+      YAY_REPO="$3" "$YAYH" harness sync >/dev/null
+      commit_all "$3" "chore(harness): install"
+      [ "$2" = harnessed ] || { git -C "$3" switch -q dev && git -C "$3" merge -q --ff-only chore/yay-harness; } ;;
+    *) echo "fixture_repo: unknown state $2" >&2; return 1 ;;
+  esac
+}

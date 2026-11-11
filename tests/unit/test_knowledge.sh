@@ -1,16 +1,8 @@
 # engine-independent
 # knowledge check / stale / stamp
 
-FIX="${KIT%/plugins/yay}/tests/fixtures/build.sh"
-
 _krepo() { # initialized, committed bare fixture on dev with harness merged
-  local d="$T_TMP/k.$RANDOM"
-  "$FIX" legacy-rich "$d" >/dev/null
-  git -C "$d" switch -q -c chore/yay-harness
-  YAY_REPO="$d" "$YAYH" harness wipe --yes >/dev/null
-  mkdir -p "$d/.yay"; YAY_REPO="$d" "$YAYH" harness detect 2>/dev/null > "$d/.yay/config.json"
-  YAY_REPO="$d" "$YAYH" harness sync >/dev/null
-  git -C "$d" add -A; git -C "$d" commit -qm "chore(harness): install" --no-verify
+  local d; d="$(fixture_repo legacy-rich harnessed)" || return 1
   printf '%s\n' "$d"
 }
 

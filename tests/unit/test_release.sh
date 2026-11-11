@@ -1,12 +1,7 @@
 # versions, changelog, zip checks (per JSON engine: config reads + json_set)
 
-FIX="${KIT%/plugins/yay}/tests/fixtures/build.sh"
-
 _rrepo() { # legacy-rich fixture with config, on dev, tagged v1.2.3 + one feat commit after
-  local d="$T_TMP/r.$RANDOM"
-  "$FIX" legacy-rich "$d" >/dev/null
-  mkdir -p "$d/.yay"; YAY_REPO="$d" "$YAYH" harness detect 2>/dev/null > "$d/.yay/config.json"
-  git -C "$d" add -A; git -C "$d" commit -qm "chore(harness): config" --no-verify
+  local d; d="$(fixture_repo legacy-rich configured)" || return 1
   printf '%s\n' "$d"
 }
 _c() { # repo message [body]

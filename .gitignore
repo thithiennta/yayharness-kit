@@ -2,3 +2,4 @@
 tests/.tmp/
 *.log
 plugins/yay/evals/results/
+tests/.times
