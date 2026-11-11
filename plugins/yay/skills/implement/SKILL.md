@@ -51,7 +51,7 @@ When the argument isn't a plan (a requirement, or an `R-`/`BS-`/`B-<n>` with no 
 2. Create the branch in one of two ways:
    - **Worktree (default):** `wt="$(yayh git worktree "$branch" <base>)"`, then `cd "$wt"`. From here on you work **only** in the worktree.
    - **`--no-worktree`:** `git switch -c "$branch" <base>`.
-3. Carry the new artifacts into the branch: `yayh artifact carry "$wt" <plan file> <its from: brainstorm/bug file if untracked> <untracked backlog notes from P-<n>>`, run from the main checkout. Skip this with `--no-worktree`, because untracked files follow the switch.
+3. Carry the new artifacts into the branch: `yayh artifact carry "$wt" <plan file> <its from: brainstorm/bug file if untracked> <untracked backlog notes from P-<n>>`, run from the main checkout. Skip this with `--no-worktree`, because untracked files follow the switch. Then run `yayh artifact tidy --yes` from the main checkout: it removes only untracked copies whose exact twin is already committed in another worktree, the leftovers of an earlier carry that didn't finish.
 4. In the branch:
    - `yayh fm set <plan> status in-progress`
    - `yayh fm set <plan> branch "$branch"`

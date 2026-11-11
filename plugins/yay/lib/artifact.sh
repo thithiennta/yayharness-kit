@@ -334,3 +334,51 @@ yay_debug_markers() {
       | while IFS= read -r f; do [ -f "$f" ] && printf '%s\0' "$f"; done \
       | xargs -0 grep -nE '(//|#|/\*|<!--)[[:space:]]*yay:debug' 2>/dev/null ) || true
 }
+
+# ---------- where artifacts live (all worktrees) ----------
+
+# yay_artifact_where <ID> -> TSV: worktree branch state(tracked|untracked|modified) path
+# Every copy of the artifact that declares ID, in this checkout and every other worktree.
+yay_artifact_where() {
+  local id="$1" wt f br st rel
+  [ -n "$id" ] || yay_die "usage: yayh artifact where <ID>"
+  while IFS= read -r wt; do
+    br="$(git -C "$wt" symbolic-ref --short -q HEAD 2>/dev/null || echo detached)"
+    for f in "$wt"/docs/*/*.md; do
+      [ -f "$f" ] || continue
+      [ "$(yay_fm_get "$f" id 2>/dev/null || true)" = "$id" ] || continue
+      rel="${f#"$wt"/}"
+      if ! git -C "$wt" ls-files --error-unmatch -- "$rel" >/dev/null 2>&1; then st=untracked
+      elif git -C "$wt" diff --quiet HEAD -- "$rel" 2>/dev/null; then st=tracked
+      else st=modified; fi
+      printf '%s\t%s\t%s\t%s\n' "$wt" "$br" "$st" "$rel"
+    done
+  done <<EOT
+$(yay_worktree_roots)
+EOT
+}
+
+# yay_artifact_tidy [--yes] -> TSV: removed|would-remove <path> <worktree that has it committed>
+# Untracked artifacts in this checkout whose exact copy is committed in another
+# worktree: leftovers of a carry that didn't finish. Only byte-identical copies
+# count, so nothing that holds unsaved work is ever removed. Without --yes, list only.
+yay_artifact_tidy() {
+  local yes=0 root f rel wt other
+  [ "${1:-}" != --yes ] || yes=1
+  root="$(cd "$(yay_repo_root)" && pwd -P)"
+  git -C "$root" ls-files --others --exclude-standard -- docs/brainstorms docs/plans docs/bugs docs/backlog docs/designs 2>/dev/null \
+  | while IFS= read -r rel; do
+      case "$rel" in *.md) ;; *) continue ;; esac
+      f="$root/$rel"; other=""
+      while IFS= read -r wt; do
+        [ "$wt" != "$root" ] || continue
+        [ -f "$wt/$rel" ] && cmp -s "$f" "$wt/$rel" && git -C "$wt" ls-files --error-unmatch -- "$rel" >/dev/null 2>&1 \
+          && git -C "$wt" diff --quiet HEAD -- "$rel" 2>/dev/null && { other="$wt"; break; }
+      done <<EOT
+$(yay_worktree_roots)
+EOT
+      [ -n "$other" ] || continue
+      if [ "$yes" = 1 ]; then rm -f "$f"; printf 'removed\t%s\t%s\n' "$rel" "$other"
+      else printf 'would-remove\t%s\t%s\n' "$rel" "$other"; fi
+    done
+}

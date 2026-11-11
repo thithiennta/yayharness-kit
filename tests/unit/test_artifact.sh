@@ -259,3 +259,23 @@ test_small_plan_needs_only_goal_tasks_and_verify() {
   assert_fails "$YAYH" artifact new plan "X" lane=tiny
   assert_fails "$YAYH" artifact new bug "X" lane=small
 }
+
+test_artifact_where_and_tidy_leftover_copies() {
+  export YAY_REPO; YAY_REPO="$(_arepo)"
+  local p wt; p="$("$YAYH" artifact new plan "Carried plan")"
+  wt="$("$YAYH" git worktree feat/carried-plan)"
+  "$YAYH" artifact carry "$wt" "$p" >/dev/null
+  git -C "$wt" add -- "$p"; git -C "$wt" commit -qm "docs(plan): add P-1" --no-verify
+  assert_contains "$("$YAYH" artifact where P-1)" "feat/carried-plan	tracked	$p"
+  # a leftover copy (as an interrupted carry leaves it) is found and removed, an edited one is kept
+  cp "$wt/$p" "$YAY_REPO/$p"
+  assert_contains "$("$YAYH" artifact where P-1)" "untracked	$p"
+  assert_contains "$("$YAYH" artifact tidy)" "would-remove	$p"
+  assert_file "$YAY_REPO/$p"
+  printf 'edit\n' >> "$YAY_REPO/$p"
+  assert_eq "" "$("$YAYH" artifact tidy --yes)"
+  assert_file "$YAY_REPO/$p"
+  cp "$wt/$p" "$YAY_REPO/$p"
+  assert_contains "$("$YAYH" artifact tidy --yes)" "removed	$p"
+  assert_no_file "$YAY_REPO/$p"
+}

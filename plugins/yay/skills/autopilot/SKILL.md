@@ -34,7 +34,7 @@ With no scope at all, use `--sprint=current`.
    - `stage` is where each item is: `brainstorm`, `decide` (open brainstorm), `plan` (decided brainstorm), `implement` (draft or ready plan), `continue` (in progress), `review` (built by an earlier run that stopped before its reviews: the plan is `done` with `reviewed: pending`), `done`, `dropped`. Re-running autopilot on the same scope therefore resumes where the last run stopped.
    - `after` are dependencies inside the run (built first; the dependent's branch stacks on theirs). `waits` are unmet dependencies outside it (another plugin, an item not in scope): those items are planned but not built. Say which.
    - A dependency cycle is an error: report it and stop.
-   - Check `git status`: the main checkout must have no tracked changes (`yayh artifact carry` refuses tracked, modified artifacts).
+   - Check `git status`: the main checkout must have no tracked changes (`yayh artifact carry` refuses tracked, modified artifacts). Run `yayh artifact tidy --yes` first, so leftover copies from an interrupted run don't count. `yayh artifact where <id>` shows where any artifact's copies are.
 2. **Show the queue** as a table (order, id, title, stage, after/waits), with the agent count: about 1 per item to prepare, plus about 3 per item to build (implement, review, resolve), and 1 more per revised item. With `--dry-run`, stop here. Don't ask whether to start: the user asked for the run. Only when the run is over 10 items **and** `--parallel` > 3, make "start N agents?" one question of step 4's round.
 3. **Prepare.** Run the Workflow tool with `scriptPath: ${CLAUDE_PLUGIN_ROOT}/workflows/autopilot.js` and
    ```json

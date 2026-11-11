@@ -124,6 +124,7 @@ Goal: measure quality, so every later change can show it helped. *(8 / 8)*
 - what: every run appends its friction to `.yay/runs/lessons.md`. `/yay:knowledge-update` turns patterns that repeat into `docs/knowledge/` entries, and kit-level ones into notes for this repo.
 
 ### R-16 Easier artifact carrying across worktrees
+- status: built on `feat/later-items` (not merged): `artifact where` and `artifact tidy`; new notes already land in the worktree they're written from
 - size: M · goal: 2
 - why: artifacts start untracked in the main checkout and are carried in, autopilot refuses a dirty main checkout, and id clashes renumber an artifact before the PR.
 - what: write the artifact directly into the work branch once one exists, show `yayh artifact where <id>` across worktrees, and clean up leftover copies automatically.

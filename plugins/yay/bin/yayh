@@ -87,6 +87,8 @@ Artifacts (brainstorms, plans, bugs, backlog)
   artifact list [type] [--status=s] id, status, title, path (TSV)
   artifact carry <worktree> <path>...
                                    move new (untracked) artifacts from this checkout into a worktree
+  artifact where <ID>              every copy of an artifact, in every worktree: worktree, branch, tracked|untracked|modified, path
+  artifact tidy [--yes]            untracked artifacts here whose exact copy is committed in another worktree (leftovers); --yes removes them
   plan tasks <plan>                T<n>, done|open, text (TSV)
   plan tick <plan> <T<n>> [--undo] tick a task's checkbox
   plan check <plan>                structure errors and warnings (exit 1 on errors)
@@ -302,7 +304,9 @@ case "$cmd" in
       resolve) [ $# -eq 1 ] || yay_die "usage: yayh artifact resolve <ID|path|slug>"; yay_artifact_resolve "$1" || yay_die "no artifact matches '$1'" ;;
       list) yay_artifact_list "$@" ;;
       carry) [ $# -ge 2 ] || yay_die "usage: yayh artifact carry <worktree> <path>..."; yay_artifact_carry "$@" ;;
-      *) yay_die "usage: yayh artifact new|resolve|list|carry" ;;
+      where) [ $# -eq 1 ] || yay_die "usage: yayh artifact where <ID>"; yay_artifact_where "$1" ;;
+      tidy) yay_artifact_tidy "$@" ;;
+      *) yay_die "usage: yayh artifact new|resolve|list|carry|where|tidy" ;;
     esac ;;
   plan)
     sub="${1:-}"; shift || true
