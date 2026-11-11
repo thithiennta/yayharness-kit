@@ -4,6 +4,13 @@
 
 ## Unreleased (0.5.0)
 - **`/yay:go`: one front door.** With no argument it shows `yayh status` and runs or offers the next step. With an id, it runs `yayh next <id>`. In plain words ("fix the coupon bug", "build R-12", "ship it, dry run"), it routes to the right `/yay:*` skill with the options the words imply, says which one in one line, and hands off. It never starts `/yay:harness-init`. The managed CLAUDE.md block lists it first. (Plugin skills are namespaced, so a bare `/yay` isn't possible.)
+- **Shorter skills; the rare paths load only when they're used.** Three skills move their less-used paths to reference files, which they read only when the matching option is given:
+  - `/yay:roadmap`: multi-agent, publish, Trello and legacy conversion go to `reference/roadmap-extras.md` (141 → 107 lines).
+  - `/yay:release`: `--bundle`, `--tag-only` and `--hotfix` go to `reference/release-modes.md` (166 → 140).
+  - `/yay:implement`: planning a requirement and the tiny lane go to `reference/implement-unplanned.md` (152 → 132).
+
+  Nothing in what the skills do has changed.
+- **Words work as options.** A new asking rule: plain words in a `/yay:*` argument that name an option mean that option (`/yay:roadmap status`, `/yay:release dry run`).
 
 ## Unreleased (0.4.0)
 - **`yayh status` and `yayh next`: where you are and what's next.** `yayh status` lists every piece of work in flight, across all worktrees, most urgent first: this branch's work (`here`), work in progress (`active`), slipped roadmap items, critical and high bugs, the current sprint, then other bugs, plans not tied to a listed item, and brainstorms with no plan yet. Each row has its stage and the one command that moves it on (`/yay:implement P-4 --continue`, `/yay:plan --from=BS-3`, `/yay:fix B-7`; a finished branch gets its push and PR commands). `yayh next [ID]` prints only that command for one `R-`, `P-`, `BS-`, `B-` or `UX-<n>`. When that work is finished, it prints the most urgent other work. With no ID, it prints this branch's work or the top row. The managed CLAUDE.md block mentions both commands.

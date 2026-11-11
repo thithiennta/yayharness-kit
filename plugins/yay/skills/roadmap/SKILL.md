@@ -26,9 +26,9 @@ Always edit through `yayh roadmap` where a command exists (`add`, `set`, `move`)
 | `--focus="…"` | A theme to favour (e.g. "conversion before BFCM"). |
 | `--web` | Also research wordpress.org (reviews, support forum) and 3–5 competitors. |
 | `--add="<title>"` (with `--sprint=<n\|later>`, `--size=S\|M\|L`), `--move=R-<n>:<n\|later>`, `--drop=R-<n>` | Quick edits. See **Quick edits**. |
-| `--multi-agent` / `--plugins=a,b\|all` / `--rounds=1\|2` | Co-plan several plugins. See **Multi-agent**. |
-| `--publish` | Publish the roadmap as a private page. See **Publish**. |
-| `--trello` | Optional. Also mirror the sprints and items to a Trello board. Off unless given. See **Trello**. |
+| `--multi-agent` / `--plugins=a,b\|all` / `--rounds=1\|2` | Co-plan several plugins. See `reference/roadmap-extras.md`. |
+| `--publish` | Publish the roadmap as a private page. See `reference/roadmap-extras.md`. |
+| `--trello` | Optional. Also mirror the sprints and items to a Trello board. Off unless given. See `reference/roadmap-extras.md`. |
 | `--dry-run` | Show the proposed roadmap and change nothing. |
 | `--no-pr`, `--draft` | As in `/yay:implement`: the PR is opened by default; `--no-pr` finishes locally and prints the commands; draft PR. |
 
@@ -61,18 +61,14 @@ One small change, on a branch as above, then `yayh roadmap check`, commit and th
 
 Commit: `docs(roadmap): add R-<n> <title>` / `move R-<n> to sprint <n>` / `drop R-<n>`.
 
-With `--trello`, sync only the item that changed (**Trello**).
+With `--trello`, sync only the item that changed (`reference/roadmap-extras.md`, Trello).
 
 ## Plan (default)
 
 1. **Where we are.**
    - With no `docs/roadmap.md` at all, the harness isn't set up: suggest `/yay:harness-init` and stop.
    - `yayh roadmap status`, `yayh roadmap check` and `yayh roadmap links`. Keep every existing item and its id.
-   - **Legacy roadmap.** If `docs/roadmap.md` has content but no front-matter or no `### R-<n>` items (milestones, checklists, prose from the old harness), this run converts it:
-     - Read it as evidence. Unfinished milestones and unticked "done when" boxes become candidates (step 3); finished ones are history and are dropped.
-     - Lasting content that isn't a plan (scope rules, business rules, settled decisions) belongs in knowledge, not the roadmap. List those sections. By default, append them to `docs/knowledge/decisions.md` under `## From the old roadmap` in the same commit; the confirm round can change that. Never silently lose them. Old text often links docs the harness wipe removed: run `yayh knowledge check docs/knowledge/decisions.md` and repoint each dead path at its `docs/knowledge/` successor (or drop the link) before committing.
-     - The new file replaces the old one entirely (the old version stays in git history). Say so in the confirm step.
-   - **Legacy backlog files** (no `id:` front-matter) are still evidence. Read `docs/backlog/*.md` directly, not only `yayh artifact list backlog`. When one is promoted, give it front-matter first: `yayh fm set <file> id "$(yayh id next BL)"`, then `title`, `status promoted:R-<n>` and `created`.
+   - **Legacy roadmap or backlog** (content without front-matter or `### R-<n>` items, or backlog files without `id:`): read **Legacy conversion** in `${CLAUDE_PLUGIN_ROOT}/reference/roadmap-extras.md` before going on.
    - Settle horizon, sprint length, start, capacity and freezes from the options and the front-matter, and use the defaults for the rest. Don't ask yet: the defaults are shown in step 5's single round. Then `yayh roadmap sprints start=… length=… until=…|count=… first=<next sprint number>` gives the new sprint dates. Past and current sprints keep their headings and dates.
 2. **Evidence.** Read what's there; don't invent demand.
    - Unfinished roadmap items, and `links` drift.
@@ -95,43 +91,13 @@ With `--trello`, sync only the item that changed (**Trello**).
    - New items: `yayh roadmap add "<title>" sprint=<n|later> size=… "why=…" ["editions=free, pro"] [from=…]`. It prints the id. Write `editions` with the config's edition names, comma and space separated.
    - Backlog ideas that became items: `yayh fm set docs/backlog/<file> status promoted:R-<n>`. A deferred note that became an item: `yayh fm set <file> affects "[R-<n>]"`, so the item's plan picks it up (it stays `open` until a plan takes it).
    - `yayh roadmap check` must have no errors.
-7. **Trello** (only with `--trello`): sync before committing, so the saved card URLs go in the same commit. See **Trello**.
+7. **Trello** (only with `--trello`): sync before committing, so the saved card URLs go in the same commit. See `reference/roadmap-extras.md`.
 8. **Commit and PR**: `docs(roadmap): plan to <horizon>`, as above.
 9. **Report** the sprint table with the new ids, what slipped and where it went, what was promoted, the Trello cards (with `--trello`), the PR link, and end with the **Next** line (`reference/asking.md`), usually the top row of `yayh status` (`/yay:brainstorm --from=R-<n>` for the first item of the current sprint).
 
-## Multi-agent (`--multi-agent`)
+## Multi-agent, publish and Trello
 
-One read-only owner agent per plugin researches its repo; the owners then read each other's briefs, answer each other's integration asks and propose joint work; one synthesis agent schedules every plugin into the same sprints. The workflow script is `${CLAUDE_PLUGIN_ROOT}/workflows/roadmap-portfolio.js`.
-
-1. **Plugins.** `yayh roadmap peers` lists the sibling plugin folders (dir, name, slug, harnessed, path). `--plugins=all` means every harnessed peer plus this repo. Otherwise match each name against the dir, slug or name, case-insensitively, and stop on anything unmatched. Plugins without a harness can join the research, but get no roadmap file written (say so).
-2. **Calendar.** Settle the horizon, sprint length, start, capacity and freezes once, for everyone (Plan step 1), then build the sprint list with `yayh roadmap sprints`.
-3. **Cost.** The run uses 2N + 1 agents (N + 1 with `--rounds=1`). Only when N > 3, ask one question: start with this many agents? (Calendar defaults are decisions, listed under **Decided**, not questions.)
-4. **Run** the Workflow tool with `scriptPath: ${CLAUDE_PLUGIN_ROOT}/workflows/roadmap-portfolio.js` and `args`:
-   ```json
-   { "today": "YYYY-MM-DD", "horizon": "YYYY-MM-DD", "sprintLength": "2w", "capacity": 8,
-     "focus": "", "web": false, "rounds": 2, "models": { /* yayh model table --json */ },
-     "sprints": [{ "n": 1, "start": "…", "end": "…", "freeze": false }],
-     "plugins": [{ "name": "YayReturns", "slug": "yayreturns", "path": "/abs/path", "repo": "owner/name or empty", "version": "1.1.0", "harnessed": true }] }
-   ```
-   Take `models` from `yayh model table --json` in this repo (`${CLAUDE_PLUGIN_ROOT}/reference/models.md`). Get `repo` from `gh repo view --json nameWithOwner -q .nameWithOwner` in each repo (empty if gh fails), and `version` from `YAY_REPO=<path> yayh version current`.
-5. **Show, don't ask again.** Show the portfolio summary, the shared initiatives (owner, sprint, per-plugin work), the conventions, and a sprint table per plugin. Then go on to write: every repo's change is its own branch and PR, easy to change or drop; with `--no-pr`, keep them local and print the commands.
-6. **Write each harnessed plugin's roadmap**, in its own repo (`YAY_REPO=<path>` for every `yayh` call, `git -C <path>`), following Plan steps 6–7: on its own branch, `existing_id` items moved, new items added. A shared initiative's part gets `- shared: <initiative title> (owner <plugin>)` and `- depends: <plugin>:R-<n>` where the dependency is known. Skip `cut` items.
-7. **Report** one line per plugin (items per sprint, PR link) and the shared initiatives. With `--publish`, publish a hub (below).
-
-## Publish (`--publish`)
-
-1. Load the `artifact-design` skill, then build one HTML page from the committed roadmap(s): the current sprint first, then a timeline of sprints with item cards (id, title, size, status colour), Later, open critical and high bugs, and for multi-agent runs the shared initiatives and one tab per plugin. Write it to the session scratchpad, not the repo.
-2. If `docs/roadmap.md` has `published: <url>` (or `hub:` for a portfolio), republish to that URL with the Artifact tool. Otherwise publish a new private page and save its URL with `yayh fm set docs/roadmap.md published <url>` (`hub` in every plugin of a portfolio), committed with the roadmap.
-3. If the Artifact tool isn't available, say so and leave the HTML file's path.
-
-## Trello (`--trello`)
-
-Optional, and only when the flag is given. The contract (board setup, list and card mapping, re-runs) is `${CLAUDE_PLUGIN_ROOT}/reference/trello.md`.
-1. Find the board (`trello.board`), or ask for it once.
-2. For every sprint heading in the horizon and `Later`: find or create its list.
-3. For every item in those sections: create its card, or update and move the one in its `trello:` bullet. Shipped cards are marked done, dropped ones archived. Save new card URLs with `yayh roadmap set R-<n> trello <url>`, then `yayh roadmap check`.
-4. `--status` and `--dry-run` never sync. With `--multi-agent`, each plugin uses its own `trello.board`; a plugin with none is skipped (say so).
-5. Trello not connected: say so and carry on (the roadmap is still written and committed).
+`--multi-agent`, `--publish` and `--trello` are described in `${CLAUDE_PLUGIN_ROOT}/reference/roadmap-extras.md`. Read it only when one of them is given.
 
 ## Don'ts
 - Never renumber, reuse or delete an `R-<n>`. Dropped items stay with `status: dropped`.
