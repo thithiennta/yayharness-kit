@@ -14,7 +14,7 @@ One entry point, so nobody has to remember every skill and its options. This ski
 ## No argument, or "next" / "continue" / "go on"
 
 1. `yayh status` (scope, id, stage, next command, title; most urgent first).
-2. Nothing in flight: say so, and offer `/yay:roadmap` (plan the next sprint) or a request in plain words.
+2. Nothing in flight: say so, and offer `/yay:roadmap` (plan the next sprint) or a request in plain words. Point to `docs/yay-workflow.md` for the whole flow, roadmap to release, when the user seems new to it.
 3. Otherwise show the top 5 rows as a short table and say what the first one is. When the request was "next", "continue" or "go on", or the top row is this branch's own work (`here`), run it now: hand its `next` command to the Skill tool (or run it with Bash when it's a `git` or `gh` command). Otherwise end with `Next: <the top command>`, and run it if the user says "go".
 
 ## An id

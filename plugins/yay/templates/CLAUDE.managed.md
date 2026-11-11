@@ -19,6 +19,7 @@ This repo uses the **yay** harness. Work through its skills so every developer a
 | Ship | `/yay:release` → merge → `/yay:release --tag-only` | readme.txt changelog, `docs/releases/`, checked bundle, tag |
 | Keep docs true | `/yay:knowledge-update` | this file's project block, `docs/knowledge/` |
 
+- A worked example from roadmap to release tag, with the exact prompts, is in `docs/yay-workflow.md`.
 - Each skill checks for the previous step's output and says when it's missing. You can still run any skill on its own.
 - Lost? `yayh status` lists the work in flight in every worktree, most urgent first, each with the command that moves it on. `yayh next [ID]` prints just that command.
 - The repo's commands, editions, branches and generated paths are in `.yay/config.json`. Read them with `yayh config get <key>`; never guess a command.

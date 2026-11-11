@@ -97,9 +97,11 @@ test_sync_installs_everything_then_is_idempotent() {
   export YAY_REPO; YAY_REPO="$(_fixture legacy-rich)"
   _init "$YAY_REPO"
   for f in CLAUDE.md .claude/rules/yay-git.md .claude/rules/yay-workflow.md .claude/rules/yay-wordpress.md \
-           .claude/settings.json .github/pull_request_template.md docs/roadmap.md docs/plans/.gitkeep docs/bugs/.gitkeep; do
+           .claude/settings.json .github/pull_request_template.md docs/roadmap.md docs/yay-workflow.md \
+           docs/plans/.gitkeep docs/bugs/.gitkeep; do
     assert_file "$YAY_REPO/$f"
   done
+  assert_contains "$(cat "$YAY_REPO/docs/yay-workflow.md")" "merge each PR** into \`dev\`"
   assert_contains "$(cat "$YAY_REPO/CLAUDE.md")" "<!-- yay:managed:start v="
   assert_contains "$(cat "$YAY_REPO/CLAUDE.md")" "<!-- yay:project:start -->"
   assert_contains "$(cat "$YAY_REPO/.claude/rules/yay-git.md")" "Never commit to \`dev\` directly"

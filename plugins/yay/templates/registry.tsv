@@ -9,6 +9,7 @@ settings.json	.claude/settings.json	json	settings
 github/pull_request_template.md	.github/pull_request_template.md	file	github
 docs/roadmap.md	docs/roadmap.md	seed	docs
 docs/knowledge-readme.md	docs/knowledge/README.md	seed	docs
+docs/yay-workflow.md	docs/yay-workflow.md	file	docs
 -	docs/brainstorms/.gitkeep	seed	docs
 -	docs/plans/.gitkeep	seed	docs
 -	docs/bugs/.gitkeep	seed	docs

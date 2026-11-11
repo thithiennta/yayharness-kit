@@ -32,6 +32,8 @@ A repo's `.claude/settings.json` enables the plugin, but that alone does **not**
 
 ## 3. The workflow
 
+**A worked example, roadmap to release tag: [`plugins/yay/templates/docs/yay-workflow.md`](plugins/yay/templates/docs/yay-workflow.md).** Every plugin repo gets it as `docs/yay-workflow.md`, kept current by `/yay:harness-update`.
+
 **Don't remember the skills? Use `/yay:go`.**
 ```text
 /yay:go                                    # what's in flight, then the next step
