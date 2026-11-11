@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # PostToolUse Bash: after a `git commit`, check the new commit's message and
-# branch name. Exit 2 tells Claude what to amend.
+# branch name. A header the changelog can't read exits 2; style problems are hints.
 . "$(dirname "$0")/_hook.sh"
 
 cmd="$(hook_get tool_input.command)"
@@ -14,13 +14,20 @@ now="$(date +%s)"; ct="$(git -C "$root" log -1 --format=%ct 2>/dev/null || echo 
 [ $((now - ct)) -le 120 ] || exit 0
 
 msg="$(git -C "$root" log -1 --format=%B)"
-problems=""
-if ! err="$(yay_commit_check "$msg" 2>&1)"; then problems="$err"; fi
+# Only a header the changelog can't read blocks. Style (length, period, scope,
+# branch name) is a hint: the commit stands, and Claude amends it if it's worth it.
+if ! err="$(yay_commit_shape "$msg" 2>&1)"; then
+  printf 'yay: the last commit breaks the git conventions (.claude/rules/yay-git.md):\n%s\nFix it with: git commit --amend -m "<type>(<scope>): <summary>" (keep the trailers).\n' "$err" >&2
+  exit 2
+fi
+hints="$(yay_commit_style "$msg" 2>&1 || true)"
 br="$(git -C "$root" branch --show-current 2>/dev/null)"
 if [ -n "$br" ] && ! yay_branch_check "$br"; then
-  problems="${problems:+$problems
-}branch '$br' doesn't follow <type>/<slug> (types: $(yay_config_get git.branchTypes | tr '\n' ' ')). Rename it with 'git branch -m <type>/<slug>' if it's yours."
+  hints="${hints:+$hints
+}branch '$br' doesn't follow <type>/<slug> (types: $(yay_config_get git.branchTypes | tr '\n' ' ')). Rename it with 'git branch -m <type>/<slug>' if it's yours and not pushed yet."
 fi
-[ -z "$problems" ] && exit 0
-printf 'yay: the last commit breaks the git conventions (.claude/rules/yay-git.md):\n%s\nFix it with: git commit --amend -m "<type>(<scope>): <summary>" (keep the trailers).\n' "$problems" >&2
-exit 2
+[ -n "$hints" ] || exit 0
+msg="yay git hints (not blocking; amend with git commit --amend -m \"…\" if it's still local, keeping the trailers): $(printf '%s' "$hints" | tr '\n' ' ' | sed 's/ $//')"
+esc="$(printf '%s' "$msg" | sed -e 's/\\/\\\\/g' -e 's/"/\\"/g' | tr -d '\r' | tr '\t' ' ')"
+printf '{"hookSpecificOutput":{"hookEventName":"PostToolUse","additionalContext":"%s"}}\n' "$esc"
+exit 0

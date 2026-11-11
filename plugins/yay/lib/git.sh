@@ -66,17 +66,31 @@ yay_semver_bump() {
 }
 
 # yay_commit_check <message-file-or-string>  -> 0 if the header is a valid
-# conventional commit; prints the reason on stderr otherwise.
-yay_commit_check() {
-  local msg header type scope
-  if [ -f "$1" ]; then msg="$(cat "$1")"; else msg="$1"; fi
-  header="$(printf '%s\n' "$msg" | sed -n '/^[^#]/{p;q;}')"
+# conventional commit with the kit's style; prints the reasons on stderr otherwise.
+yay_commit_check() { yay_commit_shape "$1" && yay_commit_style "$1"; }
+
+_yay_commit_header() {
+  local msg; if [ -f "$1" ]; then msg="$(cat "$1")"; else msg="$1"; fi
+  printf '%s\n' "$msg" | sed -n '/^[^#]/{p;q;}'
+}
+
+# yay_commit_shape <message>: the header is `type(scope): summary`. The changelog
+# and release notes are built from it, so the post-commit hook blocks on this one.
+yay_commit_shape() {
+  local header; header="$(_yay_commit_header "$1")"
   case "$header" in Merge\ *|Revert\ \"*|fixup!\ *|squash!\ *) return 0;; esac
-  if ! printf '%s' "$header" | grep -Eq '^(feat|fix|perf|refactor|docs|test|build|ci|chore|revert)(\([a-z0-9][a-z0-9-]*\))?!?: [^ ].*$'; then
-    echo "commit header must be 'type(scope): summary' with type in feat fix perf refactor docs test build ci chore revert: $header" >&2; return 1
-  fi
-  if [ "${#header}" -gt 72 ]; then echo "commit header is ${#header} chars; keep it at most 72" >&2; return 1; fi
-  case "$header" in *.) echo "commit header must not end with a period" >&2; return 1;; esac
+  printf '%s' "$header" | grep -Eq '^(feat|fix|perf|refactor|docs|test|build|ci|chore|revert)(\([a-z0-9][a-z0-9-]*\))?!?: [^ ].*$' && return 0
+  echo "commit header must be 'type(scope): summary' with type in feat fix perf refactor docs test build ci chore revert: $header" >&2
+  return 1
+}
+
+# yay_commit_style <message>: length, final period and allowed scope. The
+# post-commit hook only hints about these. Prints every problem; exit 1 if any.
+yay_commit_style() {
+  local header scope bad=0; header="$(_yay_commit_header "$1")"
+  case "$header" in Merge\ *|Revert\ \"*|fixup!\ *|squash!\ *) return 0;; esac
+  if [ "${#header}" -gt 72 ]; then echo "commit header is ${#header} chars; keep it at most 72" >&2; bad=1; fi
+  case "$header" in *.) echo "commit header must not end with a period" >&2; bad=1;; esac
   scope="$(printf '%s' "$header" | sed -nE 's/^[a-z]+\(([^)]*)\).*/\1/p')"
   if [ -n "$scope" ]; then
     local scopes; scopes="$(yay_config_get git.scopes 2>/dev/null || true)"
@@ -88,10 +102,10 @@ release
 changelog
 knowledge
 roadmap"; then
-      echo "scope '$scope' is not in git.scopes ($(printf '%s' "$scopes" | tr '\n' ' '))" >&2; return 1
+      echo "scope '$scope' is not in git.scopes ($(printf '%s' "$scopes" | tr '\n' ' '))" >&2; bad=1
     fi
   fi
-  return 0
+  return "$bad"
 }
 
 # yay_merged_worktrees [base] -> "<path><TAB><branch>" for .claude/worktrees/*

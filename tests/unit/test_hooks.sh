@@ -111,8 +111,16 @@ test_post_commit_checks_message_and_branch() {
   assert_exit 0 _bash check-commit.sh "$r" 'git commit --amend -m "feat(core): add stuff"'
   git -C "$r" switch -q -c "my-branch"
   echo b >> "$r/a.txt"; git -C "$r" commit -qam "feat: more" --no-verify
-  local err; err="$(_bash check-commit.sh "$r" 'git commit -am "feat: more"' 2>&1)"
-  assert_contains "$err" "branch 'my-branch'"
+  # style problems are hints: exit 0, with the hint as additional context
+  local out; out="$(_bash check-commit.sh "$r" 'git commit -am "feat: more"' 2>&1)"
+  assert_exit 0 _bash check-commit.sh "$r" 'git commit -am "feat: more"'
+  assert_contains "$out" '"additionalContext":"yay git hints (not blocking'
+  assert_contains "$out" "branch 'my-branch'"
+  git -C "$r" switch -q -c feat/ok
+  echo c >> "$r/a.txt"; git -C "$r" commit -qam "feat(core): a header that ends with a period." --no-verify
+  assert_exit 0 _bash check-commit.sh "$r" 'git commit -am x'
+  assert_contains "$(_bash check-commit.sh "$r" 'git commit -am x')" "must not end with a period"
+  assert_eq "" "$(git -C "$r" commit -q --amend -m "feat(core): clean" --no-verify; _bash check-commit.sh "$r" 'git commit --amend')"
   assert_exit 0 _bash check-commit.sh "$r" 'git status'
 }
 

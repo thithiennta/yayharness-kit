@@ -142,7 +142,8 @@ Planning and building never stop for a call nobody can make yet. Claude builds a
 
 - **Branches:** `<type>/<slug>`, e.g. `feat/express-checkout` or `fix/coupon-field-vanishes`. There's no owner prefix; the PR is assigned to you instead (`gh pr create --assignee @me`). Release branches are `chore/release-1-4-0`.
 - **Commits:** [Conventional Commits](https://www.conventionalcommits.org), `type(scope): summary`, at most 72 characters, no final period. Trailers link the work: `Plan: P-4`, `Fixes: B-7`, `Roadmap: R-12`.
-- **Blocked by the hooks:** commits on the base branch, `--no-verify`, leftover `yay:debug` markers in staged code, tags made outside `/yay:release`, and hand edits to kit-owned or generated files.
+- **Blocked by the hooks:** commits on the base branch, `--no-verify`, leftover `yay:debug` markers in staged code, tags made outside `/yay:release`, hand edits to kit-owned or generated files, and a commit header that isn't `type(scope): summary` (the changelog is built from it).
+- **Hinted, not blocked:** a header over 72 characters or ending in a period, a scope outside `git.scopes`, and a branch name that isn't `<type>/<slug>`. The commit stands; Claude amends it while it's still local.
 - **Worktrees:** each task gets one under `.claude/worktrees/<slug>`. `/yay:release --tag-only` offers to remove the merged ones.
 - **Pushing:** skills that finish work on a branch push it and open the PR, assigned to you, without asking. Pass `--no-pr` to keep it local; the report then prints the push and PR commands. Tags stay local unless `/yay:release --push-tag`. With no `origin` remote or no `gh` login, the work still finishes locally.
 
@@ -188,7 +189,7 @@ Every skill shows its full option list as you type it, and explains each option 
 |---|---|
 | `/yay:` shows nothing | The plugin isn't installed: `claude plugin install yay@yayharness`, then restart `claude`. |
 | "harness is outdated" at session start | `/yay:harness-update`. It only touches kit-owned files. |
-| A commit is rejected | Read the hook's message. Usually the header is too long, the scope isn't in `git.scopes`, you're on the base branch, or a `yay:debug` marker is left in the code. |
+| A commit is rejected | Read the hook's message. Usually you're on the base branch, the header isn't `type(scope): summary`, or a `yay:debug` marker is left in the code. A long header or an unknown scope only gets a hint. |
 | Two branches created the same ID | `/yay:implement` and `/yay:fix` check this before the PR (`yayh id conflicts`), and the later branch renumbers. |
 | "version files disagree" | Run `yayh version list`, then fix them through `/yay:release`, or correct `versionFiles` in `.yay/config.json`. |
 | The build fails a check | `/yay:release` says which file and why. Fix the package script or `package.forbidden`, never the zip. |
