@@ -30,13 +30,15 @@ yay_render_vars() {
 }
 
 # yay_artifact_new <type> "<title>" [key=value...] -> path of the new file.
-# Known keys: from, roadmap, type (plan branch type), severity, editions.
+# Known keys: from, roadmap, type (plan branch type), severity, editions;
+# for backlog: kind (idea|decision|deferred), affects, default.
 yay_artifact_new() {
   local type="$1" title="$2"; shift 2 || yay_die "usage: yayh artifact new <type> \"<title>\" [key=value...]"
   [ -n "$title" ] || yay_die "a title is required"
   case "$title" in -*) yay_die "title '$title' looks like an option; give the title first: yayh artifact new $type \"<title>\" [key=value...]";; esac
   case "$title" in *$'\n'*) yay_die "title must be one line";; esac
   local prefix id slug rel root from="" roadmap="" ptype="feat" severity="medium" editions kv
+  local bl_kind=idea affects="" default=""
   prefix="$(_art_prefix "$type")"
   editions="$(yay_config_get editions 2>/dev/null | paste -sd, - | sed 's/,/, /g')"
   for kv in "$@"; do
@@ -44,11 +46,18 @@ yay_artifact_new() {
       from=*) from="${kv#from=}" ;; roadmap=*) roadmap="${kv#roadmap=}" ;;
       type=*) ptype="${kv#type=}" ;; severity=*) severity="${kv#severity=}" ;;
       editions=*) editions="${kv#editions=}" ;;
-      *) yay_die "unknown key '${kv%%=*}' (from, roadmap, type, severity, editions)" ;;
+      kind=*) bl_kind="${kv#kind=}" ;; affects=*) affects="${kv#affects=}" ;; default=*) default="${kv#default=}" ;;
+      *) yay_die "unknown key '${kv%%=*}' (from, roadmap, type, severity, editions, kind, affects, default)" ;;
     esac
   done
   case "$ptype" in feat|fix|chore|refactor|perf|docs|test) ;; *) yay_die "plan type must be feat, fix, chore, refactor, perf, docs or test";; esac
   case "$severity" in critical|high|medium|low) ;; *) yay_die "severity must be critical, high, medium or low";; esac
+  case "$bl_kind" in idea|decision|deferred) ;; *) yay_die "backlog kind must be idea, decision or deferred";; esac
+  case "$default$affects" in *$'\n'*) yay_die "default and affects must be one line";; esac
+  case "$default" in *' #'*) yay_die "default can't contain ' #' (front-matter reads it as a comment)";; esac
+  [ "$type" = backlog ] || [ "$bl_kind$affects$default" = idea ] || yay_die "kind, affects and default are for backlog notes only"
+  [ "$bl_kind" != decision ] || [ -n "$default" ] || yay_die "a decision note needs default=\"<what the work does until it's decided>\""
+  affects="$(_bl_list "$affects" | paste -sd, - | sed 's/,/, /g')"
   root="$(yay_repo_root)"
   slug="$(yay_slugify "$title")"
   [ -n "$slug" ] || yay_die "title gives an empty slug"
@@ -60,7 +69,8 @@ yay_artifact_new() {
   id="$(yay_id_next "$prefix")"
   yay_render_vars "$YAY_TEMPLATES/artifacts/$type.md" \
     "id=$id" "title=$title" "slug=$slug" "from=$from" "roadmap=$roadmap" "ptype=$ptype" \
-    "severity=$severity" "artifact_editions=$editions" > "$root/$rel"
+    "severity=$severity" "artifact_editions=$editions" "bl_kind=$bl_kind" \
+    "bl_status=$([ "$bl_kind" = idea ] && echo idea || echo open)" "affects=$affects" "default=$default" > "$root/$rel"
   yay_id_unlock; trap - EXIT
   printf '%s\n' "$rel"
 }
@@ -169,6 +179,15 @@ EOF
           nowhy) echo "warn: task $t adds new code ('Reuse: none') without saying why the existing code doesn't fit ('because …')" ;;
         esac
       done
+  # Notes left for this plan (lib/backlog.sh): settle them or keep their default on purpose.
+  case "$st" in draft|ready|in-progress)
+    yay_backlog_open --for="$(yay_fm_get "$f" id 2>/dev/null || echo -)" 2>/dev/null | while IFS="$(printf '\t')" read -r k kind _ _ def ti _; do
+      case "$kind" in
+        decision) echo "warn: open decision $k ($ti) affects this plan; it follows the default \"$def\" until settled (yayh backlog settle $k decided …)" ;;
+        deferred) echo "warn: deferred work $k ($ti) affects this plan: take it as a task (yayh backlog settle $k planned <P-n>) or leave it for later" ;;
+      esac
+    done ;;
+  esac
   grep -Eq '^\*\*Tests:\*\*[[:space:]]*[^[:space:]]' "$f" || _pe "no '**Tests:** <tests or none>' line"
   # Each test names the layer it runs at (reference/testing.md): [unit], [integration], [js] or [manual].
   sed -nE 's/^\*\*Tests:\*\*[[:space:]]*//p' "$f" | sed -n 1p | tr ';' '\n' | sed -E 's/^[[:space:]]+//; s/[[:space:]]+$//' \

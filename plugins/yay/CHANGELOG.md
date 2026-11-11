@@ -3,6 +3,15 @@
 `/yay:harness-update` reads this file to tell a repo what changed between its recorded kit version and the installed one. Each entry lists new skills, config keys, template changes and behavior changes.
 
 ## 0.2.0
+- **Parked decisions and later work are picked up again.** Backlog files gain `kind: idea | decision | deferred`, plus `affects:`, `default:`, `decision:` and `settled:`. Files without `kind` are ideas, as before.
+  - A **decision** note is a call that couldn't be made while planning or building. The work builds its `default:` and never stops for it.
+  - A **deferred** note is work left for later: out of scope, a follow-up, a nice-to-have found while building.
+  - `/yay:plan`, `/yay:implement`, `/yay:fix` and `/yay:autopilot` write these notes instead of stopping or burying the point under "Open:" risks or a report line.
+  - Before they work on a plan, they run `yayh backlog open --for=<id>`, which matches the plan, its roadmap item and its source, across every worktree. They settle what can now be settled into the plan (`yayh backlog settle BL-<n> decided "…" | planned P-<n> | dropped "…"`). A decided answer that differs from a default already built becomes a task.
+  - `yayh plan check` warns about each open note that touches the plan.
+  - Autopilot's decision sheet also offers the open decision notes on its items.
+  - `/yay:roadmap` reads deferred notes as evidence.
+  - The PR template gains an "Open decisions and later work" section, and the workflow rules a "Park what can't be settled now" rule.
 - **Unit, integration and JS tests: `/yay:test-init` and `/yay:test`.** Three layers:
   - **Unit:** PHPUnit 9.6 + Brain Monkey, with no WordPress (`tests/php/unit`).
   - **Integration:** the WordPress (and WooCommerce) test suite in wp-env's **tests** site, which has its own database on port+1. That way the e2e site's data is never wiped (`tests/php/integration`, `wp-env run tests-cli`).

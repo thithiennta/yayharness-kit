@@ -96,10 +96,11 @@ function preparePrompt(it) {
 Bring roadmap item **${it.id} ${it.title}** to an implementable plan, in the main checkout. Create only new artifact files (\`yayh artifact new …\`); don't create branches, commit, or edit tracked files.${it.after.length ? `\nIt will be built after ${it.after.join(', ')} in this run, on top of their branches: plan it assuming their plans are done (read their brainstorms or plans under docs/ for what they add).` : ''}
 
 1. ${start}
-2. Follow ${KIT}/skills/plan/SKILL.md with \`--from=<the brainstorm id>\`, \`roadmap=${it.id}\`, the type that fits (feat unless it's a fix or refactor), and \`--tests=ask\`. Do every step, including the self-review and \`yayh plan check\` with no errors.
+2. Follow ${KIT}/skills/plan/SKILL.md with \`--from=<the brainstorm id>\`, \`roadmap=${it.id}\`, the type that fits (feat unless it's a fix or refactor), and \`--tests=ask\`. Do every step, including the self-review and \`yayh plan check\` with no errors. That includes "Picking up notes": run \`yayh backlog open --for=${it.id}\` and settle into the plan every decision and deferred note the evidence now answers (tracked notes as \`Settles:\` lines under the plan's ## Risks).
 3. The plan skill's "Hard questions only" step is where you would ask. Don't ask. Instead:
    - Return as **questions** only the calls that are expensive to undo or that only the user can make: which brainstorm option (only when the options are genuinely close or change what customers see), customer-visible behaviour the source doesn't pin down, tests when the repo's rules say tests need approval. At most 2, usually 0. Each names the item and lists the option the plan follows first.
    - If a question is returned, leave the plan \`draft\` and write the question under the plan's ## Risks as "Open (autopilot sheet): …". Otherwise mark it ready (\`yayh fm set <plan> status ready\`).
+   - An open **decision note** (\`BL-<n>\`) on this item that only the user can make and that is expensive to get wrong counts toward those 2 questions; name its id in the question. Any other call you can't make: write a decision note with the default the plan follows (the plan skill's "Park what's still open") and list it in **decided** as "BL-<n>: default …". Work you leave out of scope becomes a deferred note.
    - Everything else you chose goes in **decided**.
 4. If the item can't be planned (the evidence is missing, the code it names doesn't exist, it's really several items), set **blocked** with the reason and what a human must do, and create no plan.`
 }
@@ -126,7 +127,8 @@ ${answer}
 
 In the main checkout, apply it before anyone builds the plan:
 - If it picks a brainstorm option, set the brainstorm's \`decision\` and \`status decided\` (\`yayh fm set\`), and write any condition into its Recommendation.
-- Revise the plan (${KIT}/skills/plan/SKILL.md: Design, Tasks, Tests and Verify, Write it) so it follows the answer. Replace the "Open (autopilot sheet): …" risk lines with the decision. \`yayh plan check\` must have no errors. Then \`yayh fm set <plan> status ready\`.
+- Revise the plan (${KIT}/skills/plan/SKILL.md: Design, Tasks, Tests and Verify, Write it) so it follows the answer. Replace the "Open (autopilot sheet): …" risk lines with the decision.
+- If the answer settles a decision note (\`BL-<n>\`): settle an untracked note with \`yayh backlog settle BL-<n> decided "<answer>"\`; for a tracked note, add the line \`Settles: BL-<n> decided "<answer>"\` under the plan's ## Risks (implement applies it on the branch). \`yayh plan check\` must have no errors. Then \`yayh fm set <plan> status ready\`.
 - Edit only those untracked artifact files. Return a one-paragraph summary of what changed.`
 }
 
@@ -134,7 +136,8 @@ function implementPrompt(it, baseBranch, mergeIn) {
   return `${CTX}
 
 Build plan **${it.artifact}** (roadmap ${it.id} ${it.title}). Follow ${KIT}/skills/implement/SKILL.md with \`${it.artifact}${it.stage === 'continue' ? ' --continue' : ''} --base=${baseBranch} --no-push --no-review\`, with these changes for an unattended run:
-- The "Hard questions only" round in Load and gate: don't ask. Decide in the plan's spirit and record it.${mergeIn.length ? `\n- After the Branch and worktree section creates the worktree, merge the other dependency branches into it: ${mergeIn.map(b => `\`git merge --no-ff --no-edit ${b}\``).join(', ')}. On a conflict, abort the merge and return blocked.` : ''}
+- The "Hard questions only" round in Load and gate: don't ask. Decide in the plan's spirit and record it. Do "Pick up open notes" as written.
+- A decision you can't make while building: build the default, write the decision note (the task loop's rule), list it in decided as "BL-<n>: default …", and go on. It never blocks.${mergeIn.length ? `\n- After the Branch and worktree section creates the worktree, merge the other dependency branches into it: ${mergeIn.map(b => `\`git merge --no-ff --no-edit ${b}\``).join(', ')}. On a conflict, abort the merge and return blocked.` : ''}
 - The task loop's "stop and tell the user" when the plan is wrong: if the fix to the task text is small and obviously in the plan's spirit, edit the plan's task text, note it under decided, and go on. Otherwise stop, leave the branch as it is (commit what works), and return blocked with the exact problem.
 - Skip the "Review for reuse and comments" step of Finish (--no-review): the autopilot runs the reviewer next. Skip the "Push and PR" section (--no-push).
 - A check that fails because of your change and that you can't fix in three attempts: return blocked. A pre-existing failure (also on ${A.base}) is reported, not fixed, and doesn't block.

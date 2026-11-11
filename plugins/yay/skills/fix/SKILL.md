@@ -33,6 +33,7 @@ Fix one bug, minimally, on its own branch. **No fix without a cause:** the bug r
   - `fixed`, `wontfix` or `duplicate` → stop.
 - **No report, only a description:** do a `/yay:debug --quick` pass inline. Create the report with `yayh artifact new bug …`, find the cause with `file:line` evidence, and fill in Root cause and Fix options. If the cause isn't clear within a reasonable read, stop and suggest `/yay:debug`.
 - Choose the fix option: the report's recommended one, unless the user says otherwise.
+- Run `yayh backlog open --for=B-<n>`. Settle the notes the fix answers (in the branch, step 2), and keep the others open.
 
 ### 2. Branch
 - `branch="$(yayh git branch-name <fix|hotfix> "<bug title>")"`
@@ -43,7 +44,7 @@ Fix one bug, minimally, on its own branch. **No fix without a cause:** the bug r
 - For a hotfix, check that the bug exists at the tag: are the root-cause lines present there? If they aren't, it's not a hotfix; say so.
 
 ### 3. Fix, minimally
-- Change only what the root cause needs, calling the existing helpers the code already has (`yayh code find <verb> <noun>`) rather than writing new ones. Don't touch comments the fix doesn't make wrong. No refactors and no drive-by fixes; note those in the report under a `## Follow-ups` heading, or as backlog ideas.
+- Change only what the root cause needs, calling the existing helpers the code already has (`yayh code find <verb> <noun>`) rather than writing new ones. Don't touch comments the fix doesn't make wrong. No refactors and no drive-by fixes; write each as a deferred note (`yayh artifact new backlog "<what>" kind=deferred from=B-<n>`). A call the fix can't make (customer-visible behaviour the report doesn't pin down) becomes a decision note with the default you built (`kind=decision default="…"`); it never stops the fix. Commit the notes with the fix.
 - **Escalate** if the fix needs a schema or data migration, touches more than about 3 modules, changes a public API or hook, or needs a design decision. Stop, commit nothing to product code, and run `/yay:plan --from=B-<n> --type=fix`. A planned fix is then built by `/yay:implement`.
 - Follow the hard rules: PHP floor, editions boundary, escaping and nonces, HPOS.
 

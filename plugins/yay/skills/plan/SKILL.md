@@ -30,6 +30,7 @@ A plan is the contract `/yay:implement` follows task by task. The format is in `
    - **Brainstorm:** use its decision. If its `status` isn't `decided`, plan its recommended option, and make "plan option <X>?" a question in step 7's round.
    - **Bug:** use its root cause. If it isn't `root-caused`, suggest `/yay:debug` first.
    - **Roadmap item:** if there's no brainstorm and the approach isn't obvious, plan the most likely approach, and say in the report that `/yay:brainstorm --from=R-<n>` would compare options.
+   - **Open notes:** run `yayh backlog open --for=<source id>` (and `--for=P-<n>` when revising a plan). These are decisions and work an earlier step parked for later. Settle each one now if you can; see "Picking up notes" below.
 2. **Ground it.** Read the project block and the relevant `docs/knowledge/` docs. Read **every file the plan will touch**. A plan that names a file you haven't opened is a guess.
 3. **Design.**
    - **Goal:** the user-visible outcome and "done means…".
@@ -65,8 +66,17 @@ A plan is the contract `/yay:implement` follows task by task. The format is in `
    - **Tests to include** (multiSelect, with the proposed tests as options), only when the repo's rules say tests need approval (the project block or `.claude/rules/`). Otherwise decide yourself: keep the tests that guard real risk.
    - **The single biggest open decision**, if one remains (the brainstorm option, or a design choice). Your pick comes first.
 
-   Apply the answers. Then, when `yayh plan check` has no errors and no hard decision is still unanswered, mark it ready yourself: `yayh fm set <file> status ready`. Every other open point goes under the plan's `## Risks` as "Open: …" with the default you chose, for `/yay:implement` or the PR review. Nothing hard open means no question.
-8. **Report.** Give the file, the task count, the Tests and E2E lines, any open risks, and the next step: `/yay:implement P-<n>`.
+   Apply the answers. Then, when `yayh plan check` has no errors and no hard decision is still unanswered, mark it ready yourself: `yayh fm set <file> status ready`. Nothing hard open means no question.
+
+   **Park what's still open.** A decision that can't be made now, and isn't worth the question round, becomes a decision note: `yayh artifact new backlog "<the question>" kind=decision from=P-<n> default="<what the plan does for now>" [affects="<other P-/R-ids>"]`. Plan the default, and add the line `Open: BL-<n> <question> (default: …)` under `## Risks`. Work you leave out of scope that someone will want later becomes `kind=deferred from=P-<n>`; name it under **Non-goals** as `BL-<n>`. Neither one stops the plan or keeps it `draft`.
+8. **Report.** Give the file, the task count, the Tests and E2E lines, any open risks, the notes settled into the plan, the notes written or left open (`BL-<n>`, kind, default), and the next step: `/yay:implement P-<n>`.
+
+### Picking up notes
+For each row of `yayh backlog open --for=<id>`:
+- **decision:** decide it now if the code, the source artifact, an answer in this round, or work finished since (its `from:` plan is done, the item it waited on shipped) settles it. Write the answer with `yayh backlog settle BL-<n> decided "<answer>"`, then plan the answer instead of the default. If the default was **already built** by a finished plan and the answer differs, the change is a task in this plan when it touches the same code. Otherwise, write a `kind=deferred` note for the change. A decision that still can't be made stays open: plan its default and reference it under `## Risks` as above. A decision only the user can make, that's expensive to get wrong, can be one of step 7's questions.
+- **deferred:** if the work fits this plan's goal, add it as tasks and run `yayh backlog settle BL-<n> planned P-<n>`. If it doesn't fit, leave it open, and say so in the report.
+
+A note that's become pointless (the code it named is gone, the item was dropped) is closed with `yayh backlog settle BL-<n> dropped "<why>"`. Settling edits the note's file. Before a branch exists, that's allowed only for an untracked note. A tracked note is settled by `/yay:implement` on the branch, so here write `Settles: BL-<n> decided "<answer>"` (or `planned P-<n>`) under the plan's `## Risks` for it. List every note you settled, or left open, in the report.
 
 ### `--check` mode
 Run `yayh plan check <plan>`. Then review against the code as it is **now**: do the files still exist, is the approach still valid, and are there tasks the self-review list says are missing? Report blocking issues and suggestions separately. Offer to apply the fixes, but don't edit a plan that's `in-progress` without saying so; changes there must be visible to whoever is implementing it.

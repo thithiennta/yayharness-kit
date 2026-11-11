@@ -18,7 +18,7 @@ Every step of the workflow leaves a markdown file in the repo. Its front-matter 
 | `BS-<n>` | Brainstorm | `docs/brainstorms/YYYY-MM-DD-<slug>.md` |
 | `P-<n>` | Plan | `docs/plans/<slug>.md` |
 | `B-<n>` | Bug report | `docs/bugs/YYYY-MM-DD-<slug>.md` |
-| `BL-<n>` | Backlog idea | `docs/backlog/<slug>.md` |
+| `BL-<n>` | Backlog idea, or a note: a pending decision or work left for later | `docs/backlog/<slug>.md` |
 
 Get the next free ID with `yayh id next <PREFIX>`. It scans `docs/` and returns one more than the highest ID found. IDs never get reused, so when deleting an artifact, set its `status` to `dropped` instead. Two branches can claim the same ID. `/yay:implement` and `/yay:fix` check this before opening a PR, and the later branch renumbers.
 
@@ -106,13 +106,27 @@ created: 2026-11-10
 ```
 Body: Symptoms, Environment (PHP/WP/WC/edition/theme), Repro steps, Root cause (`file:line` evidence and confidence high/medium/low), Fix options (1 to 3, with a recommendation), Regression test proposal.
 
-### Backlog idea: `docs/backlog/<slug>.md`
+### Backlog: `docs/backlog/<slug>.md`
 ```
 id: BL-9
-title: Import layouts from a URL
-status: idea | promoted:R-15 | dropped   # promoted by /yay:roadmap
+title: Refund email wording
+kind: idea | decision | deferred   # missing means idea
+status: open                       # see below
+from: P-4                          # where it came up: plan, bug, roadmap item, brainstorm
+affects: [P-5, R-12]               # other plans or items it changes once settled
+default: reuse the order email copy   # decision: what the work does until it's decided
+decision:                          # decision: the answer (or why it was dropped)
+settled:                           # date, set by yayh backlog settle
 created: 2026-11-10
 ```
+Three kinds share the folder and the `BL` ids:
+- **idea**: something to maybe build. `status: idea | promoted:R-15 | dropped`; `/yay:roadmap` promotes it.
+- **decision**: a call that couldn't be made when it came up (it needs product input, or waits on how other work turns out). The work goes on with `default:` and never stops for it. `status: open | decided | dropped`.
+- **deferred**: work left for later: out of the plan's scope, a follow-up, a nice-to-have found while building. `status: open | planned:P-6 | dropped`.
+
+Body: the question and its options (decision), or what's left and where it would go (deferred), and why it waited.
+
+**Notes are picked up again.** Before working on a plan, `/yay:plan`, `/yay:implement`, `/yay:fix` and `/yay:autopilot` run `yayh backlog open --for=<id>`. It lists the open notes whose `from:` or `affects:` is that plan, its roadmap item or its source, from this checkout and every worktree. Each one is either settled into the plan (`yayh backlog settle BL-n decided "<answer>"`, or `planned P-n` when the plan takes the work as a task) or left open, on purpose, for later. `yayh plan check` warns about every open note that touches the plan. Settling a note edits its file, so it's committed on the branch that settles it, like any tracked artifact.
 
 ### Release notes: `docs/releases/<version>.md`
 ```

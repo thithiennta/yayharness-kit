@@ -73,7 +73,7 @@ Commit: `docs(roadmap): add R-<n> <title>` / `move R-<n> to sprint <n>` / `drop 
    - Settle horizon, sprint length, start, capacity and freezes from the options and the front-matter, and use the defaults for the rest. Don't ask yet: the defaults are shown in step 5's single round. Then `yayh roadmap sprints start=… length=… until=…|count=… first=<next sprint number>` gives the new sprint dates. Past and current sprints keep their headings and dates.
 2. **Evidence.** Read what's there; don't invent demand.
    - Unfinished roadmap items, and `links` drift.
-   - `yayh artifact list backlog --status=idea`, open bugs (`yayh roadmap status` lists them by severity), ready and in-progress plans, open and decided brainstorms.
+   - `yayh artifact list backlog --status=idea`, and the parked work and decisions from plans and fixes: `yayh backlog open` (a `deferred` note whose plan is done is a candidate item; an open `decision` that affects a scheduled item is worth naming in its `note:`), open bugs (`yayh roadmap status` lists them by severity), ready and in-progress plans, open and decided brainstorms.
    - `docs/knowledge/known-issues.md` and `decisions.md`, and the `CLAUDE.md` project block.
    - `readme.txt`: features, recent changelog, and "Requires at least" / "Tested up to" / "WC tested up to". A newer WordPress or WooCommerce release than "tested up to" is a compat item.
    - `git log --since=90.days --oneline` and unmerged branches, for work already under way.
@@ -90,7 +90,7 @@ Commit: `docs(roadmap): add R-<n> <title>` / `move R-<n> to sprint <n>` / `drop 
    - Add the new sprint headings from `yayh roadmap sprints … --md`, each followed by its `Goal:` line. Never rewrite past sprints' headings.
    - Existing items: `yayh roadmap move R-<n> <sprint|later>`, and for each `links` drift, `yayh roadmap set R-<n> status <suggested>`.
    - New items: `yayh roadmap add "<title>" sprint=<n|later> size=… "why=…" ["editions=free, pro"] [from=…]`. It prints the id. Write `editions` with the config's edition names, comma and space separated.
-   - Backlog ideas that became items: `yayh fm set docs/backlog/<file> status promoted:R-<n>`.
+   - Backlog ideas that became items: `yayh fm set docs/backlog/<file> status promoted:R-<n>`. A deferred note that became an item: `yayh fm set <file> affects "[R-<n>]"`, so the item's plan picks it up (it stays `open` until a plan takes it).
    - `yayh roadmap check` must have no errors.
 7. **Commit and PR**: `docs(roadmap): plan to <horizon>`, as above.
 8. **Report** the sprint table with the new ids, what slipped and where it went, what was promoted, the PR link, and the next step: `/yay:brainstorm --from=R-<n>` for the first item of the current sprint.

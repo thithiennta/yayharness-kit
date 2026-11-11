@@ -14,6 +14,7 @@ YAY_LIB_DIR="$YAY_KIT_ROOT/lib"
 . "$YAY_LIB_DIR/harness.sh"
 . "$YAY_LIB_DIR/knowledge.sh"
 . "$YAY_LIB_DIR/artifact.sh"
+. "$YAY_LIB_DIR/backlog.sh"
 . "$YAY_LIB_DIR/release.sh"
 . "$YAY_LIB_DIR/bundle.sh"
 . "$YAY_LIB_DIR/roadmap.sh"
@@ -63,6 +64,7 @@ Harness
 
 Artifacts (brainstorms, plans, bugs, backlog)
   artifact new <brainstorm|plan|bug|backlog> "<title>" [from=X] [roadmap=R-n] [type=feat] [severity=high] [editions="free, pro"]
+                                   [kind=idea|decision|deferred affects="P-5, R-12" default="<choice for now>"]  (backlog)
                                    create from the template with the next id; prints the path
   artifact resolve <ID|path|slug>  path of one artifact
   artifact list [type] [--status=s] id, status, title, path (TSV)
@@ -72,6 +74,10 @@ Artifacts (brainstorms, plans, bugs, backlog)
   plan tick <plan> <T<n>> [--undo] tick a task's checkbox
   plan check <plan>                structure errors and warnings (exit 1 on errors)
   id conflicts [base]              ids this branch adds that the base branch already uses
+  backlog open [--for=<ID>] [--kind=decision|deferred]
+                                   open notes (all worktrees) that apply to ID: id, kind, from, affects, default, title, path
+  backlog settle <BL-n> decided "<answer>" | planned <P-n> | dropped "<why>"
+                                   close a decision or deferred note (this checkout)
 
 Roadmap (docs/roadmap.md)
   roadmap list [--status=s] [--sprint=n|later]
@@ -278,6 +284,13 @@ case "$cmd" in
       tick) [ $# -ge 2 ] || yay_die "usage: yayh plan tick <plan> <T<n>> [--undo]"; yay_plan_tick "$@" ;;
       check) [ $# -eq 1 ] || yay_die "usage: yayh plan check <plan>"; yay_plan_check "$1" ;;
       *) yay_die "usage: yayh plan tasks|tick|check" ;;
+    esac ;;
+  backlog)
+    sub="${1:-}"; shift || true
+    case "$sub" in
+      open) yay_backlog_open "$@" ;;
+      settle) [ $# -ge 2 ] || yay_die "usage: yayh backlog settle <BL-n> decided \"<answer>\" | planned <P-n> | dropped \"<why>\""; yay_backlog_settle "$@" ;;
+      *) yay_die "usage: yayh backlog open|settle" ;;
     esac ;;
   roadmap)
     sub="${1:-}"; shift || true

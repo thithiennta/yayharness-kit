@@ -78,7 +78,7 @@ Each step leaves a markdown artifact in `docs/`, so the next step (or the next p
 | `BS-<n>` | Brainstorm | `docs/brainstorms/` |
 | `P-<n>` | Plan | `docs/plans/` |
 | `B-<n>` | Bug report | `docs/bugs/` |
-| `BL-<n>` | Backlog idea | `docs/backlog/` |
+| `BL-<n>` | Backlog idea, pending decision or work left for later | `docs/backlog/` |
 
 Brainstorms, plans and bug reports start as untracked files in your checkout. `/yay:implement` and `/yay:fix` carry them into the work's branch, so they're committed with the code they describe.
 
@@ -124,6 +124,10 @@ Findings are fixed, or answered in the PR's "Reuse and comments review" section.
 ### Asking less, blocking less
 
 Skills ask at most **one round of 1–3 questions**, and only the hardest ones: decisions that are expensive to undo, or that only you can make. Claude decides the rest and lists it under **Decided** in the report or PR, so you can overrule anything afterwards. Skills never stop to confirm a default, a version, a draft or the next step. Finished work is pushed and its PR opened without asking (pass `--no-pr` to keep it local and get the commands instead). Deleting, overwriting and pushing tags are the only things that always wait for a yes. The rules are in [`plugins/yay/reference/asking.md`](plugins/yay/reference/asking.md).
+
+### Parked decisions and later work
+
+Planning and building never stop for a call nobody can make yet. Claude builds a sensible default and writes a **decision note**, `BL-<n>` in `docs/backlog/` with `kind: decision` and the `default:` it built. Work found along the way that the plan doesn't cover becomes a **deferred note** (`kind: deferred`). Before `/yay:plan`, `/yay:implement`, `/yay:fix` or `/yay:autopilot` works on a plan, it runs `yayh backlog open --for=<id>` and settles the notes it now can into the plan: a decided answer replaces the default, and deferred work that fits becomes tasks. The rest stays open for the next plan that touches the same work. To answer one yourself, run `yayh backlog settle BL-<n> decided "<answer>"`, and the next plan on that item builds your answer. The PR lists every note under "Open decisions and later work".
 
 ## 5. Git rules (hooks enforce these)
 

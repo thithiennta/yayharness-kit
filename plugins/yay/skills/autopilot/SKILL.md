@@ -39,12 +39,13 @@ With no scope at all, use `--sprint=current`.
    { "mode": "prepare", "kit": "<yayh root>", "repo": "<repo root>", "base": "<yayh git base>", "today": "YYYY-MM-DD",
      "parallel": 1, "items": [{ "id": "R-3", "stage": "decide", "artifact": "BS-1", "after": [], "waits": [], "title": "…" }] }
    ```
-   Map the TSV's `-` to `""` or `[]`, and split `after`/`waits` on commas. Pass `parallel` from `--parallel` (`yayh artifact new` locks ids, so parallel prepare is safe). Each agent brainstorms (when needed) and plans its item in the main checkout, marks the plan `ready` unless it hit a hard call, and returns at most 2 hard questions.
+   Map the TSV's `-` to `""` or `[]`, and split `after`/`waits` on commas. Pass `parallel` from `--parallel` (`yayh artifact new` locks ids, so parallel prepare is safe). Each agent brainstorms (when needed) and plans its item in the main checkout, settles the open backlog notes the evidence now answers (`yayh backlog open --for=<id>`), marks the plan `ready` unless it hit a hard call, and returns at most 2 hard questions. Calls it can't make and that aren't worth a question become decision notes with a default; they never keep an item from building.
 4. **The decision sheet: the one stop of the run** (`${CLAUDE_PLUGIN_ROOT}/reference/asking.md`).
-   - Collect every returned question. Rank them by cost of a wrong call (customer-visible, hard to undo, wide blast radius).
+   - Collect every returned question, plus every open decision note on the queue's items that no agent asked about (`yayh backlog open --kind=decision --for=<id>` per item). Rank them by cost of a wrong call (customer-visible, hard to undo, wide blast radius).
    - Ask the top ones in **one** AskUserQuestion (up to 4 questions; each names its item and puts the plan's current option first, marked "(Recommended)"). Every question that doesn't fit takes its recommendation; say so under **Decided** in the sheet.
    - With `--no-ask`, or with no questions at all, ask nothing.
-   - Write the sheet to `.yay/runs/<today>-autopilot.md` (gitignored): the queue, every item's plan and option, each question with its answer (or "recommended, not asked"), and every agent's **decided** list. Items prepare **blocked** are listed with their reason and are not built.
+   - Write the sheet to `.yay/runs/<today>-autopilot.md` (gitignored): the queue, every item's plan and option, each question with its answer (or "recommended, not asked"), every agent's **decided** list, and the decision notes still open with the default each build follows.
+   - An answered decision note goes into that item's `answers` entry as `BL-<n>: <answer>`, so the revise step settles it. A note that isn't asked stays open, and the build follows its default. Items prepare **blocked** are listed with their reason and are not built.
    - With `--plan-only`, report and stop. The plans are ready for `/yay:implement` or a later `/yay:autopilot --ready`.
 5. **Build.** Run the Workflow tool again with the same `scriptPath` and
    ```json
@@ -62,6 +63,7 @@ With no scope at all, use `--sprint=current`.
    A blocked item leaves its branch with whatever was committed, and the run goes on with everything that doesn't depend on it. Nothing in this step asks the user.
 6. **Report.** Append the results to the run sheet, then show:
    - one row per item: id, title, result (done / blocked / skipped), branch, base, commits, checks (pre-existing failures marked)
+   - every decision and deferred note the run wrote or left open (`BL-<n>`, item, default), so the next run, or the next plan on the same item, picks them up
    - every blocker, with what a human must do, and the command that resumes after it's fixed (`/yay:autopilot <ids>` again, or `/yay:implement P-<n> --continue`)
    - the review findings fixed and answered, and every **Decided** line, grouped per item
    - the manual checks left for a human
@@ -69,7 +71,7 @@ With no scope at all, use `--sprint=current`.
    - the run sheet's path
 
 ## Don'ts
-- Don't ask anything outside step 4. A question that turns up later is decided in the plan's spirit and listed under **Decided**; a real blocker blocks only its item.
+- Don't ask anything outside step 4. A question that turns up later is decided in the plan's spirit, written as a decision note with its default, and listed under **Decided**. A real blocker blocks only its item.
 - Don't build an item whose plan prepare blocked, whose dependency didn't finish, or that waits on work outside the run.
 - Don't push with `--no-pr`, and never push tags. Never force-push, never `--no-verify`, never commit on the base branch.
-- Don't plan past what the roadmap item and its evidence support. Scope growth goes into the report as a backlog idea, as in `/yay:implement`.
+- Don't plan past what the roadmap item and its evidence support. Scope growth becomes a deferred note, as in `/yay:implement`.

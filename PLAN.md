@@ -92,6 +92,13 @@ Goal: browser tests the flow uses in a targeted way. A plan names the 0–2 flow
 - [x] T8.6 `/yay:e2e-init` replaces `/yay:e2e-setup`: `yayh e2e surfaces`, `yay:e2e-scout` agents, a Flows table in `docs/knowledge/e2e.md`, baseline specs for critical browser-only flows (pass twice, fail when the precondition breaks; bugs become `B-<n>` with `test.fail`); plan, e2e and fix read the map ⟵ T8.5
 - Not yet run live: a worktree's own port (`WP_ENV_PORT`) side by side with the main site, adopting YayWholesale's existing setup, the CI workflow on GitHub.
 
+## P10 Parked decisions and later work ✅ ⟵ P9
+Goal: a decision that can't be made while planning or building, or work that should wait, is written down instead of stopping the run or getting lost. The next step that works on the same plan picks it up again and updates the plan.
+- [x] T10.1 Backlog `kind: idea|decision|deferred` with `from`, `affects`, `default`, `decision`, `settled`; `yayh backlog open [--for=<ID>] [--kind=]` (plan ↔ roadmap item ↔ source, every worktree) and `yayh backlog settle`; `yayh plan check` warns about open notes
+- [x] T10.2 Plan, implement, fix and autopilot (skill and workflow) write notes rather than stopping, and pick them up before working on a plan; roadmap reads deferred notes; workflow rule, asking rules, PR template, artifacts contract
+- [x] T10.3 Unit tests (`test_backlog.sh`)
+- Not yet run live: an autopilot run where a sheet answer settles a tracked note through a `Settles:` line.
+
 ## P9 Tests: unit, integration, JS, and a layer per task ✅ ⟵ P8
 - [x] T9.1 `lib/tests.sh` + `yayh test status|detect|scaffold|run|list`: PHPUnit + Brain Monkey unit, the WP/Woo test suite in wp-env's tests site (its own DB; the dev site's would be wiped), JS runner by package.json
 - [x] T9.2 `templates/tests/` (unit/integration configs, bootstraps, `TestCase`, smoke tests, Vitest config, CI) ⟵ T9.1
