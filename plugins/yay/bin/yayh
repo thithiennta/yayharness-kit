@@ -103,7 +103,7 @@ Artifacts (brainstorms, plans, bugs, backlog)
   design check <design>            structure errors and warnings for a UX-<n> (exit 1 on errors)
   backlog open [--for=<ID>] [--kind=decision|deferred]
                                    open notes (all worktrees) that apply to ID: id, kind, from, affects, default, title, path
-  backlog settle <BL-n> decided "<answer>" | planned <P-n> | dropped "<why>"
+  backlog settle <BL-n> decided "<answer>" | planned <P-n> | done "<commit or PR>" | dropped "<why>"
                                    close a decision or deferred note (this checkout)
 
 Roadmap (docs/roadmap.md)
@@ -325,7 +325,7 @@ case "$cmd" in
     sub="${1:-}"; shift || true
     case "$sub" in
       open) yay_backlog_open "$@" ;;
-      settle) [ $# -ge 2 ] || yay_die "usage: yayh backlog settle <BL-n> decided \"<answer>\" | planned <P-n> | dropped \"<why>\""; yay_backlog_settle "$@" ;;
+      settle) [ $# -ge 2 ] || yay_die "usage: yayh backlog settle <BL-n> decided \"<answer>\" | planned <P-n> | done \"<commit or PR>\" | dropped \"<why>\""; yay_backlog_settle "$@" ;;
       *) yay_die "usage: yayh backlog open|settle" ;;
     esac ;;
   design)

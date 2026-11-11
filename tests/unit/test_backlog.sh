@@ -50,11 +50,15 @@ test_settle_closes_notes() {
   "$YAYH" artifact new backlog "Refund email wording" kind=decision from=P-1 default="order copy" >/dev/null
   "$YAYH" artifact new backlog "Apple Pay button" kind=deferred from=P-1 >/dev/null
   "$YAYH" artifact new backlog "Gift wrap" kind=deferred from=P-1 >/dev/null
+  "$YAYH" artifact new backlog "Tests in worktrees" kind=deferred >/dev/null
   assert_fails "$YAYH" backlog settle BL-2 decided "x"
+  assert_fails "$YAYH" backlog settle BL-1 done "abc1234"
   assert_fails "$YAYH" backlog settle BL-2 planned R-3
   assert_ok "$YAYH" backlog settle BL-1 decided "custom refund copy"
   assert_ok "$YAYH" backlog settle BL-2 planned P-1
   assert_ok "$YAYH" backlog settle BL-3 dropped "not worth it"
+  assert_ok "$YAYH" backlog settle BL-4 done "fix(tests): run from a worktree (b7fc2df)"
+  assert_eq "done" "$("$YAYH" fm get "$YAY_REPO/docs/backlog/tests-in-worktrees.md" status)"
   local f="$YAY_REPO/docs/backlog/refund-email-wording.md"
   assert_eq "decided" "$("$YAYH" fm get "$f" status)"
   assert_eq "custom refund copy" "$("$YAYH" fm get "$f" decision)"

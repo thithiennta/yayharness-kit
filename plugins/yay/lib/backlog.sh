@@ -82,10 +82,10 @@ EOF
 # _bl_rel <abs file> -> path relative to its own checkout.
 _bl_rel() { printf '%s\n' "docs/backlog/${1##*/docs/backlog/}"; }
 
-# yay_backlog_settle <BL-n> decided "<answer>" | planned <P-n> | dropped "<why>"
+# yay_backlog_settle <BL-n> decided "<answer>" | planned <P-n> | done "<commit or PR>" | dropped "<why>"
 yay_backlog_settle() {
   local id="${1:-}" how="${2:-}" arg="${3:-}" root rel f k
-  printf '%s' "$id" | grep -Eq '^BL-[0-9]+$' || yay_die "usage: yayh backlog settle <BL-n> decided \"<answer>\" | planned <P-n> | dropped \"<why>\""
+  printf '%s' "$id" | grep -Eq '^BL-[0-9]+$' || yay_die "usage: yayh backlog settle <BL-n> decided \"<answer>\" | planned <P-n> | done \"<commit or PR>\" | dropped \"<why>\""
   root="$(yay_repo_root)"
   rel="$(yay_artifact_resolve "$id" 2>/dev/null)" || {
     f="$(_bl_files | while IFS= read -r x; do [ "$(yay_fm_get "$x" id)" = "$id" ] && { echo "$x"; break; }; done)"
@@ -98,13 +98,16 @@ yay_backlog_settle() {
   case "$arg" in *$'\n'*) yay_die "keep it to one line";; esac
   case "$how" in
     decided)
-      [ "$k" = decision ] || yay_die "$id is not a decision note (kind: $k); use planned or dropped"
+      [ "$k" = decision ] || yay_die "$id is not a decision note (kind: $k); use planned, done or dropped"
       yay_fm_set "$f" status decided; yay_fm_set "$f" decision "$arg" ;;
     planned)
       printf '%s' "$arg" | grep -Eq '^P-[0-9]+$' || yay_die "planned needs the plan id that takes it: planned P-6"
       yay_fm_set "$f" status "planned:$arg" ;;
+    done)       # the work landed without a plan (a /yay:fix, a tiny change): name the commit or PR
+      [ "$k" != decision ] || yay_die "$id is a decision note; use decided"
+      yay_fm_set "$f" status done; yay_fm_set "$f" decision "$arg" ;;
     dropped) yay_fm_set "$f" status dropped; yay_fm_set "$f" decision "$arg" ;;
-    *) yay_die "settle how: decided, planned or dropped" ;;
+    *) yay_die "settle how: decided, planned, done or dropped" ;;
   esac
   yay_fm_set "$f" settled "$(yay_today)"
   printf '%s\t%s\t%s\n' "$id" "$(yay_fm_get "$f" status)" "$rel"

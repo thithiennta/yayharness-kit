@@ -144,7 +144,7 @@ Three kinds share the folder and the `BL` ids:
 
 Body: the question and its options (decision), or what's left and where it would go (deferred), and why it waited.
 
-**Notes are picked up again.** Before working on a plan, `/yay:plan`, `/yay:implement`, `/yay:fix` and `/yay:autopilot` run `yayh backlog open --for=<id>`. It lists the open notes whose `from:` or `affects:` is that plan, its roadmap item or its source, from this checkout and every worktree. Each one is either settled into the plan (`yayh backlog settle BL-n decided "<answer>"`, or `planned P-n` when the plan takes the work as a task) or left open, on purpose, for later. `yayh plan check` warns about every open note that touches the plan. Settling a note edits its file, so it's committed on the branch that settles it, like any tracked artifact.
+**Notes are picked up again.** Before working on a plan, `/yay:plan`, `/yay:implement`, `/yay:fix` and `/yay:autopilot` run `yayh backlog open --for=<id>`. It lists the open notes whose `from:` or `affects:` is that plan, its roadmap item or its source, from this checkout and every worktree. Each one is either settled into the plan (`yayh backlog settle BL-n decided "<answer>"`, or `planned P-n` when the plan takes the work as a task) or left open, on purpose, for later. Deferred work that lands without a plan, through `/yay:fix` or a tiny change, is closed with `yayh backlog settle BL-n done "<commit or PR>"`. `yayh plan check` warns about every open note that touches the plan. Settling a note edits its file, so it's committed on the branch that settles it, like any tracked artifact.
 
 ### Release notes: `docs/releases/<version>.md`
 ```
