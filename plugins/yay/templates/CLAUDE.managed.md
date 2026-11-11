@@ -13,7 +13,8 @@ This repo uses the **yay** harness. Work through its skills so every developer a
 | Run a whole queue | `/yay:autopilot` | all of the above per item, one decision sheet, `.yay/runs/` |
 | Find a bug's cause | `/yay:debug` | `docs/bugs/` (`B-<n>`) |
 | Fix a bug | `/yay:fix` | worktree, branch, commits, PR |
-| Ship | `/yay:changelog` → `/yay:build` → `/yay:release` | readme.txt changelog, `docs/releases/`, zip, tag |
+| Test build for QA | `/yay:release --bundle` | `release/bundles/<slug>-<x.y.z>-rc.<n>/` |
+| Ship | `/yay:release` → merge → `/yay:release --tag-only` | readme.txt changelog, `docs/releases/`, checked bundle, tag |
 | Keep docs true | `/yay:knowledge-update` | this file's project block, `docs/knowledge/` |
 
 - Each skill checks for the previous step's output and says when it's missing. You can still run any skill on its own.

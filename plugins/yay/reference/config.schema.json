@@ -290,6 +290,40 @@
           "description": "Extra wp-env arguments for yayh e2e cli, e.g. --config=.wp-env.single.json"
         }
       }
+    },
+    "release": {
+      "type": "object",
+      "additionalProperties": false,
+      "description": "/yay:release: bundle folder, size thresholds, Stable tag policy, UI-check port",
+      "properties": {
+        "bundleDir": {
+          "type": "string",
+          "description": "where bundles go, default release/bundles"
+        },
+        "stableTag": {
+          "enum": [
+            "version",
+            "trunk"
+          ],
+          "description": "version (default): Stable tag must equal the release; trunk: Stable tag stays trunk"
+        },
+        "sizeChangePct": {
+          "type": "number",
+          "description": "UNUSUAL when the zip size or file count moves more than this percent, default 25"
+        },
+        "sizeChangeKb": {
+          "type": "number",
+          "description": "UNUSUAL when the zip size moves more than this many KB, default 1024"
+        },
+        "largeFileKb": {
+          "type": "number",
+          "description": "UNUSUAL for any single file over this many KB, default 2048"
+        },
+        "uiPort": {
+          "type": "integer",
+          "description": "port of the UI check's wp-env site, default e2e base port + 4"
+        }
+      }
     }
   }
 }

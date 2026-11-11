@@ -1,7 +1,7 @@
 ---
 name: release
-description: Release a Yay plugin version end to end. Use when the user says "release", "cut a release", "ship 1.4.0", "tag the release", "hotfix release". Picks the version, writes changelog and notes, bumps version files, marks fixed bugs and shipped roadmap items, builds and checks every zip, and opens the release PR. --tag-only tags it after merge; --hotfix releases a patch from a hotfix branch.
-argument-hint: "[major|minor|patch|x.y.z] [--edition=<name>|all] [--wp-tested=X.Y] [--wc-tested=X.Y] [--hotfix] [--tag-only] [--date=YYYY-MM-DD] [--dry-run] [--no-pr] [--push-tag] [--draft]"
+description: Build, check and release a Yay plugin, ending in a bundle to send. Use when the user says "release", "cut a release", "ship 1.4.0", "tag the release", "hotfix release", "build the zip", "package it", "make a build for QA", "send a test build", "check the zip". --bundle makes a test bundle (next version + rc) for QA without releasing. A release checks the Stable tag, versions and changelog, builds and checks every zip, compares the bundle size with the last release, runs the plugins page with the built zip, gets the developer's confirmation, and opens the release PR. --tag-only tags it after merge; --hotfix releases a patch.
+argument-hint: "[major|minor|patch|x.y.z] [--bundle] [--edition=<name>|all] [--wp-tested=X.Y] [--wc-tested=X.Y] [--hotfix] [--tag-only] [--date=YYYY-MM-DD] [--no-build] [--no-ui] [--keep-site] [--dry-run] [--no-pr] [--push-tag] [--draft]"
 allowed-tools: Bash, Read, Write, Edit, AskUserQuestion
 ---
 
@@ -9,26 +9,66 @@ allowed-tools: Bash, Read, Write, Edit, AskUserQuestion
 
 Arguments: `$ARGUMENTS`
 
-Three modes:
-- **Prepare** (the default): a release PR from the base branch.
-- **`--tag-only`**: tag it after that PR merges.
+Every mode ends in a **bundle**: one folder, `release/bundles/<slug>-<version>/` (`release.bundleDir`), that you can send to QA or use to publish.
+- the zip for each edition
+- `MANIFEST.txt`: the commit, plus each zip's size, file count and sha256
+- `README.md`: what changed, the check results, the size compared with the last release, the UI check, and the manual checks left
+- `ui/<edition>/`: plugins-page screenshots and logs
+
+Four modes:
+- **Prepare** (the default): release `x.y.z` through a release PR from the base branch.
+- **`--bundle`**: a test bundle for QA, `<next>-rc.<n>`, built from HEAD. Nothing is committed, tagged or pushed.
+- **`--tag-only`**: tag the release after its PR merges, and rebuild the final bundle from the tag.
 - **`--hotfix`**: release a patch from a `hotfix/*` branch.
 
-Git rules are in `${CLAUDE_PLUGIN_ROOT}/reference/git-conventions.md`. Only this skill creates tags, and every tag command must start with `YAY_RELEASE=1` (the hook blocks any other).
+Git rules are in `${CLAUDE_PLUGIN_ROOT}/reference/git-conventions.md`. Only this skill creates tags, and every tag command must start with `YAY_RELEASE=1` (the hook blocks any other). The commands come from `.yay/config.json` (`commands.build`, `commands.package`, `package.output`, `package.forbidden`, `checks`). Never improvise a different build.
 
 ## Options
 
 | Option | Effect |
 |---|---|
-| `major\|minor\|patch\|x.y.z` | The bump. Default: `yayh changelog suggest`, confirmed with the user. With `none`, there's nothing to release. |
-| `--edition=<e>\|all` | Editions to build (default `all`). |
+| `major\|minor\|patch\|x.y.z` | The bump. Default: `yayh changelog suggest`. With `none`, there's nothing to release. |
+| `--bundle` | Make a test bundle for QA instead of releasing. See **Test bundle**. |
+| `--edition=<e>\|all` | Editions to build (default `all`, from `yayh config get editions`). |
 | `--wp-tested=X.Y` / `--wc-tested=X.Y` | Update "Tested up to" and "WC tested up to" (`yayh version tested`). Without them, keep the current values, and mention them if they look stale. |
 | `--hotfix` | Release a patch from the current `hotfix/*` branch (made by `/yay:fix --hotfix`), tag it there, and open the merge-back PR. |
-| `--tag-only` | After the release PR has merged: tag the base branch's released commit and build the final zips from the tag. |
+| `--tag-only` | After the release PR has merged: tag the base branch's released commit and rebuild the final bundle from the tag. |
 | `--date=YYYY-MM-DD` | Changelog date (default today). |
-| `--dry-run` | Show the version, changelog, version-file changes and build plan, and change nothing. |
-| `--no-pr`, `--no-push`, `--draft` | As in `/yay:implement`: the release branch is pushed and its PR opened by default; `--no-pr` keeps it local and prints the commands. |
+| `--no-build` | Skip `commands.build` (the assets are already built): only package and check. |
+| `--no-ui` | Skip the automatic plugins-page check. A release then asks you to confirm that you checked it by hand. |
+| `--keep-site` | Leave the UI check's site running afterwards, to look around (`admin` / `password`). `yayh release ui-stop` stops it. |
+| `--dry-run` | Show the version, the changelog, the version-file changes, the release checks and the build plan. Change nothing. |
+| `--no-pr`, `--no-push`, `--draft` | As in `/yay:implement`: the release branch is pushed and its PR opened by default. `--no-pr` keeps it local and prints the commands. |
 | `--push-tag` | Also push the tag (`--tag-only`, `--hotfix`). Without it the tag stays local and the report prints `git push origin <tag>`. Local tags are made without asking. |
+
+## Build the bundle
+
+Every mode uses this. It needs a version `v` (the version the zips carry) and a baseline version `b` for the size comparison (`v` itself, or `x.y.z` for an rc).
+
+1. **Config.** `yayh config get commands.package` and `yayh config get package.output` must both be set. If one is missing, stop and say which key to add, with a suggestion based on `scripts/`, `bin/`, or the `package.json`/`composer.json` scripts. Note `git status --porcelain`, so you can tell afterwards what the build changed.
+2. **For each edition** `e`:
+   1. Unless `--no-build`, run `yayh run build edition=<e>`. If dependencies are missing, run `yayh run install` once.
+   2. `yayh run package version=<v> edition=<e>`.
+   3. `zip="$(yayh build zip edition=<e> version=<v>)"`. If it's empty, the package command didn't produce what `package.output` describes; report both.
+   4. `yayh build check "$zip" edition=<e> version=<v>`. This checks for one top folder, no dev files, no forbidden paths for the edition, the right version header and Stable tag, PHP that parses, and the repo's `checks`. Any FAIL means the build is **not shippable**: stop and say what to fix. A dev file means fixing the package script's excludes or `.distignore`. Forbidden paths mean fixing the edition strip step. A version mismatch means fixing `versionFiles`. Never fix a check by editing the zip. WARN lines are judgment calls; a legitimate one is silenced with `package.allow`.
+   5. `yayh release size "$zip" edition=<e> version=<b>`. Keep any `UNUSUAL` lines: a size or file count that moved more than 25% or 1 MB against the last release that recorded its size, or a single file over 2 MB (`release.sizeChangePct`, `release.sizeChangeKb`, `release.largeFileKb`). A `WARN baseline` line only means nothing was recorded yet.
+3. **Bundle.** `bundle="$(yayh release bundle <v> <e>=<zip>… [--replace])"`, run in the main checkout. Use `--replace` only when rebuilding the same version (`--tag-only`, or a release re-run).
+4. **UI check**, unless `--no-ui`. For each edition: `yayh release ui "$zip" out="$bundle/ui/<e>" edition=<e> [--keep]`. It installs **the built zip** (not the source) in its own throwaway wp-env site, then:
+   - logs in, checks that the plugin is listed, and activates it from its row (recording where activation lands)
+   - opens every row action link and meta link on the same site (Settings and so on), checking for a 4xx/5xx, a fatal error or a "not allowed" page
+   - deactivates it (noting a deactivation-feedback dialog)
+   - screenshots every step and scans `debug.log` for PHP errors from the plugin's folder
+
+   Exit 1 is a FAIL: stop, show the lines and the screenshot, and suggest `/yay:debug`. Exit 3 means it couldn't run (no e2e setup or no Docker): say why. The release then gets a manual check instead (Prepare step 9).
+5. **Bundle README.** Write `$bundle/README.md`:
+   - the plugin, the version and the commit
+   - what changed: the changelog entry, or for an rc, a short merchant-language list from `yayh changelog collect --since=<last tag>`
+   - the build-check results per edition
+   - the size against the baseline, with every UNUSUAL line and the largest files
+   - the UI-check lines, naming each step's screenshot
+   - the manual checks left: the `## Verify` items needing a browser or a human, from the plans shipped since the last tag (`Plan:` trailers)
+   - how to install it: upload the zip under Plugins → Add New → Upload, or `wp plugin install <zip> --force`
+6. **Tidy up.** Compare `git status` with step 1. If a package script rewrote tracked files that this mode doesn't commit, restore them (`git checkout -- <files>`) and say so.
 
 ## Prepare (default)
 
@@ -43,41 +83,60 @@ Git rules are in `${CLAUDE_PLUGIN_ROOT}/reference/git-conventions.md`. Only this
 2. **Version.**
    - Run `yayh changelog baseline`. It prints `<ref> <how>`, and the next step depends on `<how>`:
      - **`tag`:** normal. `last=<ref>`.
-     - **`release-commit`:** `<cur>` was released at that commit but never tagged. Offer to back-fill the tag: `YAY_RELEASE=1 git tag -a "$(yayh git tag-for "$cur")" -m "<name> $cur" <ref>`, then push it after asking. Either way, `last=<ref>`.
+     - **`release-commit`:** `<cur>` was released at that commit but never tagged. Back-fill the tag locally: `YAY_RELEASE=1 git tag -a "$(yayh git tag-for "$cur")" -m "<name> $cur" <ref>`, pushed only with `--push-tag`. Either way, `last=<ref>`.
      - **`first-appearance`:** ambiguous, so **ask** (AskUserQuestion). Has `<cur>` shipped already?
        - **Not yet:** this is the first release. Release `<cur>` itself (no bump), with a changelog of "Initial release." plus the headline features.
        - **Yes, at commit…:** back-fill the tag there, as above.
        - **Yes, but I don't know where:** use `--since` to give a date or ref.
 
-       In a non-interactive run, stop here with this question. Don't guess. This question replaces the version confirmation below.
-   - `cur="$(yayh version current)"`
-   - `bump` comes from the argument, or from `yayh changelog suggest`.
-   - `new="$(yayh git bump "$cur" "$bump")"`
+       In a non-interactive run, stop here with this question. Don't guess.
+   - `cur="$(yayh version current)"`. `bump` comes from the argument, or from `yayh changelog suggest`. `new="$(yayh git bump "$cur" "$bump")"`.
    - Show the commit summary: `yayh changelog collect`, counted by type, with breaking changes listed.
-   - **Hard questions only** (`${CLAUDE_PLUGIN_ROOT}/reference/asking.md`). Use the suggested version without asking. Ask, in one AskUserQuestion with at most 3 questions, only when there's a hard question: a **major** bump (breaking changes reach customers), a bump argument that disagrees with the commits, or the version-file or baseline doubt from preflight. No hard question means no question.
-3. **Branch.**
-   - `branch="$(yayh git branch-name chore "release $new")"`
-   - `wt="$(yayh git worktree "$branch")"`, then `cd "$wt"`
+   - **Hard questions only** (`${CLAUDE_PLUGIN_ROOT}/reference/asking.md`). Use the suggested version without asking. Ask only for a **major** bump (breaking changes reach customers), a bump argument that disagrees with the commits, or a version-file or baseline doubt from preflight. Hold these for step 9's round when they can wait that long; they rarely can't.
+3. **Branch.** `branch="$(yayh git branch-name chore "release $new")"`, `wt="$(yayh git worktree "$branch")"`, then `cd "$wt"`.
 4. **Changelog.** Follow `/yay:changelog` steps 1–6 with `--version=$new --since=$last`: the readme entry plus `docs/releases/$new.md`.
-5. **Versions.**
-   - `yayh version set "$new"`
-   - `yayh version check` must print `$new`
-   - with `--wp-tested`/`--wc-tested`: `yayh version tested wp=… wc=…`
+5. **Versions.** `yayh version set "$new"`, then `yayh version check` must print `$new`. With `--wp-tested`/`--wc-tested`: `yayh version tested wp=… wc=…`.
 6. **Close the loop on artifacts.** These are the commits since `$last` (from the collect output):
    - **`Fixes: B-<n>`:** `yayh fm set <bug> fixed_in "$new"`, and `status fixed` if not already.
    - **`Roadmap: R-<n>`:** `yayh roadmap set R-<n> status "shipped:$new"`. Also do this for the `roadmap:` item of every plan shipped in this release.
    - **Plans whose commits are all in:** make sure their `status` is `done`.
-7. **Build.** Follow `/yay:build` for every edition with `--version=$new`. Any FAIL stops the release: report it and leave the branch for the fix.
-8. **Commit.**
-   ```
-   git add -- <version files> <readme> docs/releases/$new.md <changed artifacts> [.yay/config.json if tested changed]
-   git commit -m "chore(release): $new" -m "<headline from the release notes>"
-   ```
-   Stage by path. The zips stay untracked (`release/` is a generated path).
-9. **Push and PR.** By default, without asking. With `--no-pr`, or with no `origin` remote or no logged-in `gh`, end the report with the exact commands instead (`git push -u origin <branch>` and the `gh pr create …` line).
-   - `git push -u origin "$branch"`
-   - `gh pr create --base <base> --assignee @me --title "chore(release): $new" --body-file <release notes + build table>`
-10. **Report.** Give the version, the changelog entry, the zips with their check results, and the PR URL. The next step is to merge, then run `/yay:release --tag-only`.
+7. **Release gate.** `yayh release check "$new"` must have no FAIL. It checks:
+   - every version file says `$new`, and `$new` is newer than the last release tag
+   - the readme's **Stable tag** is `$new` (`trunk` only when `release.stableTag` is `trunk`)
+   - the readme **changelog** has a `$new` entry without placeholder text
+   - `docs/releases/$new.md` exists
+
+   A FAIL from steps 4–5 (a missing entry, a version file that `versionFiles` doesn't cover) gets fixed here, then the gate runs again. Anything else stops the release, with the line.
+8. **Build the bundle** (above) with `v=$new`, `b=$new`.
+9. **Confirm: the developer always signs off on a release.** One AskUserQuestion, asked even when nothing else is open:
+   - **The plugins page** (always first). If the UI check ran, summarize its lines (activation and where it landed, each link with its HTTP status, deactivation, PHP log) and give the screenshot folder. Ask: "Is the plugins page for `<plugin> $new` correct?" Options: "Correct, release it" / "Something's wrong, stop". If it didn't run, give the steps instead: install the zip on a test site, activate it, open each link in its row, deactivate it. Ask "Did all of that work?" with the same options.
+   - **Size**, only when step 8 had UNUSUAL lines. Show them, with the largest new files. Ask: "Is this size change expected?" Options: "Expected" / "Not expected, stop".
+   - **Any hard question held from step 2.**
+
+   Any "stop" answer leaves the branch as it is and reports what to look at. In a non-interactive run, or when the user said "don't ask", stop here too: a release needs a person's yes. Report the bundle and the pending confirmations.
+10. **Record the size** as the next release's baseline: for each edition, `yayh release size "$zip" edition=<e> version=$new --record=docs/releases/$new.md`.
+11. **Commit.**
+    ```
+    git add -- <version files> <readme> docs/releases/$new.md <changed artifacts> [.yay/config.json if tested changed]
+    git commit -m "chore(release): $new" -m "<headline from the release notes>"
+    ```
+    Stage by path. The bundle stays untracked (`release/` is a generated path).
+12. **Push and PR.** By default, without asking. With `--no-pr`, or with no `origin` remote or no logged-in `gh`, end the report with the exact commands instead.
+    - `git push -u origin "$branch"`
+    - `gh pr create --base <base> --assignee @me --title "chore(release): $new" --body-file <release notes, the bundle README's check, size and UI sections, and "Confirmed by the developer: plugins page, size">`
+13. **Report.** Give the version, the changelog entry, the check results, the size against the baseline, the UI check, the PR URL, and **the bundle path to send**. The next step is to merge, then `/yay:release --tag-only`.
+
+## Test bundle (`--bundle`)
+
+A build for QA or a client to test before the release. It's built from HEAD of the current branch, any branch, and **nothing is committed, tagged or pushed**.
+
+1. **Preflight.** `git status --porcelain`: uncommitted changes aren't in the bundle, so say so. Run `yayh run test` (and lint, reported only). A failing test stops it: don't send a broken build.
+2. **Version.** `next="$(yayh git bump "$(yayh version current)" "<bump arg or $(yayh changelog suggest)>")"`, then `rc="$(yayh release next-rc "$next")"`, e.g. `1.5.0-rc.1`. WordPress sorts it before `1.5.0`, so the real release upgrades over it. Don't ask.
+3. **A throwaway checkout of HEAD:** `tmp="$(mktemp -d)/build"`, `git worktree add --detach "$tmp" HEAD`, then `cd "$tmp"`. There, `yayh version set "$rc"` (never committed), and `yayh release check "$rc" --rc`: only a `version` FAIL matters here.
+4. **Build the bundle** (above) with `v=$rc` and `b=$next`, building in `$tmp`. Run `yayh release bundle` and `yayh release ui` from the **main checkout** (`YAY_REPO=<main checkout>`), with the zip paths from `$tmp`, so the bundle lands in the main checkout's `release/bundles/` and the UI site's settings come from it.
+5. **No confirmation:** QA does that. UNUSUAL size lines and any UI FAIL go at the top of the bundle README and of the report.
+6. Remove the throwaway checkout: `git worktree remove --force "$tmp"`.
+7. **Report** the bundle path (`release/bundles/<slug>-<rc>/`), its zips with their sha256, the UI and size results, and the manual checks for the tester. To send it as one file: `(cd release/bundles && zip -qr <slug>-<rc>.zip <slug>-<rc>)`.
 
 ## `--tag-only`
 
@@ -85,18 +144,21 @@ Git rules are in `${CLAUDE_PLUGIN_ROOT}/reference/git-conventions.md`. Only this
 2. `tag="$(yayh git tag-for <v>)"`. It must not exist yet (`git rev-parse -q --verify "refs/tags/$tag"`).
 3. Find the release commit: `git log --format=%H --grep="^chore(release): <v>$" -1`. Then `YAY_RELEASE=1 git tag -a "$tag" -m "<plugin name> <v>" <commit>`.
 4. Push the tag only with `--push-tag`. Otherwise print `git push origin "$tag"` in the report.
-5. Build the final zips **from the tag**: `/yay:build --version=<v>` in a detached worktree of the tag (`git worktree add --detach <tmp> "$tag"`). Report the paths. Remove the temporary worktree when you're done.
+5. **The final bundle, from the tag:** in a detached worktree of the tag (`git worktree add --detach <tmp> "$tag"`), **Build the bundle** with `v=<v>`, `b=<v>`, and `--replace`, but no UI check and no confirmation, since that build was confirmed in the release PR. If a zip's sha256 differs from the release PR's `MANIFEST.txt`, say so: the build isn't reproducible. Remove the temporary worktree when you're done.
 6. Tidy up: `yayh git merged-worktrees` lists the worktrees whose branches are now merged (the release branch, and the features and fixes it shipped). Offer to remove them with `git worktree remove <path>`. Keep the branches, which the remote may still need.
+7. **Report** the tag and the bundle path: this is what gets published.
 
 ## `--hotfix`
 
 1. Be on a `hotfix/*` branch with a clean tree, branched from a release tag (`git describe --tags --abbrev=0` equals `yayh git last-tag`, or the tag given to `/yay:fix`). The bump is always `patch`.
-2. Run the tests (Prepare step 1), then the Prepare steps 2, 4–7 on **this** branch (no new branch): changelog since that tag, version, artifacts and build.
+2. Run the tests (Prepare step 1), then Prepare steps 2 and 4–10 on **this** branch (no new branch): the changelog since that tag, the versions, the artifacts, the release gate, the bundle and the developer's confirmation.
 3. Commit `chore(release): <v>` and tag that commit right away (`YAY_RELEASE=1 git tag -a …`), since it's exactly what ships. A local tag is safe, so don't ask first. Push the branch by default (not with `--no-pr`); push the tag only with `--push-tag`. Print whatever wasn't pushed as commands.
 4. Open the merge-back PR into the base branch (by default; with `--no-pr`, print the command): `gh pr create --base <base> --assignee @me --title "chore(release): <v> (hotfix)"`. In its body, warn that `readme.txt` and the version files will conflict if the base has moved on. Resolve them by keeping the base's newer entries plus this hotfix's entry.
-5. Report the tag, the zips and the merge-back PR.
+5. Report the tag, the bundle path and the merge-back PR.
 
 ## Don'ts
 - Never tag without `YAY_RELEASE=1`, never tag an unmerged release branch (hotfixes excepted), and never move or delete a pushed tag.
-- Never release with failing zip checks or disagreeing version files.
-- Never publish to WordPress.org SVN or upload anywhere. That's out of scope; report where the zips are.
+- Never release with a FAIL from `yayh release check`, `yayh build check` or the UI check, or without the developer's yes in Prepare step 9.
+- Never hand-edit a zip, or delete files from it to pass a check. Fix the build.
+- Never commit a test bundle's rc version, and never send a bundle built with `--no-build` unless you know the assets are current.
+- Never publish to WordPress.org SVN or upload anywhere. That's out of scope; report where the bundle is.

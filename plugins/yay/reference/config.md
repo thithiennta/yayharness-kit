@@ -24,13 +24,17 @@ JSON, not YAML, so hooks can read it with `jq`, `node` or `php` and nothing to i
 | `git.scopes` | string[] | Optional allowed commit scopes. Empty means any scope is allowed. |
 | `commands.<name>` | string | Shell commands run from the repo root. Known names: `install`, `dev`, `build`, `lint`, `typecheck`, `test`, `package`, and the e2e set `e2e` (runs Playwright; `yayh e2e run` appends its arguments), `e2e-install`, `e2e-start`, `e2e-stop`, `e2e-reset`. Placeholders: `{version}`, `{edition}`. A missing command means the step does not apply. |
 | `package.output` | string \| object | Glob for the built zip, e.g. `release/{slug}-{edition}-{version}.zip`. When editions name their zips differently, use a map: `{"pro": "release/{slug}-{version}.zip", "lite": "release/{slug}-lite-{version}.zip"}`. |
-| `package.forbidden` | object | Map from edition to paths that must not appear in that edition's zip, e.g. `{"free": ["includes/Pro/"]}`. `/yay:build` fails the zip when they do. |
+| `package.forbidden` | object | Map from edition to paths that must not appear in that edition's zip, e.g. `{"free": ["includes/Pro/"]}`. `yayh build check` (run by `/yay:release`) fails the zip when they do. |
 | `package.allow` | string[] | Globs, relative to the zip's top folder, that are exempt from the "usually not shipped" warnings (e.g. `composer.json` when it's needed at runtime). |
 | `versionFiles[]` | object[] | `{ "file", "pattern" }`, where `pattern` is an extended regex whose first group is the version. Every match is bumped together. |
 | `generatedPaths` | string[] | Paths never hand-edited (prefix match, trailing `/` for folders). The guard hook blocks edits to them. |
 | `changelog.readme` | string | File holding `== Changelog ==`, usually `readme.txt`. |
 | `changelog.notesDir` | string | Where customer-facing release notes go. Default `docs/releases`. |
-| `checks[]` | string[] | Extra commands `/yay:build` runs on the packaged zip, with `{zip}` available. |
+| `checks[]` | string[] | Extra commands `yayh build check` runs on the packaged zip, with `{zip}` available. |
+| `release.bundleDir` | string | Where `/yay:release` puts bundles. Default `release/bundles` (keep it gitignored). |
+| `release.stableTag` | `version` \| `trunk` | `version` (default): the readme's Stable tag must equal the release. `trunk`: it stays `trunk`. |
+| `release.sizeChangePct` / `release.sizeChangeKb` / `release.largeFileKb` | number | When `yayh release size` calls a zip UNUSUAL, so a release asks: the size or file count moved more than 25% or 1024 KB against the last release, or a file is over 2048 KB. |
+| `release.uiPort` | int | Port of the UI check's own wp-env site. Default: the e2e base port + 4. |
 | `site.wpPath` | string | Per developer, so put it in `.yay/local.json`, never in the shared config. It's the WordPress root of the local site; `/yay:debug` uses it for WP-CLI and logs. When the repo sits in `<wp>/wp-content/plugins/` it's derived automatically, and worktrees work too. |
 | `site.url` | string | Per developer. The local site's URL, for repro steps. |
 | `site.debugLog` | string | Per developer. Defaults to `<wpPath>/wp-content/debug.log`. |

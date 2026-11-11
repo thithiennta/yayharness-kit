@@ -1,5 +1,5 @@
 # shellcheck shell=bash
-# Changelog, versions, and zip checks for /yay:changelog, /yay:build, /yay:release.
+# Changelog, versions, and zip checks for /yay:changelog and /yay:release.
 
 command -v perl >/dev/null 2>&1 || true   # perl does the regex rewrites (macOS and Linux ship it)
 

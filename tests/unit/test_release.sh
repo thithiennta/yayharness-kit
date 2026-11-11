@@ -223,3 +223,68 @@ test_merged_worktrees() {
   git -C "$YAY_REPO" merge -q --no-ff feat/merged-one -m "merge"
   assert_eq "$a	feat/merged-one" "$("$YAYH" git merged-worktrees)"
 }
+
+test_release_check_gates_version_stable_tag_changelog_notes() {
+  export YAY_REPO; YAY_REPO="$(_rrepo)"
+  local out
+  out="$("$YAYH" release check 1.2.3)"; assert_exit 1 "$YAYH" release check 1.2.3
+  assert_contains "$out" "FAIL	newer	1.2.3 is not newer than the last release 1.2.3"
+  "$YAYH" version set 1.3.0 >/dev/null
+  out="$("$YAYH" release check 1.3.0 || true)"
+  assert_contains "$out" "PASS	version	every version file says 1.3.0"
+  assert_contains "$out" "PASS	stable-tag	Stable tag: 1.3.0"
+  assert_contains "$out" "FAIL	changelog	no changelog entry for 1.3.0"
+  assert_contains "$out" "FAIL	notes	no docs/releases/1.3.0.md"
+  printf '* Fix: TODO write this.\n' > "$T_TMP/b.txt"; "$YAYH" changelog write 1.3.0 "$T_TMP/b.txt" >/dev/null
+  assert_contains "$("$YAYH" release check 1.3.0 || true)" "FAIL	changelog	the 1.3.0 entry has placeholder text"
+  printf '* Fix: the coupon field stays after a shipping change.\n' > "$T_TMP/b.txt"; "$YAYH" changelog write 1.3.0 "$T_TMP/b.txt" --replace >/dev/null
+  mkdir -p "$YAY_REPO/docs/releases"; printf -- '---\nversion: 1.3.0\n---\n' > "$YAY_REPO/docs/releases/1.3.0.md"
+  assert_ok "$YAYH" release check 1.3.0
+  sed -i.bak 's/^Stable tag: .*/Stable tag: trunk/' "$YAY_REPO/readme.txt"
+  assert_contains "$("$YAYH" release check 1.3.0 || true)" "FAIL	stable-tag	Stable tag is trunk, expected 1.3.0"
+  sed -i.bak 's/^Stable tag: .*/Stable tag: 1.3.0/' "$YAY_REPO/readme.txt"
+  "$YAYH" version set 1.3.0-rc.1 >/dev/null
+  out="$("$YAYH" release check 1.3.0-rc.1 --rc || true)"
+  assert_contains "$out" "PASS	version	every version file says 1.3.0-rc.1"
+  assert_contains "$out" "PASS	newer	1.3.0-rc.1 is newer than the last release 1.2.3"
+  assert_contains "$out" "(not checked for a test bundle)"
+}
+
+test_release_size_compares_with_recorded_baseline_and_records() {
+  export YAY_REPO; YAY_REPO="$(_rrepo)"
+  local z out
+  z="$(_zip "$YAY_REPO" fixture-plugin)"
+  mkdir -p "$YAY_REPO/docs/releases"
+  printf -- '---\nversion: 1.2.0\n---\n' > "$YAY_REPO/docs/releases/1.2.0.md"
+  printf -- '---\nversion: 1.4.0\n---\n' > "$YAY_REPO/docs/releases/1.4.0.md"
+  out="$("$YAYH" release size "$z" edition=free version=1.3.0)"
+  assert_contains "$out" "WARN	baseline	no earlier release recorded its free zip size"
+  "$YAYH" release size "$z" edition=free version=1.2.0 --record=docs/releases/1.2.0.md >/dev/null
+  "$YAYH" fm set "$YAY_REPO/docs/releases/1.4.0.md" zip_bytes_free 1 >/dev/null   # newer than 1.3.0: never the baseline
+  out="$("$YAYH" release size "$z" edition=free version=1.3.0)"
+  assert_contains "$out" "OK	size-change	+0% (0 B) vs 1.2.0"
+  assert_contains "$out" "OK	file-count	+0 files vs 1.2.0"
+  local st="$T_TMP/big.$RANDOM"; mkdir -p "$st/fixture-plugin"
+  (cd "$YAY_REPO" && cp -R fixture-plugin.php readme.txt includes "$st/fixture-plugin/")
+  head -c 3000000 /dev/urandom > "$st/fixture-plugin/big.bin"
+  z="$YAY_REPO/release/big-$RANDOM.zip"; (cd "$st" && zip -qr "$z" fixture-plugin)
+  out="$("$YAYH" release size "$z" edition=free version=1.3.0)"
+  assert_contains "$out" "UNUSUAL	size-change"
+  assert_contains "$out" "UNUSUAL	large-file	fixture-plugin/big.bin (2.9 MB)"
+}
+
+test_release_next_rc_and_bundle_manifest() {
+  export YAY_REPO; YAY_REPO="$(_rrepo)"
+  local z d
+  z="$(_zip "$YAY_REPO" fixture-plugin)"
+  assert_eq "1.3.0-rc.1" "$("$YAYH" release next-rc 1.3.0)"
+  d="$("$YAYH" release bundle 1.3.0-rc.1 free="$z" 2>/dev/null)"
+  assert_eq "$YAY_REPO/release/bundles/fixture-plugin-1.3.0-rc.1" "$d"
+  assert_file "$d/$(basename "$z")"
+  assert_contains "$(cat "$d/MANIFEST.txt")" "free	$(basename "$z")	$(wc -c < "$z" | tr -d ' ')"
+  assert_contains "$(cat "$d/files-free.txt")" "fixture-plugin/fixture-plugin.php"
+  assert_eq "1.3.0-rc.2" "$("$YAYH" release next-rc 1.3.0)"
+  assert_exit 1 "$YAYH" release bundle 1.3.0-rc.1 free="$z"
+  assert_ok "$YAYH" release bundle 1.3.0-rc.1 free="$z" --replace
+  assert_fails "$YAYH" release next-rc 1.3
+}

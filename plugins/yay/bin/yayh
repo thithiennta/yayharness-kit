@@ -15,6 +15,7 @@ YAY_LIB_DIR="$YAY_KIT_ROOT/lib"
 . "$YAY_LIB_DIR/knowledge.sh"
 . "$YAY_LIB_DIR/artifact.sh"
 . "$YAY_LIB_DIR/release.sh"
+. "$YAY_LIB_DIR/bundle.sh"
 . "$YAY_LIB_DIR/roadmap.sh"
 . "$YAY_LIB_DIR/code.sh"
 . "$YAY_LIB_DIR/review.sh"
@@ -130,6 +131,17 @@ Versions, changelog, build
   changelog write <version> <bullets-file> [--date=YYYY-MM-DD] [--replace]
                                    insert the entry under == Changelog ==
   changelog entry <version>        print that version's bullets
+  release check <version> [--rc]   version files, newer than the last tag, Stable tag, changelog entry, notes
+                                   (PASS/WARN/FAIL lines; exit 1 on any FAIL)
+  release size <zip> [edition=e] [version=v] [--record=<notes>]
+                                   size and file count vs the last release that recorded one; UNUSUAL lines
+  release next-rc <x.y.z>          next test-bundle version, e.g. 1.5.0-rc.2
+  release bundle <version> <edition>=<zip>... [--replace]
+                                   collect zips into the bundle folder with MANIFEST.txt; prints the folder
+  release ui <zip> out=<dir> [edition=e] [--keep]
+                                   plugins-page check of the built zip in its own wp-env site, with screenshots
+                                   (exit 1 on a FAIL, 3 when it can't run)
+  release ui-stop                  stop that site
   build zip [edition=e] [version=v] newest zip matching package.output
   build check <zip> [edition=e] [version=v]
                                    PASS/WARN/FAIL per check; exit 1 on any FAIL
@@ -313,6 +325,17 @@ case "$cmd" in
       write) [ $# -ge 2 ] || yay_die "usage: yayh changelog write <version> <bullets-file> [--date=] [--replace]"; yay_changelog_write "$@" ;;
       entry) [ $# -eq 1 ] || yay_die "usage: yayh changelog entry <version>"; yay_changelog_entry "$1" ;;
       *) yay_die "usage: yayh changelog collect|suggest|baseline|style|write|entry" ;;
+    esac ;;
+  release)
+    sub="${1:-}"; shift || true
+    case "$sub" in
+      check) yay_release_check "$@" ;;
+      size) yay_release_size "$@" ;;
+      next-rc) [ $# -eq 1 ] || yay_die "usage: yayh release next-rc <x.y.z>"; yay_release_next_rc "$1" ;;
+      bundle) yay_release_bundle "$@" ;;
+      ui) yay_release_ui "$@" ;;
+      ui-stop) yay_release_ui_stop ;;
+      *) yay_die "usage: yayh release check|size|next-rc|bundle|ui|ui-stop" ;;
     esac ;;
   build)
     sub="${1:-}"; shift || true

@@ -5,7 +5,7 @@ A Claude Code plugin that gives every Yay WordPress plugin the same harness and 
 ```
 /yay:roadmap ─► /yay:brainstorm ─► /yay:plan ─► /yay:implement ─┐
                └──────── /yay:autopilot (all three, for a whole queue) ┤
-/yay:debug ─► /yay:fix ──────────────────────────────────────────┼─► /yay:changelog ─► /yay:build ─► /yay:release
+/yay:debug ─► /yay:fix ──────────────────────────────────────────┼─► /yay:release --bundle (QA) ─► /yay:release
 /yay:harness-init · /yay:harness-update · /yay:knowledge-init · /yay:knowledge-update
 ```
 

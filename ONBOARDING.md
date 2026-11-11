@@ -1,6 +1,6 @@
 # Working on a Yay plugin with Claude: onboarding
 
-Every Yay plugin repo runs the same Claude Code harness, the **`yay`** plugin. It gives each repo the same rules, hooks and settings, project knowledge written from that repo's own code, and 16 `/yay:*` skills that take work from idea to tagged release in the same way for everyone.
+Every Yay plugin repo runs the same Claude Code harness, the **`yay`** plugin. It gives each repo the same rules, hooks and settings, project knowledge written from that repo's own code, and 15 `/yay:*` skills that take work from idea to tagged release in the same way for everyone.
 
 This page is what a new developer needs. The kit internals are in [`plugins/yay/README.md`](plugins/yay/README.md).
 
@@ -63,10 +63,12 @@ Re-running the same command resumes: each item's stage comes from its brainstorm
 
 **A release**
 ```text
-/yay:release --dry-run          # preview the version, changelog and build plan
-/yay:release                    # changelog, version bump, zips checked, release PR
-/yay:release --tag-only         # after the PR merges: tag it and build the final zips from the tag
+/yay:release --bundle           # a test bundle for QA (1.5.0-rc.1): zips, checks, plugins-page screenshots
+/yay:release --dry-run          # preview the version, changelog, release checks and build plan
+/yay:release                    # Stable tag, versions, changelog, zips, size vs last release, plugins page → your yes → release PR
+/yay:release --tag-only         # after the PR merges: tag it and rebuild the final bundle from the tag
 ```
+Every mode ends in `release/bundles/<slug>-<version>/`: the zips, `MANIFEST.txt` (sha256), a `README.md` for the tester, and `ui/` screenshots. Send that folder.
 
 Each step leaves a markdown artifact in `docs/`, so the next step (or the next person) picks up where it stopped:
 
@@ -143,8 +145,7 @@ When a hook blocks something, its message says why and what to do instead. Claud
 | `/yay:debug` | `--area=<path>`, `--bisect=<good-ref>`, `--repro`, `--report-only` |
 | `/yay:fix` | `B-<n>`, `--hotfix`, `--test`, `--no-pr` |
 | `/yay:changelog` | `--dry-run`, `--since=<tag>` |
-| `/yay:build` | `--edition=pro`, `--zip=<path>` |
-| `/yay:release` | `minor`, `--dry-run`, `--wc-tested=X.Y`, `--tag-only`, `--hotfix` |
+| `/yay:release` | `--bundle`, `minor`, `--dry-run`, `--wc-tested=X.Y`, `--no-ui`, `--keep-site`, `--tag-only`, `--hotfix`, `--push-tag` |
 | `/yay:e2e-init` | `--adopt`, `--depth=quick`, `--max-specs=6`, `--smoke-only`, `--no-ci`, `--no-run`, `--no-pr` |
 | `/yay:e2e` | `P-<n>`, `B-<n>`, `"<flow>"`, `--run=@P-4`, `--all`, `--triage` |
 
@@ -159,7 +160,9 @@ Every skill shows its full option list as you type it, and explains each option 
 | A commit is rejected | Read the hook's message. Usually the header is too long, the scope isn't in `git.scopes`, you're on the base branch, or a `yay:debug` marker is left in the code. |
 | Two branches created the same ID | `/yay:implement` and `/yay:fix` check this before the PR (`yayh id conflicts`), and the later branch renumbers. |
 | "version files disagree" | Run `yayh version list`, then fix them through `/yay:release`, or correct `versionFiles` in `.yay/config.json`. |
-| The build fails a check | `/yay:build` says which file and why. Fix the package script or `package.forbidden`, never the zip. |
+| The build fails a check | `/yay:release` says which file and why. Fix the package script or `package.forbidden`, never the zip. |
+| The release asks about the size | The zip moved more than 25% or 1 MB against the last release, or has a file over 2 MB. The report lists the largest files. Tune it with `release.sizeChangePct` / `sizeChangeKb` / `largeFileKb`. |
+| The UI check is skipped | It needs `/yay:e2e-init` (wp-env and Playwright installed) and Docker running. Without them, the release asks you to check the plugins page by hand. |
 | Wrong Node version for builds | Add `.nvmrc`. `yayh run` uses it through nvm. |
 | JSON errors from `yayh` | Install `jq`, or force an engine with `YAY_JSON_ENGINE=php`. |
 
