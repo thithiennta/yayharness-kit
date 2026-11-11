@@ -3,6 +3,18 @@
 `/yay:harness-update` reads this file to tell a repo what changed between its recorded kit version and the installed one. Each entry lists new skills, config keys, template changes and behavior changes.
 
 ## 0.2.0
+- **Unit, integration and JS tests: `/yay:test-init` and `/yay:test`.** Three layers:
+  - **Unit:** PHPUnit 9.6 + Brain Monkey, with no WordPress (`tests/php/unit`).
+  - **Integration:** the WordPress (and WooCommerce) test suite in wp-env's **tests** site, which has its own database on port+1. That way the e2e site's data is never wiped (`tests/php/integration`, `wp-env run tests-cli`).
+  - **JS:** Vitest, Jest or wp-scripts (`tests/js`).
+
+  `/yay:test-init` scouts the code with `yay:test-scout` agents, scaffolds or adopts, installs the dev packages, and writes baseline tests for the riskiest units. Each baseline test must pass twice and fail when the code is broken. It also writes a **Coverage** table in `docs/knowledge/testing.md`. New commands: `yayh test status|detect|scaffold|run|list`; `run all --id=P-4` runs every configured layer and skips integration when its site is down. New config keys: `commands.test-unit`, `test-integration`, `test-js` and `tests.php|js|jsRunner`. `yayh test scaffold` turns on `testsEnvironment` in the e2e package's `.wp-env.json`. Contract: `reference/testing.md`.
+- **The agent picks the test layer for each task.** It follows a ladder in `reference/testing.md`: unit → integration → js → e2e → manual, stopping at the cheapest layer that proves the risk, with two layers only for two named risks.
+  - `/yay:plan` writes `**Tests:**` items as `[unit] name (file) — risk`. `yayh plan check` warns about an item with no layer, and `--tests=ask` becomes `--tests=auto` (no approval round unless the repo's rules require one).
+  - `/yay:implement` writes each task's tests in that task, and runs `yayh test run all` at the end.
+  - `/yay:fix` and `/yay:debug` put the regression test at the layer of the root cause.
+  - `/yay:release` runs `yayh test run all`.
+  - The workflow rule "Tests only when they earn their keep" is now "Test each risk at the cheapest layer that proves it".
 - **`/yay:build` is gone; `/yay:release` builds and ends in a bundle.** Every mode leaves `release/bundles/<slug>-<version>/` (`release.bundleDir`): the zips, `MANIFEST.txt` (commit, size, file count, sha256), a tester `README.md` and `ui/` screenshots. `--bundle` makes a test bundle for QA as `<next>-rc.<n>` from HEAD, with nothing committed. "Build the zip" / "package it" now trigger `/yay:release`.
 - **Release gate (`yayh release check`):** version files agree and equal the release, it's newer than the last tag, the readme's **Stable tag** matches (`release.stableTag: trunk` to keep trunk), the **changelog** entry exists without placeholder text, and the release notes exist.
 - **Bundle size (`yayh release size`):** compared with the last release that recorded its size (`zip_bytes_<edition>` in `docs/releases/<v>.md`, written by each release). A size or file-count change over 25% / 1 MB, or a file over 2 MB, is UNUSUAL and the release asks about it (`release.sizeChangePct`, `sizeChangeKb`, `largeFileKb`).

@@ -170,6 +170,13 @@ EOF
         esac
       done
   grep -Eq '^\*\*Tests:\*\*[[:space:]]*[^[:space:]]' "$f" || _pe "no '**Tests:** <tests or none>' line"
+  # Each test names the layer it runs at (reference/testing.md): [unit], [integration], [js] or [manual].
+  sed -nE 's/^\*\*Tests:\*\*[[:space:]]*//p' "$f" | sed -n 1p | tr ';' '\n' | sed -E 's/^[[:space:]]+//; s/[[:space:]]+$//' \
+    | while IFS= read -r t; do
+        case "$t" in ''|none|none:*|'none '*|'['unit']'*|'['integration']'*|'['js']'*|'['manual']'*) ;;
+          *) echo "warn: test '$(printf '%s' "$t" | cut -c1-50)' has no layer: start it with [unit], [integration], [js] or [manual] (reference/testing.md)" ;;
+        esac
+      done
   # Repos with e2e set up decide per plan which flows get a browser spec.
   if yay_config_get commands.e2e >/dev/null 2>&1 && ! grep -Eq '^\*\*E2E:\*\*[[:space:]]*[^[:space:]]' "$f"; then
     _pw "no '**E2E:** <browser-only flows, or none>' line (this repo has e2e set up)"

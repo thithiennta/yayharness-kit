@@ -20,6 +20,7 @@ YAY_LIB_DIR="$YAY_KIT_ROOT/lib"
 . "$YAY_LIB_DIR/code.sh"
 . "$YAY_LIB_DIR/review.sh"
 . "$YAY_LIB_DIR/e2e.sh"
+. "$YAY_LIB_DIR/tests.sh"
 
 usage() {
   cat <<'EOF'
@@ -111,6 +112,15 @@ E2E (Playwright + wp-env, one site per checkout; reference/e2e.md)
   e2e specs [ID]                   spec files with test counts, or the tests tagged @ID (file:line:text)
   e2e surfaces                     where users reach the plugin: admin pages, shortcodes, blocks, Woo hooks, REST... (TSV)
   e2e cli <command...>             run in the wp-env cli container: wp option get x, tail -n 50 wp-content/debug.log
+
+Tests (PHP unit + integration, JS unit; which layer per task: reference/testing.md)
+  test status                      unit, integration (tests site up|down), js (runner), php, deps, docker, file counts (TSV)
+  test detect                      what exists: phpunit configs, composer dev packages, test dirs, JS runner, scripts, ci (TSV)
+  test scaffold [php=tests/php] [js=tests/js] [js-runner=vitest|jest|wp-scripts|none] [--no-integration] [--no-js] [--no-ci]
+                                   write missing starter files and config keys (never overwrites); deps lines = packages to add
+  test run unit|integration|js|all [--id=P-4] [runner args...]
+                                   one layer, or every configured one (integration skipped when its site is down)
+  test list [ID]                   test files per layer with counts, or the tests tagged @group ID (PHP) / @ID (JS)
 
 Commands and debugging
   run <name> [version=x] [edition=y]
@@ -311,6 +321,16 @@ case "$cmd" in
       cli) yay_e2e_cli "$@" ;;
       surfaces) yay_e2e_surfaces ;;
       *) yay_die "usage: yayh e2e status|detect|scaffold|port|url|env|run|specs|surfaces|cli" ;;
+    esac ;;
+  test)
+    sub="${1:-}"; shift || true
+    case "$sub" in
+      status) yay_tests_status ;;
+      detect) yay_tests_detect ;;
+      scaffold) yay_tests_scaffold "$@" ;;
+      run) yay_tests_run "$@" ;;
+      list) yay_tests_list "$@" ;;
+      *) yay_die "usage: yayh test status|detect|scaffold|run|list" ;;
     esac ;;
   run) [ $# -ge 1 ] || yay_die "usage: yayh run <command-name> [k=v...]"; yay_run "$@" ;;
   debug)

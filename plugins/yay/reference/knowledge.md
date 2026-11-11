@@ -40,6 +40,7 @@ When a test is warranted here, where tests live, how to run one. The default pol
 
 ## Read when…
 - adding any function, hook or setting → [docs/knowledge/helpers.md](docs/knowledge/helpers.md) (reuse first)
+- writing or fixing a test → [docs/knowledge/testing.md](docs/knowledge/testing.md) (only when tests are set up)
 - writing or fixing a browser spec → [docs/knowledge/e2e.md](docs/knowledge/e2e.md) (only when e2e is set up)
 - changing <area> → [docs/knowledge/architecture.md § <section>](docs/knowledge/architecture.md#section)
 - …one line per knowledge doc or section
@@ -71,6 +72,7 @@ The core set: write each one that has content. If the repo is small, fewer docs 
 | `known-issues.md` | Gotchas with evidence: checks that fail on the base branch, environment traps, flaky areas, "looks wrong but is intentional" |
 | `helpers.md` | The reuse map: helpers, services, settings getters and hooks that new code should call instead of re-implementing, grouped by job (Formatting, Settings, Eligibility, Escaping and capabilities, REST, Assets…). One line each: `Class::method()`, its file, and when to use it. Built from `yayh code index` plus reading the code, listing only what's meant to be reused, not every method. `covers` lists the helper directories |
 | `e2e.md` | Only when e2e is set up (`/yay:e2e-init` writes it): how to run it (`yayh e2e …`), what `bin/setup-env.sh` seeds, the users, the tag convention, the shared fixtures, edition gates and how the test site bypasses them, the traps hit while setting it up, and the **Flows** table (`| flow | actor | priority | coverage | source |`; coverage is a spec file and tag, `candidate`, `unit: …` or `manual: …`). `covers: [tests/e2e/]` (the `e2e.dir`) |
+| `testing.md` | Only when tests are set up (`/yay:test-init` writes it): how to run each layer (`yayh test run …`), the bootstraps, the shared stubs and factories in `TestCase`, edition gates and how tests get past them, the traps hit while setting it up, and the **Coverage** table (`\| unit \| layer \| priority \| tests \| source \|`; tests is a file and tag, `candidate` or `bug: B-<n>`). `covers` = the test dirs (`tests/php/`, `tests/js/`) |
 | `decisions.md` | Decision log: `### <date> <decision>`, with why, what was rejected, and evidence (commit, PR or file). Built from git history and code comments |
 
 Add an area doc (`admin.md`, `blocks.md`, `storefront.md`, …) only when an area is big enough that `architecture.md` would bloat. Each area doc gets its own narrow `covers`.

@@ -190,7 +190,7 @@ _e2e_render() {
     { for (i = 1; i <= d; i++) if (skip[i]) next; print }' "$tpl" > "$tmp"
   for kv in "$@"; do
     k="${kv%%=*}"; v="${kv#*=}"
-    awk -v k="{{e2e.$k}}" -v v="$v" 'BEGIN{gsub(/\\/,"\\\\",v)} { while ((i = index($0, k)) > 0) $0 = substr($0, 1, i-1) v substr($0, i+length(k)); print }' "$tmp" > "$tmp.n" && mv "$tmp.n" "$tmp"
+    awk -v k="{{${_YAY_TPL_NS:-e2e}.$k}}" -v v="$v" 'BEGIN{gsub(/\\/,"\\\\",v)} { while ((i = index($0, k)) > 0) $0 = substr($0, 1, i-1) v substr($0, i+length(k)); print }' "$tmp" > "$tmp.n" && mv "$tmp.n" "$tmp"
   done
   yay_render "$tmp"
   rm -f "$tmp"

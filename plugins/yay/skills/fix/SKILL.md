@@ -48,7 +48,7 @@ Fix one bug, minimally, on its own branch. **No fix without a cause:** the bug r
 - Follow the hard rules: PHP floor, editions boundary, escaping and nonces, HPOS.
 
 ### 4. Regression test
-Read the report's Regression test proposal.
+Read the report's Regression test proposal. Put the test at the layer where the **root cause** lives (`${CLAUDE_PLUGIN_ROOT}/reference/testing.md`, "Bugs"): **unit** for logic, **integration** for hooks, storage, REST or WooCommerce objects, and **js** for front-end logic. Follow `/yay:test B-<n>` steps 3–4. Tag it `B-<n>`. When the bug came from a baseline test marked `markTestIncomplete( 'B-<n>: …' )`, `test.fails` or `test.failing`, remove the mark; that test is the regression test. If the layer isn't set up, use the manual check and suggest `/yay:test-init`.
 - With `--test`, write it.
 - With `--no-test`, skip it.
 - Otherwise write it, unless the repo's rules (the project block or `.claude/rules/`) say tests need approval. Only then ask, in **one** AskUserQuestion round, together with the low-confidence question from step 1 if it applies. Write the test if accepted. It must fail without the fix and pass with it; check both, for example by `git stash`-ing the fix.

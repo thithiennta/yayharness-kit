@@ -22,7 +22,7 @@ JSON, not YAML, so hooks can read it with `jq`, `node` or `php` and nothing to i
 | `git.tagFormat` | string | Tag template. `{version}` is replaced, e.g. `v{version}`. |
 | `git.branchTypes` | string[] | Allowed branch prefixes. Default `["feat","fix","chore","hotfix","docs","refactor","test"]`. |
 | `git.scopes` | string[] | Optional allowed commit scopes. Empty means any scope is allowed. |
-| `commands.<name>` | string | Shell commands run from the repo root. Known names: `install`, `dev`, `build`, `lint`, `typecheck`, `test`, `package`, and the e2e set `e2e` (runs Playwright; `yayh e2e run` appends its arguments), `e2e-install`, `e2e-start`, `e2e-stop`, `e2e-reset`. Placeholders: `{version}`, `{edition}`. A missing command means the step does not apply. |
+| `commands.<name>` | string | Shell commands run from the repo root. Known names: `install`, `dev`, `build`, `lint`, `typecheck`, `test`, `package`, and the e2e set `e2e` (runs Playwright; `yayh e2e run` appends its arguments), `e2e-install`, `e2e-start`, `e2e-stop`, `e2e-reset`, and the test layers `test-unit`, `test-integration` (runs in wp-env's `tests-cli`), `test-js` (`yayh test run <layer>` appends its arguments; `test` stays the fast default: unit + js). Placeholders: `{version}`, `{edition}`. A missing command means the step does not apply. |
 | `package.output` | string \| object | Glob for the built zip, e.g. `release/{slug}-{edition}-{version}.zip`. When editions name their zips differently, use a map: `{"pro": "release/{slug}-{version}.zip", "lite": "release/{slug}-lite-{version}.zip"}`. |
 | `package.forbidden` | object | Map from edition to paths that must not appear in that edition's zip, e.g. `{"free": ["includes/Pro/"]}`. `yayh build check` (run by `/yay:release`) fails the zip when they do. |
 | `package.allow` | string[] | Globs, relative to the zip's top folder, that are exempt from the "usually not shipped" warnings (e.g. `composer.json` when it's needed at runtime). |
@@ -41,6 +41,9 @@ JSON, not YAML, so hooks can read it with `jq`, `node` or `php` and nothing to i
 | `e2e.dir` | string | The e2e package folder. Default `tests/e2e`. See `e2e.md`. |
 | `e2e.port` | int | The main checkout's wp-env port. Default: 8900–9890, derived from `plugin.slug`. Worktrees always get their own port. |
 | `e2e.baseUrl` | string | Per developer (`.yay/local.json`). Run specs against an external site instead of wp-env; yayh then manages nothing. |
+| `tests.php` | string | PHP tests folder (`unit/`, `integration/`, their `*.xml.dist`). Default `tests/php`. See `testing.md`. |
+| `tests.js` | string | JS tests folder. Default `tests/js`. |
+| `tests.jsRunner` | string | `vitest`, `jest`, `wp-scripts` or `none`. Default: what `package.json` uses. |
 | `e2e.wpEnvArgs` | string | Extra wp-env arguments for `yayh e2e cli`, e.g. `--config=.wp-env.single.json` in adopted setups. |
 | `keep` | string[] | Paths `/yay:harness-init` must not wipe, e.g. user docs that live in `docs/`. |
 

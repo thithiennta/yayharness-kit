@@ -1,0 +1,60 @@
+name: Tests
+
+on:
+  pull_request:
+  workflow_dispatch:
+
+concurrency:
+  group: tests-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  unit:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.2'
+          tools: composer
+          coverage: none
+      - run: composer install --no-interaction --no-progress
+      - name: PHP unit tests
+        run: {{tests.unitCmd}}
+#if-js
+#if-pnpm
+      - uses: pnpm/action-setup@v4
+#end-pnpm
+      - uses: actions/setup-node@v4
+        with:
+          {{tests.node}}
+      - run: {{tests.jsInstall}}
+      - name: JS unit tests
+        run: {{tests.jsCmd}}
+#end-js
+#if-integration
+
+  integration:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+#if-pnpm
+      - uses: pnpm/action-setup@v4
+#end-pnpm
+      - uses: actions/setup-node@v4
+        with:
+          {{tests.node}}
+      - name: Build the plugin
+        run: {{tests.prepare}}
+      - name: Install wp-env
+        working-directory: {{tests.e2e}}
+        run: {{tests.e2eInstall}}
+      - name: Start WordPress
+        working-directory: {{tests.e2e}}
+        run: npx wp-env start
+      - name: PHP integration tests
+        working-directory: {{tests.e2e}}
+        run: npx wp-env run tests-cli --env-cwd=wp-content/plugins/{{plugin.slug}} vendor/bin/phpunit -c {{tests.php}}/integration.xml.dist
+#end-integration

@@ -26,6 +26,8 @@ A baseline spec describes behaviour the plugin has today, so it must pass on the
 
 ## When a flow deserves a spec (targeted)
 
+E2E is the fourth rung of the ladder in `testing.md`. Check the cheaper layers first.
+
 A spec costs minutes per run and breaks on markup changes. Write one only when the acceptance criterion **can only be proved in a browser**, and a unit test can't cover it:
 - what a customer sees or does: cart, checkout (classic and block), My Account, product page, emails rendered from a front-end action
 - an admin screen rendered by JS (React settings, the block editor), where saving and reloading must keep the value

@@ -80,7 +80,7 @@ Every mode uses this. It needs a version `v` (the version the zips carry) and a 
    - Run `yayh version check`. The version files must agree, and normally equal the last tag's version (`yayh git version-of-tag "$(yayh git last-tag)"`). If they don't, that's a question in the round below.
    - Run `yayh knowledge stale --since=<last tag>`. If anything is stale, suggest `/yay:knowledge-update` first. Don't block on it.
    - Look for open work: `yayh artifact list plan --status=in-progress`. Mention it, since it isn't in this release.
-   - Run the tests: `yayh run test`. A failure stops the release, so report it and suggest `/yay:debug`. If `commands.test` isn't set, say that the kit ran no tests. Also run `yayh run lint` when it's set, and report failures without blocking: lint debt often predates the release.
+   - Run the tests: `yayh test run all` (unit, integration when Docker is running, js; it falls back to `commands.test`). A failure stops the release, so report it and suggest `/yay:debug`. Integration reported as *skipped* is said in the report, not a block. If no test command is set, say that the kit ran no tests. Also run `yayh run lint` when it's set, and report failures without blocking: lint debt often predates the release.
    - **E2E** (when `commands.e2e` is set and Docker is running): `yayh e2e env start`, then the full suite, `yayh e2e run`. Triage failures as `${CLAUDE_PLUGIN_ROOT}/reference/e2e.md` says. A product bug stops the release, like a failing test. A flaky or environment failure is reported and doesn't block. Without Docker, say the suite wasn't run.
 2. **Version.**
    - Run `yayh changelog baseline`. It prints `<ref> <how>`, and the next step depends on `<how>`:

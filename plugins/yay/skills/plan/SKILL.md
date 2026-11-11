@@ -20,7 +20,7 @@ A plan is the contract `/yay:implement` follows task by task. The format is in `
 | `--check` | Review an existing plan instead of writing one: run the structural check, then do a critical review (see step 6). Doesn't change the plan unless the user agrees. |
 | `--split` | If the work is bigger than about 8 tasks or touches unrelated areas, split it into several plans that ship on their own, linked through `from:`. |
 | `--type=<t>` | Branch and commit type for `/yay:implement` (default `feat`; `fix` for bugs; `refactor` for no behavior change). |
-| `--tests=ask\|none` | `ask` (default): propose tests, and ask only if the repo's rules require approval for tests. `none`: write `**Tests:** none` and verify by manual checks. |
+| `--tests=auto\|none` | `auto` (default; `ask` is accepted as the same): pick the tests yourself, one per risk at the right layer, and ask only if the repo's rules require approval for tests. `none`: write `**Tests:** none` and verify by manual checks. |
 | `--edition=<e>` | Which editions the plan touches. Default: inferred from where the code lives. |
 | `--commit` | Commit the plan when you're on a non-base branch. |
 
@@ -45,9 +45,11 @@ A plan is the contract `/yay:implement` follows task by task. The format is in `
 
    Put data and migration first, then server, then UI, then docs. If the work makes a knowledge doc wrong, add a task to update it.
 5. **Tests and Verify.**
-   - **Tests:** with `--tests=ask`, draft the worthwhile tests (each with its name, file, suite, and the risk it guards). They're asked about in step 7's single round. Until then, write them into `**Tests:**` as proposed. The repo's test policy is in the project block and `.claude/rules/yay-workflow.md`.
+   - **Tests:** list the risks in the change (acceptance criteria, branches of logic, data written, hooks touched). Give each one the **first layer down the ladder** in `${CLAUDE_PLUGIN_ROOT}/reference/testing.md` that can prove it: unit, integration, js, e2e or manual. Add a second layer only for a second, named risk. Check `yayh test status` and the **Coverage** table in `docs/knowledge/testing.md`: extend an existing test class rather than adding a new one, and mark a layer that isn't set up `(not set up: /yay:test-init)`.
+     - Write them on the `**Tests:**` line as `[unit] <test_name> (<file>) — <risk>`, separated by `;`. Use `[integration]`, `[js]` or `[manual]` the same way. Browser-only risks go on the **E2E** line instead.
+     - A typical plan has 1–4 tests, mostly unit. Decide this yourself. Only when the repo's rules require approval for tests (the project block or `.claude/rules/`) do they become step 7's question.
    - **E2E** (only when `yayh config get commands.e2e` is set): pick the acceptance criteria that **only a browser can prove**, by the test in `${CLAUDE_PLUGIN_ROOT}/reference/e2e.md` ("When a flow deserves a spec"). Usually that's 0–2: a customer-facing flow, or a JS-rendered admin screen that must save and reload. Read the **Flows** table in `docs/knowledge/e2e.md` first: when the change touches a flow that already has a spec, name that flow (its spec gets extended), and a touched `candidate` row is a strong reason to add it. Write them on the `**E2E:**` line as `<flow>: <the outcome to assert>`, separated by `;`, or write `**E2E:** none`. Decide this yourself; it's not a question.
-   - **Verify:** exact checks, each with the command or the UI path, the input, and the result that means it passed. Cover every edition the plan touches. A Verify item covered by an E2E flow says `(e2e)`.
+   - **Verify:** exact checks, each with the command or the UI path, the input, and the result that means it passed. Cover every edition the plan touches. A Verify item covered by a test says its layer: `(unit)`, `(integration)`, `(js)` or `(e2e)`.
 6. **Write it.**
    - `yayh artifact new plan "<title>" from=<id> roadmap=<R-n or empty> type=<type>`, then fill in every section.
    - With `--split`, create one plan per shippable slice, each with `from:` pointing at the source.
@@ -71,5 +73,5 @@ Run `yayh plan check <plan>`. Then review against the code as it is **now**: do 
 
 ## Don'ts
 - Don't write code or change anything except the plan file.
-- Don't add tests the user didn't accept.
+- Don't put the same assertion at two layers, or a test at a costlier layer than the ladder picks.
 - Don't plan from memory: open the files first.

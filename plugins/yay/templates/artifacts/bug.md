@@ -28,4 +28,4 @@ created: {{today}}
 1.
 
 ## Regression test proposal
-<!-- Name, file, suite, and what risk it guards. Or "none: <why>, manual check: <exact check>". -->
+<!-- [unit|integration|js|e2e] name (file) — the risk it guards, at the layer of the root cause (reference/testing.md). Or "none: <why>, manual check: <exact check>". -->

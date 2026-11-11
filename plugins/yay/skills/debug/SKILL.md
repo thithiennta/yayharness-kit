@@ -55,7 +55,7 @@ Fill in every section:
 - **Repro steps**
 - **Root cause:** what happens, why, `file:line` evidence, the introducing commit or version if known, and **Confidence: high/medium/low** with the reason
 - **Fix options:** 1–3, smallest first, with the files and the edition impact. Mark the recommended one.
-- **Regression test proposal:** the name, file and suite, and the risk it guards. Or "none", with the exact manual check that proves the fix.
+- **Regression test proposal:** the layer where the root cause lives (`[unit]`, `[integration]`, `[js]` or `[e2e]`, by `${CLAUDE_PLUGIN_ROOT}/reference/testing.md`), the test name and file, and the risk it guards. Or "none", with the exact manual check that proves the fix.
 
 Set the status:
 - `root-caused` when confidence is high or medium

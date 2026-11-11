@@ -1,6 +1,6 @@
 # yayharness build plan
 
-15 skills, all `/yay:*`. `⟵` marks a dependency. A box gets ticked when the task's tests pass.
+17 skills, all `/yay:*`. `⟵` marks a dependency. A box gets ticked when the task's tests pass.
 
 ## Decisions
 - Distribution: plugin `yay` in this marketplace. Local only for now.
@@ -91,3 +91,10 @@ Goal: browser tests the flow uses in a targeted way. A plan names the 0–2 flow
 - [x] T8.5 Unit tests (`test_e2e.sh`), plus a real run on a throwaway Woo plugin: install, wp-env + WooCommerce, seed, 4/4 smoke ⟵ all
 - [x] T8.6 `/yay:e2e-init` replaces `/yay:e2e-setup`: `yayh e2e surfaces`, `yay:e2e-scout` agents, a Flows table in `docs/knowledge/e2e.md`, baseline specs for critical browser-only flows (pass twice, fail when the precondition breaks; bugs become `B-<n>` with `test.fail`); plan, e2e and fix read the map ⟵ T8.5
 - Not yet run live: a worktree's own port (`WP_ENV_PORT`) side by side with the main site, adopting YayWholesale's existing setup, the CI workflow on GitHub.
+
+## P9 Tests: unit, integration, JS, and a layer per task ✅ ⟵ P8
+- [x] T9.1 `lib/tests.sh` + `yayh test status|detect|scaffold|run|list`: PHPUnit + Brain Monkey unit, the WP/Woo test suite in wp-env's tests site (its own DB; the dev site's would be wiped), JS runner by package.json
+- [x] T9.2 `templates/tests/` (unit/integration configs, bootstraps, `TestCase`, smoke tests, Vitest config, CI) ⟵ T9.1
+- [x] T9.3 `reference/testing.md` (the ladder), `/yay:test-init` (scout, scaffold or adopt, baseline tests, Coverage table), `/yay:test`, `yay:test-scout` ⟵ T9.2
+- [x] T9.4 Plan `**Tests:**` items carry a layer (+ plan-check warning), implement/fix/debug/release/workflow rule use the ladder ⟵ T9.3
+- [x] T9.5 Unit tests (`test_tests.sh`), plus a live run on the throwaway Woo plugin: unit 3/3, integration 3/3 (WooCommerce product price through the plugin's filter), js 1/1, a broken unit fails, and the e2e site's data and smoke survive the integration run ⟵ all

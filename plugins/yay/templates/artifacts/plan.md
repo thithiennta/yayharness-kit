@@ -25,6 +25,7 @@ created: {{today}}
   - Reuse: <existing function/hook/setting and its file>, or `none, new <name>() because …`
 
 **Tests:** none
+<!-- One per risk, at the cheapest layer that proves it (reference/testing.md), separated by ";": [unit] test_name (tests/php/unit/X/YTest.php) — the risk; [integration] …; [js] …. Or none. -->
 
 **E2E:** none
 <!-- Browser-only acceptance criteria that get a Playwright spec tagged with this plan's id (reference/e2e.md). Usually none, at most 2. -->

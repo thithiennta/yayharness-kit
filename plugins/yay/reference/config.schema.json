@@ -159,6 +159,15 @@
         },
         "e2e-reset": {
           "type": "string"
+        },
+        "test-unit": {
+          "type": "string"
+        },
+        "test-integration": {
+          "type": "string"
+        },
+        "test-js": {
+          "type": "string"
         }
       }
     },
@@ -288,6 +297,28 @@
         "wpEnvArgs": {
           "type": "string",
           "description": "Extra wp-env arguments for yayh e2e cli, e.g. --config=.wp-env.single.json"
+        }
+      }
+    },
+    "tests": {
+      "type": "object",
+      "additionalProperties": false,
+      "description": "Unit, integration and JS tests (reference/testing.md). Written by /yay:test-init.",
+      "properties": {
+        "php": {
+          "type": "string",
+          "default": "tests/php",
+          "description": "PHP tests folder: unit/ and integration/ with their phpunit configs"
+        },
+        "js": {
+          "type": "string",
+          "default": "tests/js",
+          "description": "JS tests folder"
+        },
+        "jsRunner": {
+          "type": "string",
+          "enum": ["vitest", "jest", "wp-scripts", "none"],
+          "description": "The JS test runner. Default: what package.json uses"
         }
       }
     },

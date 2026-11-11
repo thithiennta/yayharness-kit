@@ -72,7 +72,7 @@ For each unticked task in order (or only `--task`):
 2. **Verify the task:** run the configured checks that apply to what changed:
    - `yayh run lint`, or the linter on the changed files if the project block says how
    - `yayh run typecheck` for TS changes
-   - the tests listed in the plan's `**Tests:**` line that touch this task
+   - the tests on the plan's `**Tests:**` line that belong to this task. Write them in the same task, following `/yay:test` steps 3–4: tag them `P-<n>`, put them at the layer the plan names, and prove that they fail without the change. Run them with `yayh test run <layer> --id=P-<n>`. Integration needs this worktree's tests site (`yayh e2e env start`); without Docker, write the tests and mark them **not run**.
 
    Fix what fails. If something fails that your change can't explain, check whether it also fails on the base branch: `git stash`, or run it in a temporary detached worktree of the base. A pre-existing failure is reported, not fixed.
 3. **Tick the task:** `yayh plan tick <plan> T<n>`.
@@ -84,7 +84,7 @@ For each unticked task in order (or only `--task`):
    Add `Roadmap: R-<n>` on the commit that completes the item. Stage by path. Never use `git add -A` (other people's untracked files, and the generated paths the hooks guard). If a hook rejects the commit, fix the cause; never use `--no-verify`.
 
 ### 4. Finish
-1. Run all of `lint`, `typecheck`, `test` and `build` that exist in the config (`yayh run <name>`). For `build` with editions, build each edition the plan touches (`edition=<e>`). Report pre-existing failures separately (compare with the base, as in step 3.2).
+1. Run all of `lint`, `typecheck` and `build` that exist in the config (`yayh run <name>`), and the tests with `yayh test run all` (every configured layer: unit, integration when the tests site is up, and js; it falls back to `commands.test`). For `build` with editions, build each edition the plan touches (`edition=<e>`). Report pre-existing failures separately (compare with the base, as in step 3.2).
 2. **E2E** (when the plan's `**E2E:**` line isn't `none` and `commands.e2e` is set): follow `/yay:e2e P-<n>` steps 1–5 in this worktree. Write the specs, tagged `@P-<n>`. Run `yayh e2e run --grep "@P-<n>|@smoke"` against this worktree's own site (`yayh e2e env start` gives it its own port). Classify any failure: a product bug is yours to fix now, since it's this branch's code. Commit as `test(e2e): <flow>` with the `Plan:` trailer. Without Docker, write and commit the specs anyway, and list them as **not run** in the PR. When you're done, stop the site with `yayh e2e env stop`.
 3. Walk through the plan's **Verify** list. Do each check you can (CLI, WP-CLI against `yayh config get site.wpPath`, reading the output). List the checks only a human can do (browser flows) for the PR.
 4. Run `yayh debug markers`. It must be empty.
@@ -122,5 +122,5 @@ Give the plan (and, when step 0 wrote it, that it did, with its task count and a
 
 ## Don'ts
 - Don't implement anything the plan doesn't list. Note follow-ups in the report, or as a backlog idea (`yayh artifact new backlog …`).
-- Don't add tests beyond the plan's `**Tests:**` line without asking.
+- Don't add tests beyond the plan's `**Tests:**` line without adding them to that line first (with their layer). Don't move a test to a costlier layer than the plan says.
 - Don't work in the main checkout once the worktree exists. Don't commit on the base branch.

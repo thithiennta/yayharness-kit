@@ -84,6 +84,21 @@ Brainstorms, plans and bug reports start as untracked files in your checkout. `/
 
 The gates are soft. You can skip a brainstorm for an obvious change, or fix a tiny bug without `/yay:debug`, and the skills say so when they think you shouldn't.
 
+### Tests: which layer for each task
+```text
+/yay:test-init                             # once per repo: PHPUnit + Brain Monkey, WP/Woo integration in wp-env, JS runner, baseline tests
+/yay:test "tier discount rounding"         # tests for one behaviour, at the layer that proves it
+yayh test run all --id=P-4                 # unit, integration (when Docker runs) and js tests tagged P-4
+```
+You don't choose the layer; the agent does, for each risk, going down a ladder (`reference/testing.md`):
+- **unit:** logic, with WordPress stubbed
+- **integration:** hooks, storage, REST, HPOS, real WooCommerce objects, in wp-env's separate tests site
+- **js:** front-end logic and components
+- **e2e:** only what a browser alone can show
+- **manual:** a written check, when nothing else fits
+
+`/yay:plan` writes each test on the `**Tests:**` line with its layer (`[unit] test_rounds_to_cents (…) — wrong totals`), `/yay:implement` writes and runs them, and `/yay:fix` tests at the layer of the root cause. Two layers only when there are two different risks.
+
 ### Browser tests (e2e)
 ```text
 /yay:e2e-init                              # once per repo: scout the flows, Playwright + wp-env in tests/e2e, seed, baseline specs, CI
@@ -129,7 +144,7 @@ When a hook blocks something, its message says why and what to do instead. Claud
 | knowledge | The `yay:project` block of `CLAUDE.md`, `docs/knowledge/` | `/yay:knowledge-update`, or by hand. Keep the facts verifiable. |
 | workflow | `docs/roadmap.md`, brainstorms, plans, bugs, backlog, releases | Through the skills. |
 
-## 7. All 16 skills
+## 7. All 17 skills
 
 | Skill | Most-used options |
 |---|---|
@@ -139,13 +154,15 @@ When a hook blocks something, its message says why and what to do instead. Claud
 | `/yay:knowledge-update` | `--since=<tag>`, `--check`, `--doc=<file>` |
 | `/yay:roadmap` | `--status`, `--horizon=eoy`, `--capacity=8`, `--freeze=a..b`, `--add="…"`, `--multi-agent --plugins=a,b`, `--publish` |
 | `/yay:brainstorm` | `--from=R-<n>\|BL-<n>\|B-<n>`, `--quick`, `--research` |
-| `/yay:plan` | `--from=BS-<n>`, `--check`, `--tests=ask\|none` |
+| `/yay:plan` | `--from=BS-<n>`, `--check`, `--tests=auto\|none` |
 | `/yay:implement` | `P-<n>`, `"<requirement>"` or `R-<n>` (plans it first), `--task=T3`, `--continue`, `--no-pr`, `--draft` |
 | `/yay:autopilot` | `--sprint=current`, `R-<n>…`, `--ready`, `--parallel=N`, `--plan-only`, `--no-ask`, `--no-pr` |
 | `/yay:debug` | `--area=<path>`, `--bisect=<good-ref>`, `--repro`, `--report-only` |
 | `/yay:fix` | `B-<n>`, `--hotfix`, `--test`, `--no-pr` |
 | `/yay:changelog` | `--dry-run`, `--since=<tag>` |
 | `/yay:release` | `--bundle`, `minor`, `--dry-run`, `--wc-tested=X.Y`, `--no-ui`, `--keep-site`, `--tag-only`, `--hotfix`, `--push-tag` |
+| `/yay:test-init` | `--adopt`, `--depth=quick`, `--max-tests=8`, `--js-runner=vitest`, `--no-integration`, `--no-run`, `--no-pr` |
+| `/yay:test` | `P-<n>`, `B-<n>`, `Class::method`, `"<behaviour>"`, `--layer=unit`, `--run=all`, `--triage` |
 | `/yay:e2e-init` | `--adopt`, `--depth=quick`, `--max-specs=6`, `--smoke-only`, `--no-ci`, `--no-run`, `--no-pr` |
 | `/yay:e2e` | `P-<n>`, `B-<n>`, `"<flow>"`, `--run=@P-4`, `--all`, `--triage` |
 
