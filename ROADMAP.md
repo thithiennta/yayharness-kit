@@ -39,6 +39,7 @@ Goal: you always know where you are and what comes next. *(7 / 8)*
 Goal: the workflow bends for small work. Safety guards stay. *(7 / 8)* → **ship 0.4.0**
 
 ### R-4 Lanes by size: tiny, small, standard
+- status: built on `feat/relaxed-hooks` (not merged)
 - size: M · goal: 3
 - why: `yay-workflow.md` says "Start from an artifact" for everything. `/yay:implement "<req>"` always runs the full `/yay:plan` (step 0.2), and `plan check` warns about Reuse, a Tests layer and the E2E line even for a one-file change.
 - what: implement picks the lane and says which one it chose.
@@ -48,11 +49,13 @@ Goal: the workflow bends for small work. Safety guards stay. *(7 / 8)* → **shi
   - Pass `--lane=` to override.
 
 ### R-5 Adapt the plan instead of stopping
+- status: built on `feat/relaxed-hooks` (not merged)
 - size: S · goal: 3
 - why: implement step 3.1 says "If the plan turns out to be wrong … stop and tell the user", and the workflow rule says "Plans are the contract". A moved file or an equivalent API therefore halts the run.
 - what: when the scope and the customer-visible behaviour stay the same, edit the task text in the same commit and list the change under **Decided** in the PR. Stop only when the scope or what customers see would change.
 
 ### R-6 Hooks warn about style and block only for safety
+- status: built on `feat/relaxed-hooks` (not merged)
 - size: S · goal: 3
 - why: commits get rejected for a scope that isn't in `git.scopes` or for a header that's too long (ONBOARDING §8, "A commit is rejected").
 - what: an unknown scope, the header length and the branch-name shape become post-commit warnings that suggest an `--amend`. These stay blocked: commits on the base branch, `--no-verify`, tags, generated and kit-owned files, and `yay:debug` markers.
