@@ -23,6 +23,7 @@ YAY_LIB_DIR="$YAY_KIT_ROOT/lib"
 . "$YAY_LIB_DIR/e2e.sh"
 . "$YAY_LIB_DIR/tests.sh"
 . "$YAY_LIB_DIR/model.sh"
+. "$YAY_LIB_DIR/status.sh"
 
 usage() {
   cat <<'EOF'
@@ -31,6 +32,12 @@ yayh <command> [args]
 Kit
   version                          kit version (with a subcommand: the plugin's version, see below)
   root                             kit root (for templates and reference docs)
+
+Where am I (all work in flight, every worktree)
+  status [--today=YYYY-MM-DD]      most urgent first: scope, id, stage, next command, title (TSV)
+                                   scope: here (this branch) | active | slipped | bug | sprint | plan | brainstorm
+  next [ID]                        the one command that moves ID (R/P/BS/B/UX-n) forward; with no ID,
+                                   this branch's work or the most urgent item; exit 3 when nothing is left
 
 Config (.yay/config.json)
   config get <key> [fallback]      dotted key; arrays print one per line
@@ -308,6 +315,8 @@ case "$cmd" in
     esac ;;
   design)
     case "${1:-}" in check) [ $# -eq 2 ] || yay_die "usage: yayh design check <design>"; yay_design_check "$2" ;; *) yay_die "usage: yayh design check <design>" ;; esac ;;
+  status) yay_status "$@" ;;
+  next) [ $# -le 2 ] || yay_die "usage: yayh next [ID] [--today=YYYY-MM-DD]"; yay_next "$@" ;;
   roadmap)
     sub="${1:-}"; shift || true
     case "$sub" in

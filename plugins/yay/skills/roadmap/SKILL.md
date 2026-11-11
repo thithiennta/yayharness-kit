@@ -49,7 +49,7 @@ Commit by path with `docs(roadmap): <summary>` (the `roadmap` scope is always al
    - slipped items (sprint ended, not shipped)
    - critical and high bugs with no roadmap item or fix branch: they compete for this sprint's capacity
    - status drift from `links`, and check errors
-   - the next actions, as commands: `/yay:brainstorm --from=R-<n>` for planned items without one, `/yay:plan --from=BS-<n>` for decided brainstorms, `/yay:implement P-<n>` for ready plans, `/yay:fix B-<n>` for root-caused bugs, and `/yay:roadmap` when the horizon has passed or a lot slipped
+   - the next actions, as commands, from `yayh status` (each row's `next` column), plus `/yay:roadmap` when the horizon has passed or a lot slipped
 4. Never write in this mode.
 
 ## Quick edits

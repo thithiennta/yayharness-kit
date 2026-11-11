@@ -38,6 +38,13 @@ Bug       /yay:debug ─► /yay:fix ──────────────�
 Hotfix    /yay:fix B-<n> --hotfix ─► /yay:release --hotfix ───────────────┘
 ```
 
+**Where am I? What's next?**
+```text
+yayh status                                # everything in flight, most urgent first, with the command that moves each on
+yayh next                                  # just the next command: this branch's work, or the most urgent item
+yayh next R-12                             # the next step for one item (R-, P-, BS-, B- or UX-<n>)
+```
+
 **A feature, start to finish**
 ```text
 /yay:roadmap --status                      # what's in this sprint, what slipped

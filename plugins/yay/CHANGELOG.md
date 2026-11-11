@@ -2,6 +2,9 @@
 
 `/yay:harness-update` reads this file to tell a repo what changed between its recorded kit version and the installed one. Each entry lists new skills, config keys, template changes and behavior changes.
 
+## Unreleased (0.4.0)
+- **`yayh status` and `yayh next`: where you are and what's next.** `yayh status` lists every piece of work in flight, across all worktrees, most urgent first: this branch's work (`here`), work in progress (`active`), slipped roadmap items, critical and high bugs, the current sprint, then other bugs, plans not tied to a listed item, and brainstorms with no plan yet. Each row has its stage and the one command that moves it on (`/yay:implement P-4 --continue`, `/yay:plan --from=BS-3`, `/yay:fix B-7`; a finished branch gets its push and PR commands). `yayh next [ID]` prints only that command for one `R-`, `P-`, `BS-`, `B-` or `UX-<n>`. When that work is finished, it prints the most urgent other work. With no ID, it prints this branch's work or the top row. The managed CLAUDE.md block mentions both commands.
+
 ## 0.3.0
 - **Model and effort per step.** Each agent step can run on its own model and effort, set in `.yay/config.json` (or `.yay/local.json`) under `models`:
   - **Tiers:** `veryfast` (Sonnet, medium), `fast` (Opus, low), `balanced` (Opus, medium) and `deep` (Opus, high).
