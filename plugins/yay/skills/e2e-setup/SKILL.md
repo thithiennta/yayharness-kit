@@ -49,7 +49,7 @@ Give this repo working browser tests in one pass: a seeded wp-env site, a passin
    - Leave the site running and report its URL.
 6. **Knowledge.** Write `docs/knowledge/e2e.md` as the `e2e.md` row of `${CLAUDE_PLUGIN_ROOT}/reference/knowledge.md` describes: how to run it, the seed, the users, the tags, the fixtures, and the traps you hit in step 5. Use the front-matter `area: e2e` and `covers: [<dir>/]`. Add one line to the project block's **Tests** section in CLAUDE.md ("Browser specs: `yayh e2e run`, see docs/knowledge/e2e.md") and a **Read when** line. Then `yayh knowledge check` must pass, and you run `yayh knowledge stamp docs/knowledge/e2e.md`.
 7. **Commit**, staging by path (never `git add -A`): `<dir>/` except what its `.gitignore` excludes (it includes the lockfile, which CI needs), `.github/workflows/e2e.yml`, `.yay/config.json`, `docs/knowledge/e2e.md`, `CLAUDE.md`, and any packaging fix.
-   `test(e2e): set up Playwright and wp-env browser tests`. Don't push; print the push and PR commands.
+   `test(e2e): set up Playwright and wp-env browser tests`. Push and open the PR as in `/yay:implement` (by default; with `--no-pr`, print the commands).
 8. **Report:**
    - adopted or scaffolded, and the files
    - the smoke result (passed, failed with the cause, or not run because there was no Docker)

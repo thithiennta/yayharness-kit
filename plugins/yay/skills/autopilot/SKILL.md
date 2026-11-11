@@ -1,7 +1,7 @@
 ---
 name: autopilot
 description: Take many Yay roadmap items from idea to built branch in one run - brainstorm, plan and implement each - with a single decision sheet up front instead of a question round per item. Use when the user says "autopilot", "do the whole sprint", "process all of them", "build everything on the roadmap", "run the long-term plan", "plan and implement R-3, R-5 and R-7", or wants to stop giving decisions task by task.
-argument-hint: "[R-<n>... | P-<n>...] [--sprint=<n|current|later>] [--ready] [--parallel=N] [--plan-only] [--no-ask] [--pr] [--draft] [--dry-run]"
+argument-hint: "[R-<n>... | P-<n>...] [--sprint=<n|current|later>] [--ready] [--parallel=N] [--plan-only] [--no-ask] [--no-pr] [--draft] [--dry-run]"
 allowed-tools: Bash(yayh *), Bash(git *), Bash(gh *), Read, Grep, Glob, Write, Edit, AskUserQuestion, Workflow
 ---
 
@@ -21,7 +21,7 @@ The normal flow is **roadmap item → `/yay:brainstorm` → `/yay:plan` → `/ya
 | `--parallel=N` | Build up to N independent items at once (each in its own worktree). Default 1: one at a time, in dependency order. |
 | `--plan-only` | Stop after the decision sheet: plans written and marked ready, nothing built. |
 | `--no-ask` | Skip the sheet: take every recommendation and list it under **Decided**. Also the behaviour when nobody is there to answer. |
-| `--pr` / `--draft` | Push each finished branch and open its PR (stacked PRs base on their dependency's branch). Default: nothing leaves the machine; the report lists the commands. |
+| `--no-pr` / `--draft` | By default each finished branch is pushed and its PR opened (stacked PRs base on their dependency's branch). `--no-pr` keeps everything local and the report lists the commands. |
 | `--dry-run` | Show the queue and the agent count, and change nothing. |
 
 With no scope at all, use `--sprint=current`.
@@ -48,7 +48,7 @@ With no scope at all, use `--sprint=current`.
    - With `--plan-only`, report and stop. The plans are ready for `/yay:implement` or a later `/yay:autopilot --ready`.
 5. **Build.** Run the Workflow tool again with the same `scriptPath` and
    ```json
-   { "mode": "build", "kit": "…", "repo": "…", "base": "…", "today": "…", "parallel": 1, "pr": false, "draft": false,
+   { "mode": "build", "kit": "…", "repo": "…", "base": "…", "today": "…", "parallel": 1, "pr": true, "draft": false,
      "items": [ /* the queue again, from a fresh `yayh roadmap queue`, so each artifact is now the P-<n> */ ],
      "answers": { "R-3": "Option B (no free-text coupon field); include test X" } }
    ```
@@ -57,7 +57,7 @@ With no scope at all, use `--sprint=current`.
    - applies its answer to the brainstorm and plan (revise)
    - follows `/yay:implement` in its own worktree, branched from `base` or, when stacked, from the dependency's branch (other dependencies are merged in)
    - runs `yay:code-reviewer`, then fixes or answers each finding
-   - with `--pr`, pushes and opens the PR (based on the dependency's branch for a stacked item)
+   - unless `--no-pr`, pushes and opens the PR (based on the dependency's branch for a stacked item)
 
    A blocked item leaves its branch with whatever was committed, and the run goes on with everything that doesn't depend on it. Nothing in this step asks the user.
 6. **Report.** Append the results to the run sheet, then show:
@@ -65,11 +65,11 @@ With no scope at all, use `--sprint=current`.
    - every blocker, with what a human must do, and the command that resumes after it's fixed (`/yay:autopilot <ids>` again, or `/yay:implement P-<n> --continue`)
    - the review findings fixed and answered, and every **Decided** line, grouped per item
    - the manual checks left for a human
-   - without `--pr`: the push and `gh pr create` commands, in stack order (dependencies first)
+   - the PR links, in stack order (dependencies first), or with `--no-pr` the push and `gh pr create` commands in that order
    - the run sheet's path
 
 ## Don'ts
 - Don't ask anything outside step 4. A question that turns up later is decided in the plan's spirit and listed under **Decided**; a real blocker blocks only its item.
 - Don't build an item whose plan prepare blocked, whose dependency didn't finish, or that waits on work outside the run.
-- Don't push, tag or open PRs without `--pr`. Never force-push, never `--no-verify`, never commit on the base branch.
+- Don't push with `--no-pr`, and never push tags. Never force-push, never `--no-verify`, never commit on the base branch.
 - Don't plan past what the roadmap item and its evidence support. Scope growth goes into the report as a backlog idea, as in `/yay:implement`.

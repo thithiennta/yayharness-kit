@@ -1,7 +1,7 @@
 ---
 name: fix
 description: Fix a diagnosed Yay plugin bug on its own branch and worktree. Use when the user says "fix B-7", "fix this bug", "patch this", "hotfix". Makes the minimal change, agrees a regression test, verifies, commits fix(scope) with a Fixes trailer and opens a PR assigned to its owner. --hotfix branches from the last release tag; grows into /yay:plan when the fix does.
-argument-hint: "<B-<n>|bug-slug|description> [--hotfix] [--from=<tag>] [--test|--no-test] [--no-worktree] [--escalate] [--pr|--no-pr] [--draft] [--no-push]"
+argument-hint: "<B-<n>|bug-slug|description> [--hotfix] [--from=<tag>] [--test|--no-test] [--no-worktree] [--escalate] [--no-pr] [--draft]"
 allowed-tools: Bash, Read, Grep, Glob, Write, Edit, Agent, AskUserQuestion
 ---
 
@@ -22,7 +22,7 @@ Fix one bug, minimally, on its own branch. **No fix without a cause:** the bug r
 | `--test` / `--no-test` | Write the proposed regression test without asking, or skip it and rely on the manual check. Default: write it, unless the repo's rules say tests need approval (then it's one question in step 4's round). |
 | `--no-worktree` | Branch in the current checkout instead of a worktree. |
 | `--escalate` | Stop and hand off to `/yay:plan --from=B-<n>`. This also happens automatically when the fix outgrows its scope (step 3). |
-| `--pr` / `--no-pr`, `--draft`, `--no-push` | As in `/yay:implement`. |
+| `--no-pr`, `--draft`, `--no-push` | As in `/yay:implement`: the PR is opened by default; `--no-pr` stops after the commit. |
 
 ## Steps
 
@@ -51,7 +51,7 @@ Fix one bug, minimally, on its own branch. **No fix without a cause:** the bug r
 Read the report's Regression test proposal.
 - With `--test`, write it.
 - With `--no-test`, skip it.
-- Otherwise write it, unless the repo's rules (the project block or `.claude/rules/`) say tests need approval. Only then ask, in **one** AskUserQuestion round, together with the low-confidence question from step 1 if it applies (and, since you're asking anyway, "push and open a PR when done?"). Write the test if accepted. It must fail without the fix and pass with it; check both, for example by `git stash`-ing the fix.
+- Otherwise write it, unless the repo's rules (the project block or `.claude/rules/`) say tests need approval. Only then ask, in **one** AskUserQuestion round, together with the low-confidence question from step 1 if it applies. Write the test if accepted. It must fail without the fix and pass with it; check both, for example by `git stash`-ing the fix.
 
 Without a test, do the report's manual check exactly and record the result.
 
@@ -72,7 +72,7 @@ Without a test, do the report's manual check exactly and record the result.
    ```
 
 ### 6. Push and PR
-As in `/yay:implement` step 5: only with `--pr` or a yes from step 4; otherwise print the commands. These things differ:
+As in `/yay:implement` step 5: by default, unless `--no-pr`; then print the commands. These things differ:
 - the title is the fix header
 - for a hotfix, the base is `git.baseBranch`, and the body says: "Hotfix from `<tag>`; release with `/yay:release patch --hotfix`"
 - record `pr` in the report

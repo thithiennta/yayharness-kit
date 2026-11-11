@@ -1,7 +1,7 @@
 ---
 name: implement
 description: Build a Yay plugin plan task by task in its own worktree and branch, or plan a requirement first and then build it. Use when the user says "implement P-4", "build this plan", "start on the plan", "continue the implementation", or "implement <a requirement>" / "implement R-12" when no plan exists yet. Implements, verifies and ticks each task, commits with a Plan trailer, runs the full checks, refreshes knowledge it made stale, and opens a PR assigned to its owner.
-argument-hint: "<P-<n>|plan-slug|\"<requirement>\"|R-<n>|BS-<n>|B-<n>> [--type=feat|fix|chore|refactor|perf] [--task=T<n>] [--continue] [--no-worktree] [--base=<branch>] [--pr|--no-pr] [--draft] [--no-push] [--no-review]"
+argument-hint: "<P-<n>|plan-slug|\"<requirement>\"|R-<n>|BS-<n>|B-<n>> [--type=feat|fix|chore|refactor|perf] [--task=T<n>] [--continue] [--no-worktree] [--base=<branch>] [--no-pr] [--draft] [--no-review]"
 allowed-tools: Bash, Read, Grep, Glob, Write, Edit, Agent, AskUserQuestion
 ---
 
@@ -23,9 +23,9 @@ Implement a plan exactly, in a worktree, with one commit per task. Given a requi
 | `--continue` | Resume an `in-progress` plan in its existing worktree, starting at the first unticked task. |
 | `--no-worktree` | Create the branch in the current checkout (`git switch -c`) instead of a worktree. |
 | `--base=<branch>` | Branch from here instead of `git.baseBranch`. |
-| `--pr` / `--no-pr` | Push and open the PR without asking, or stop after the last commit. Default: don't ask; finish locally and print the push and PR commands. |
+| `--no-pr` | Stop after the last commit, and print the push and PR commands. Default: push the branch and open the PR, assigned to you. |
 | `--draft` | Open the PR as a draft. |
-| `--no-push` | Never push (this also means no PR). |
+| `--no-push` | Same as `--no-pr`. |
 | `--no-review` | Skip the reuse and comments review (step 4.5). For throwaway branches only. |
 
 ## Steps
@@ -49,7 +49,7 @@ Skip this when the argument is a plan: a `P-<n>`, or text that `yayh artifact re
   - `in-progress` → behave as `--continue`.
   - `done` or `dropped` → stop.
 - Read the project block, the knowledge docs the plan touches, and every file the tasks name.
-- **Hard questions only, once, now** (`${CLAUDE_PLUGIN_ROOT}/reference/asking.md`). Include any carried over from step 0. Ask only if the plan leaves a decision that's expensive to undo or that only the user can make (for example, customer-visible behaviour the plan doesn't pin down): at most 3, in one AskUserQuestion. If you do ask, you may add "push and open a PR when done?". Everything else the plan leaves open, decide in its spirit and list under **Decided** in the PR. Usually that means no questions at all. Never stop mid-task to ask, unless the plan turns out to be wrong (step 3.1).
+- **Hard questions only, once, now** (`${CLAUDE_PLUGIN_ROOT}/reference/asking.md`). Include any carried over from step 0. Ask only if the plan leaves a decision that's expensive to undo or that only the user can make (for example, customer-visible behaviour the plan doesn't pin down): at most 3, in one AskUserQuestion. Everything else the plan leaves open, decide in its spirit and list under **Decided** in the PR. Usually that means no questions at all. Never stop mid-task to ask, unless the plan turns out to be wrong (step 3.1).
 
 ### 2. Branch and worktree (skip with `--continue`)
 1. Get the branch name: `branch="$(yayh git branch-name <plan type> "<plan title>")"`.
@@ -100,7 +100,7 @@ For each unticked task in order (or only `--task`):
 7. Run `yayh fm set <plan> status done` and commit it as `docs(plan): complete P-<n>`.
 
 ### 5. Push and PR
-Do this only with `--pr`, or when step 1's answer said yes. Otherwise don't ask: end the report with the exact commands (`git push -u origin <branch>` and the `gh pr create …` line).
+Do this by default, without asking. With `--no-pr` or `--no-push`, skip it and end the report with the exact commands (`git push -u origin <branch>` and the `gh pr create …` line). If there's no `origin` remote, or `gh` isn't installed or logged in, skip it the same way, and say why (`${CLAUDE_PLUGIN_ROOT}/reference/asking.md`).
 ```
 git push -u origin "$branch"
 gh pr create --base <base> --head "$branch" --assignee @me [--draft] \

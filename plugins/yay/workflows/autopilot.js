@@ -7,7 +7,7 @@ export const meta = {
     { title: 'Revise', detail: 'apply the decision-sheet answers to brainstorms and plans' },
     { title: 'Implement', detail: 'one item at a time, or --parallel=N; dependents stack on their dependency branch' },
     { title: 'Review', detail: 'yay:code-reviewer on each finished branch' },
-    { title: 'Resolve', detail: 'fix or answer the review findings; push and open the PR with --pr' },
+    { title: 'Resolve', detail: 'fix or answer the review findings; push and open the PR (not with --no-pr)' },
   ],
 }
 
@@ -19,6 +19,7 @@ const A = args || {}
 const KIT = A.kit
 const ITEMS = A.items || []
 const PAR = Math.max(1, Number(A.parallel) || 1)
+const PR = A.pr !== false
 if (!KIT || !A.repo) throw new Error('kit and repo are required')
 if (!ITEMS.length) throw new Error('no items')
 
@@ -148,7 +149,7 @@ Branch \`${built.branch}\` (worktree ${built.worktree}) builds ${it.artifact} fo
 1. The yay:code-reviewer returned:
 ${findings}
    For each finding: fix it (call the existing helper, delete or restore the comment; commit \`refactor(<scope>): reuse <helper>\` or \`style(<scope>): restore comments\` with the \`Plan: ${it.artifact}\` trailer, then re-run the checks the change touches), or answer it with a reason. The review flags, it never blocks.
-2. ${A.pr
+2. ${PR
     ? `Push and open the PR as in the "Push and PR" section of ${KIT}/skills/implement/SKILL.md: \`git push -u origin ${built.branch}\` and \`gh pr create --base ${prBase} --head ${built.branch} --assignee @me${A.draft ? ' --draft' : ''}\`. Fill the body from .github/pull_request_template.md. Under "Decided" list: ${JSON.stringify(built.decided)}. Under "Reuse and comments review", the fixed and answered findings.${prBase !== A.base ? ` Start the body with "Stacked on ${prBase}: merge that first."` : ''} Then \`yayh fm set <plan> pr <number>\`, commit and push.`
     : `Don't push. Return the exact commands instead: \`git push -u origin ${built.branch}\` and the \`gh pr create --base ${prBase} --head ${built.branch} --assignee @me …\` line.`}`
 }

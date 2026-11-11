@@ -49,7 +49,8 @@ Hotfix    /yay:fix B-<n> --hotfix ─► /yay:release --hotfix ─────�
 **A whole sprint, unattended**
 ```text
 /yay:autopilot --sprint=current            # brainstorm + plan every item, ONE decision sheet, then build each on its own branch
-/yay:autopilot R-3 R-5 --parallel=2 --pr   # independent items two at a time; dependents stack on their dependency's branch
+/yay:autopilot R-3 R-5 --parallel=2        # independent items two at a time; dependents stack on their dependency's branch
+/yay:autopilot --ready --no-pr             # build every ready plan, keep the branches local
 /yay:autopilot --sprint=3 --plan-only      # plans only: answer the sheet now, build later with /yay:autopilot --ready
 ```
 Re-running the same command resumes: each item's stage comes from its brainstorm and plan. A blocked item stops only itself and what depends on it.
@@ -105,7 +106,7 @@ Findings are fixed, or answered in the PR's "Reuse and comments review" section.
 
 ### Asking less, blocking less
 
-Skills ask at most **one round of 1–3 questions**, and only the hardest ones: decisions that are expensive to undo, or that only you can make. Claude decides the rest and lists it under **Decided** in the report or PR, so you can overrule anything afterwards. Skills never stop to confirm a default, a version, a draft or the next step. Work is committed locally, and the report ends with the push and PR commands (pass `--pr` to push straight away). Deleting, overwriting and pushing are the only things that always wait for a yes. The rules are in [`plugins/yay/reference/asking.md`](plugins/yay/reference/asking.md).
+Skills ask at most **one round of 1–3 questions**, and only the hardest ones: decisions that are expensive to undo, or that only you can make. Claude decides the rest and lists it under **Decided** in the report or PR, so you can overrule anything afterwards. Skills never stop to confirm a default, a version, a draft or the next step. Finished work is pushed and its PR opened without asking (pass `--no-pr` to keep it local and get the commands instead). Deleting, overwriting and pushing tags are the only things that always wait for a yes. The rules are in [`plugins/yay/reference/asking.md`](plugins/yay/reference/asking.md).
 
 ## 5. Git rules (hooks enforce these)
 
@@ -113,7 +114,7 @@ Skills ask at most **one round of 1–3 questions**, and only the hardest ones: 
 - **Commits:** [Conventional Commits](https://www.conventionalcommits.org), `type(scope): summary`, at most 72 characters, no final period. Trailers link the work: `Plan: P-4`, `Fixes: B-7`, `Roadmap: R-12`.
 - **Blocked by the hooks:** commits on the base branch, `--no-verify`, leftover `yay:debug` markers in staged code, tags made outside `/yay:release`, and hand edits to kit-owned or generated files.
 - **Worktrees:** each task gets one under `.claude/worktrees/<slug>`. `/yay:release --tag-only` offers to remove the merged ones.
-- **Pushing:** skills push only when you say so, or when you pass `--pr`.
+- **Pushing:** skills that finish work on a branch push it and open the PR, assigned to you, without asking. Pass `--no-pr` to keep it local; the report then prints the push and PR commands. Tags stay local unless `/yay:release --push-tag`. With no `origin` remote or no `gh` login, the work still finishes locally.
 
 When a hook blocks something, its message says why and what to do instead. Claude reads it and corrects course. Don't work around it.
 
@@ -137,10 +138,10 @@ When a hook blocks something, its message says why and what to do instead. Claud
 | `/yay:roadmap` | `--status`, `--horizon=eoy`, `--capacity=8`, `--freeze=a..b`, `--add="…"`, `--multi-agent --plugins=a,b`, `--publish` |
 | `/yay:brainstorm` | `--from=R-<n>\|BL-<n>\|B-<n>`, `--quick`, `--research` |
 | `/yay:plan` | `--from=BS-<n>`, `--check`, `--tests=ask\|none` |
-| `/yay:implement` | `P-<n>`, `"<requirement>"` or `R-<n>` (plans it first), `--task=T3`, `--continue`, `--pr`, `--draft` |
-| `/yay:autopilot` | `--sprint=current`, `R-<n>…`, `--ready`, `--parallel=N`, `--plan-only`, `--no-ask`, `--pr` |
+| `/yay:implement` | `P-<n>`, `"<requirement>"` or `R-<n>` (plans it first), `--task=T3`, `--continue`, `--no-pr`, `--draft` |
+| `/yay:autopilot` | `--sprint=current`, `R-<n>…`, `--ready`, `--parallel=N`, `--plan-only`, `--no-ask`, `--no-pr` |
 | `/yay:debug` | `--area=<path>`, `--bisect=<good-ref>`, `--repro`, `--report-only` |
-| `/yay:fix` | `B-<n>`, `--hotfix`, `--test`, `--pr` |
+| `/yay:fix` | `B-<n>`, `--hotfix`, `--test`, `--no-pr` |
 | `/yay:changelog` | `--dry-run`, `--since=<tag>` |
 | `/yay:build` | `--edition=pro`, `--zip=<path>` |
 | `/yay:release` | `minor`, `--dry-run`, `--wc-tested=X.Y`, `--tag-only`, `--hotfix` |
