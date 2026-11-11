@@ -231,3 +231,20 @@ PY
   assert_contains "$out" "warn: task T6 names no files"
   case "$out" in *"task T1 has no"*|*"task T4 "*|*"task T5 has no"*) _fail "false reuse warning: $out" ;; *) _pass ;; esac
 }
+
+test_id_next_counts_worktrees_and_parallel_new_never_collides() {
+  export YAY_REPO; YAY_REPO="$(_arepo)"
+  local p wt i
+  p="$("$YAYH" artifact new plan "Carried away")"
+  wt="$("$YAYH" git worktree feat/carried-away)"
+  "$YAYH" artifact carry "$wt" "$p" >/dev/null
+  assert_eq "P-2" "$("$YAYH" id next P)"
+  for i in 1 2 3 4 5 6; do "$YAYH" artifact new plan "Parallel $i" >/dev/null & done
+  wait
+  assert_eq "P-2
+P-3
+P-4
+P-5
+P-6
+P-7" "$(grep -h '^id:' "$YAY_REPO"/docs/plans/parallel-*.md | sed 's/^id: //' | sort -t- -k2 -n)"
+}

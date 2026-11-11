@@ -106,6 +106,32 @@ yay_merged_worktrees() {
     done
 }
 
+# yay_worktree_roots -> this checkout, then every other worktree of the repo (one path per line).
+yay_worktree_roots() {
+  local root p; root="$(cd "$(yay_repo_root)" && pwd -P)"
+  printf '%s\n' "$root"
+  git -C "$root" worktree list --porcelain 2>/dev/null | sed -n 's/^worktree //p' | while IFS= read -r p; do
+    [ -d "$p" ] || continue
+    p="$(cd "$p" && pwd -P)"
+    [ "$p" = "$root" ] || printf '%s\n' "$p"
+  done
+}
+
+# yay_id_lock / yay_id_unlock: a repo-wide lock (shared by all worktrees) so two
+# agents creating artifacts at once can't take the same id. Stale after 60s.
+yay_id_lock() {
+  local d i=0
+  d="$(git -C "$(yay_repo_root)" rev-parse --git-common-dir 2>/dev/null)" || return 0
+  case "$d" in /*) ;; *) d="$(yay_repo_root)/$d" ;; esac
+  YAY_ID_LOCK="$d/yay-id.lock"
+  while ! mkdir "$YAY_ID_LOCK" 2>/dev/null; do
+    i=$((i + 1))
+    if [ "$i" -ge 300 ]; then rmdir "$YAY_ID_LOCK" 2>/dev/null; i=0; continue; fi
+    sleep 0.2
+  done
+}
+yay_id_unlock() { [ -z "${YAY_ID_LOCK:-}" ] || rmdir "$YAY_ID_LOCK" 2>/dev/null; YAY_ID_LOCK=""; }
+
 yay_worktree_path() { printf '%s/.claude/worktrees/%s\n' "$(yay_repo_root)" "$1"; }
 
 # yay_worktree_create <branch> [from-ref]  -> prints the worktree path.

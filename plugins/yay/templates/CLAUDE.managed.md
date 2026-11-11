@@ -10,6 +10,7 @@ This repo uses the **yay** harness. Work through its skills so every developer a
 | Explore an idea | `/yay:brainstorm` | `docs/brainstorms/` (`BS-<n>`) |
 | Decide the work | `/yay:plan` | `docs/plans/` (`P-<n>`) |
 | Build it | `/yay:implement` | worktree, branch, commits, PR |
+| Run a whole queue | `/yay:autopilot` | all of the above per item, one decision sheet, `.yay/runs/` |
 | Find a bug's cause | `/yay:debug` | `docs/bugs/` (`B-<n>`) |
 | Fix a bug | `/yay:fix` | worktree, branch, commits, PR |
 | Ship | `/yay:changelog` → `/yay:build` → `/yay:release` | readme.txt changelog, `docs/releases/`, zip, tag |

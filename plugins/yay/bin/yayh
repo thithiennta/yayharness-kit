@@ -86,6 +86,8 @@ Roadmap (docs/roadmap.md)
   roadmap status [--today=]        sprint counts, slipped items, open bugs, active plans
   roadmap links                    items that brainstorms/plans point at: id, current, suggested status, via
   roadmap peers                    sibling plugin folders (dir, name, slug, harnessed, path)
+  roadmap queue [R-n|P-n...] [--sprint=n|current|later] [--ready]
+                                   build order for /yay:autopilot: id, stage, artifact, after, waits, title
 
 Code (reuse before you write)
   code find <words...> [--limit=N] [--kind=function|method|class|const]
@@ -268,7 +270,8 @@ case "$cmd" in
       status) yay_roadmap_status "$@" ;;
       peers) yay_roadmap_peers ;;
       links) yay_roadmap_links ;;
-      *) yay_die "usage: yayh roadmap list|get|set|add|move|sprints|current|check|status|links|peers" ;;
+      queue) yay_roadmap_queue "$@" ;;
+      *) yay_die "usage: yayh roadmap list|get|set|add|move|sprints|current|check|status|links|peers|queue" ;;
     esac ;;
   code)
     sub="${1:-}"; shift || true

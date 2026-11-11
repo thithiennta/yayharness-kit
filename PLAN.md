@@ -1,6 +1,6 @@
 # yayharness build plan
 
-15 skills, all `/yay:*`. `⟵` marks a dependency. A box gets ticked when the task's tests pass.
+16 skills, all `/yay:*`. `⟵` marks a dependency. A box gets ticked when the task's tests pass.
 
 ## Decisions
 - Distribution: plugin `yay` in this marketplace. Local only for now.

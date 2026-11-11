@@ -47,17 +47,21 @@ yay_fm_set() {
 # yay_id_next <PREFIX>  -> e.g. B-8. Scans every .md under docs/ for
 # `id: PREFIX-<n>` front-matter and `### PREFIX-<n>` roadmap headings.
 yay_id_next() {
-  local prefix="$1" root max
+  local prefix="$1" max wt m
   case "$prefix" in R|BS|P|B|BL) ;; *) yay_die "unknown id prefix '$prefix' (R, BS, P, B, BL)";; esac
-  root="$(yay_repo_root)/docs"
   max=0
-  if [ -d "$root" ]; then
-    max="$(find "$root" -type f -name '*.md' -print0 2>/dev/null \
+  # This checkout and every other worktree of the repo: artifacts carried into a
+  # worktree have left this checkout, but their ids are still taken.
+  while IFS= read -r wt; do
+    [ -d "$wt/docs" ] || continue
+    m="$(find "$wt/docs" -type f -name '*.md' -print0 2>/dev/null \
       | { xargs -0 grep -hoE "^(id: |### )${prefix}-[0-9]+" 2>/dev/null || true; } \
       | sed -E "s/.*${prefix}-//" \
       | sort -n | tail -1)"
-    max="${max:-0}"
-  fi
+    [ -n "$m" ] && [ "$m" -gt "$max" ] && max="$m"
+  done <<EOF
+$(yay_worktree_roots)
+EOF
   # Also count IDs already on the base branch, so two branches started from
   # different points don't hand out the same number.
   local base bmax

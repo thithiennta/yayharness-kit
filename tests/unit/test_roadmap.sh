@@ -214,3 +214,78 @@ test_links_suggest_status_from_brainstorms_and_plans() {
 R-3	planned	planned-in:P-2	P-2
 R-4	planned-in:P-2	brainstorming:BS-2	BS-2" "$("$YAYH" roadmap links)"
 }
+
+_qrepo() { # roadmap with dependencies, a brainstorm and plans
+  local r; r="$(mk_repo)"
+  mkdir -p "$r/docs/plans" "$r/docs/brainstorms"
+  cat > "$r/docs/roadmap.md" <<'EOT'
+---
+horizon: 2026-12-07
+---
+# Roadmap
+
+## Sprint 1 (2026-11-10 → 2026-11-23)
+
+### R-1 Express checkout
+- status: planned
+- size: M
+- depends: R-3
+
+### R-2 Cart speed
+- status: shipped:1.4.0
+- size: S
+
+### R-3 Coupon UX
+- status: planned
+- size: L
+- depends: R-2, yayreturns:R-9
+
+### R-4 Import
+- status: planned
+- size: M
+- depends: R-7
+
+### R-5 Gift wrap
+- status: planned
+- size: S
+
+## Later
+
+### R-6 Wishlist
+- status: planned-in:P-3
+- size: M
+EOT
+  printf -- '---\nid: BS-1\ntitle: Coupons\nstatus: open\nfrom: R-3\n---\n' > "$r/docs/brainstorms/2026-11-01-coupons.md"
+  printf -- '---\nid: P-1\ntitle: Gift wrap\nstatus: ready\nroadmap: R-5\nfrom: BS-9\n---\n' > "$r/docs/plans/gift-wrap.md"
+  printf -- '---\nid: P-2\ntitle: Loose plan\nstatus: ready\nroadmap:\n---\n' > "$r/docs/plans/loose-plan.md"
+  printf -- '---\nid: P-3\ntitle: Wishlist\nstatus: in-progress\nroadmap: R-6\n---\n' > "$r/docs/plans/wishlist.md"
+  commit_all "$r"
+  printf '%s\n' "$r"
+}
+
+test_queue_sprint_orders_by_depends_and_sets_stages() {
+  export YAY_REPO; YAY_REPO="$(_qrepo)"
+  assert_eq "R-2	done	-	-	-	Cart speed
+R-3	decide	BS-1	-	yayreturns:R-9	Coupon UX
+R-1	brainstorm	-	R-3	-	Express checkout
+R-4	brainstorm	-	-	R-7	Import
+R-5	implement	P-1	-	-	Gift wrap" "$("$YAYH" roadmap queue --sprint=1)"
+}
+
+test_queue_plans_ready_and_continue() {
+  export YAY_REPO; YAY_REPO="$(_qrepo)"
+  assert_eq "R-5	implement	P-1	-	-	Gift wrap
+P-2	implement	P-2	-	-	Loose plan" "$("$YAYH" roadmap queue --ready)"
+  assert_eq "R-6	continue	P-3	-	-	Wishlist" "$("$YAYH" roadmap queue P-3)"
+  assert_exit 1 "$YAYH" roadmap queue P-99
+  assert_exit 1 "$YAYH" roadmap queue
+}
+
+test_queue_sees_plans_carried_into_worktrees_and_cycles_fail() {
+  export YAY_REPO; YAY_REPO="$(_qrepo)"
+  git -C "$YAY_REPO" worktree add -q "$YAY_REPO/.claude/worktrees/gift" -b feat/gift-wrap
+  git -C "$YAY_REPO" rm -q docs/plans/gift-wrap.md
+  assert_eq "R-5	implement	P-1	-	-	Gift wrap" "$("$YAYH" roadmap queue R-5)"
+  "$YAYH" roadmap set R-3 depends R-1 >/dev/null
+  assert_exit 1 "$YAYH" roadmap queue R-1 R-3
+}

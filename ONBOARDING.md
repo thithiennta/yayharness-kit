@@ -1,6 +1,6 @@
 # Working on a Yay plugin with Claude: onboarding
 
-Every Yay plugin repo runs the same Claude Code harness, the **`yay`** plugin. It gives each repo the same rules, hooks and settings, project knowledge written from that repo's own code, and 15 `/yay:*` skills that take work from idea to tagged release in the same way for everyone.
+Every Yay plugin repo runs the same Claude Code harness, the **`yay`** plugin. It gives each repo the same rules, hooks and settings, project knowledge written from that repo's own code, and 16 `/yay:*` skills that take work from idea to tagged release in the same way for everyone.
 
 This page is what a new developer needs. The kit internals are in [`plugins/yay/README.md`](plugins/yay/README.md).
 
@@ -45,6 +45,14 @@ Hotfix    /yay:fix B-<n> --hotfix ─► /yay:release --hotfix ─────�
 /yay:plan --from=BS-3                      # tasks, tests, verify checks → P-4
 /yay:implement P-4                         # its own worktree + branch, a commit per task, PR assigned to you
 ```
+
+**A whole sprint, unattended**
+```text
+/yay:autopilot --sprint=current            # brainstorm + plan every item, ONE decision sheet, then build each on its own branch
+/yay:autopilot R-3 R-5 --parallel=2 --pr   # independent items two at a time; dependents stack on their dependency's branch
+/yay:autopilot --sprint=3 --plan-only      # plans only: answer the sheet now, build later with /yay:autopilot --ready
+```
+Re-running the same command resumes: each item's stage comes from its brainstorm and plan. A blocked item stops only itself and what depends on it.
 
 **A bug**
 ```text
@@ -118,7 +126,7 @@ When a hook blocks something, its message says why and what to do instead. Claud
 | knowledge | The `yay:project` block of `CLAUDE.md`, `docs/knowledge/` | `/yay:knowledge-update`, or by hand. Keep the facts verifiable. |
 | workflow | `docs/roadmap.md`, brainstorms, plans, bugs, backlog, releases | Through the skills. |
 
-## 7. All 15 skills
+## 7. All 16 skills
 
 | Skill | Most-used options |
 |---|---|
@@ -130,6 +138,7 @@ When a hook blocks something, its message says why and what to do instead. Claud
 | `/yay:brainstorm` | `--from=R-<n>\|BL-<n>\|B-<n>`, `--quick`, `--research` |
 | `/yay:plan` | `--from=BS-<n>`, `--check`, `--tests=ask\|none` |
 | `/yay:implement` | `P-<n>`, `--task=T3`, `--continue`, `--pr`, `--draft` |
+| `/yay:autopilot` | `--sprint=current`, `R-<n>…`, `--ready`, `--parallel=N`, `--plan-only`, `--no-ask`, `--pr` |
 | `/yay:debug` | `--area=<path>`, `--bisect=<good-ref>`, `--repro`, `--report-only` |
 | `/yay:fix` | `B-<n>`, `--hotfix`, `--test`, `--pr` |
 | `/yay:changelog` | `--dry-run`, `--since=<tag>` |

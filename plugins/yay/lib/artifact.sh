@@ -50,15 +50,18 @@ yay_artifact_new() {
   case "$ptype" in feat|fix|chore|refactor|perf|docs|test) ;; *) yay_die "plan type must be feat, fix, chore, refactor, perf, docs or test";; esac
   case "$severity" in critical|high|medium|low) ;; *) yay_die "severity must be critical, high, medium or low";; esac
   root="$(yay_repo_root)"
-  id="$(yay_id_next "$prefix")"
   slug="$(yay_slugify "$title")"
   [ -n "$slug" ] || yay_die "title gives an empty slug"
   rel="$(_art_path "$type" "$slug")"
   [ -e "$root/$rel" ] && yay_die "$rel already exists; pick a different title or open that file"
   mkdir -p "$(dirname "$root/$rel")"
+  yay_id_lock
+  trap yay_id_unlock EXIT
+  id="$(yay_id_next "$prefix")"
   yay_render_vars "$YAY_TEMPLATES/artifacts/$type.md" \
     "id=$id" "title=$title" "slug=$slug" "from=$from" "roadmap=$roadmap" "ptype=$ptype" \
     "severity=$severity" "artifact_editions=$editions" > "$root/$rel"
+  yay_id_unlock; trap - EXIT
   printf '%s\n' "$rel"
 }
 

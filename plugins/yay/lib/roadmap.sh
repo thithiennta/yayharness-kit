@@ -418,3 +418,136 @@ yay_roadmap_links() {
 $(yay_roadmap_parse)
 EOT
 }
+
+# _yay_queue_artifacts -> TSV: kind(plan|bs) id status roadmap from, for plans and
+# brainstorms in this checkout and every other worktree (carried artifacts live there).
+_yay_queue_artifacts() {
+  local wt f kind
+  while IFS= read -r wt; do
+    for f in "$wt"/docs/plans/*.md "$wt"/docs/brainstorms/*.md; do
+      [ -f "$f" ] || continue
+      case "$f" in */plans/*) kind=plan ;; *) kind=bs ;; esac
+      printf '%s\t%s\t%s\t%s\t%s\n' "$kind" \
+        "$(yay_fm_get "$f" id 2>/dev/null || echo -)" "$(yay_fm_get "$f" status 2>/dev/null || echo -)" \
+        "$(yay_fm_get "$f" roadmap 2>/dev/null || echo -)" "$(yay_fm_get "$f" from 2>/dev/null || echo -)"
+    done
+  done <<EOT
+$(yay_worktree_roots)
+EOT
+}
+
+# yay_roadmap_queue [R-n|P-n...] [--sprint=n|current|later] [--ready] [--today=YYYY-MM-DD]
+#   -> TSV in build order: id stage artifact after waits title
+# stage: brainstorm (nothing yet) | decide (open brainstorm) | plan (decided brainstorm)
+#        | implement (draft or ready plan) | continue (plan in progress) | done | dropped
+# after: dependencies inside this run (comma-separated, or -), built first.
+# waits: unmet dependencies outside this run (other plugins, items not in scope), or -.
+yay_roadmap_queue() {
+  local a ids="" today sprint="" ready="" cur arts f
+  today="$(yay_today)"
+  for a in "$@"; do
+    case "$a" in
+      --sprint=*) sprint="${a#--sprint=}" ;; --ready) ready=1 ;; --today=*) today="${a#--today=}" ;;
+      R-[0-9]*|P-[0-9]*) ids="$ids $a" ;;
+      *) yay_die "usage: yayh roadmap queue [R-n|P-n...] [--sprint=n|current|later] [--ready]" ;;
+    esac
+  done
+  arts="$(_yay_queue_artifacts)"
+  if [ "$sprint" = current ]; then
+    cur="$(yay_roadmap_current "$today" 2>/dev/null)" || yay_die "no sprint contains $today"
+    sprint="$(printf '%s' "$cur" | cut -f1)"
+  fi
+  if [ -n "$sprint" ]; then
+    ids="$ids $(yay_roadmap_list --sprint="$sprint" | cut -f1 | tr '\n' ' ')"
+  fi
+  if [ -n "$ready" ]; then
+    ids="$ids $(printf '%s\n' "$arts" | awk -F '\t' '$1 == "plan" && $3 == "ready" { print $2 }' | tr '\n' ' ')"
+  fi
+  # A plan that belongs to a roadmap item stands for that item.
+  local norm="" id r
+  for id in $ids; do
+    case "$id" in
+      P-*) r="$(printf '%s\n' "$arts" | awk -F '\t' -v p="$id" '$1 == "plan" && $2 == p && !f { print "plan:" $4; f = 1 }')"
+           [ -n "$r" ] || yay_die "no plan $id"
+           case "${r#plan:}" in R-[0-9]*) id="${r#plan:}" ;; esac ;;
+    esac
+    case " $norm " in *" $id "*) ;; *) norm="$norm $id" ;; esac
+  done
+  [ -n "$norm" ] || yay_die "nothing to queue: name R-<n>/P-<n> items, --sprint or --ready"
+  f="$(yay_roadmap_file)"
+  local rows="" st ti deps stage art pst
+  for id in $norm; do
+    case "$id" in
+      R-*)
+        [ -f "$f" ] || yay_die "no docs/roadmap.md"
+        ti="$(yay_roadmap_list | awk -F '\t' -v i="$id" '$1 == i && !f { print $5; f = 1 }')"
+        [ -n "$ti" ] || yay_die "no roadmap item $id"
+        st="$(yay_roadmap_get "$id" status 2>/dev/null || echo planned)"
+        deps="$(yay_roadmap_get "$id" depends 2>/dev/null || true)"
+        # the most advanced plan for the item, else its brainstorm
+        pst="$(printf '%s\n' "$arts" | awk -F '\t' -v i="$id" '
+          function rank(s) { return s == "done" ? 4 : s == "in-progress" ? 3 : s == "ready" ? 2 : s == "draft" ? 1 : 0 }
+          $1 == "plan" && ($4 == i || $5 == i) && $3 != "dropped" && rank($3) >= best { best = rank($3); out = $2 "\t" $3 }
+          END { print out }')"
+        if [ -z "$pst" ]; then
+          pst="$(printf '%s\n' "$arts" | awk -F '\t' -v i="$id" '
+            $1 == "bs" && $5 == i && $3 != "dropped" { out = $2 "\t" ($3 == "decided" ? "decided" : "open") } END { print out }')"
+          [ -z "$pst" ] || pst="bs:$pst"
+        fi
+        ;;
+      *) # a plan with no roadmap item
+        ti="$(yay_fm_get "$(yay_repo_root)/$(yay_artifact_resolve "$id")" title 2>/dev/null || echo "$id")"
+        st="-"; deps=""
+        pst="$id	$(printf '%s\n' "$arts" | awk -F '\t' -v p="$id" '$1 == "plan" && $2 == p && !f { print $3; f = 1 }')"
+        ;;
+    esac
+    art="${pst%%	*}"; art="${art#bs:}"; [ -n "$art" ] || art="-"
+    case "$st:$pst" in
+      shipped*|*:*"	done") stage=done ;;
+      dropped:*) stage=dropped ;;
+      *:bs:*"	decided") stage=plan ;;
+      *:bs:*) stage=decide ;;
+      *:*"	in-progress") stage=continue ;;
+      *:?*"	"?*) stage=implement ;;
+      *) stage=brainstorm ;;
+    esac
+    deps="$(printf '%s' "$deps" | tr ',' '\n' | sed 's/^[[:space:]]*//;s/[[:space:]]*$//' | { grep . || true; } | tr '\n' ',' | sed 's/,$//')"
+    rows="$rows$id	$stage	$art	${deps:--}	-	$ti
+"
+  done
+  # Split depends into in-run (after) and outside (waits, unless already shipped), then order.
+  local shipped
+  shipped="$(yay_roadmap_list | awk -F '\t' '$2 ~ /^shipped/ || $2 == "dropped" { print $1 }' | tr '\n' ' ')"
+  printf '%s' "$rows" | awk -F '\t' -v OFS='\t' -v shipped=" $shipped " '
+    { n++; id[n] = $1; stg[n] = $2; art[n] = $3; dep[n] = $4; ti[n] = $6; inrun[$1] = 1; idx[$1] = n }
+    END {
+      for (i = 1; i <= n; i++) {
+        after[i] = ""; waits[i] = ""
+        if (dep[i] != "-") {
+          m = split(dep[i], d, ",")
+          for (j = 1; j <= m; j++) {
+            if (d[j] in inrun && stg[idx[d[j]]] != "done" && stg[idx[d[j]]] != "dropped") after[i] = after[i] (after[i] == "" ? "" : ",") d[j]
+            else if (!(d[j] in inrun) && index(shipped, " " d[j] " ") == 0) waits[i] = waits[i] (waits[i] == "" ? "" : ",") d[j]
+          }
+        }
+      }
+      # Kahn, keeping the given order among ready items.
+      left = n
+      while (left > 0) {
+        progressed = 0
+        for (i = 1; i <= n; i++) {
+          if (out[i]) continue
+          ok = 1
+          if (after[i] != "") { m = split(after[i], d, ","); for (j = 1; j <= m; j++) if (!out[idx[d[j]]]) ok = 0 }
+          if (!ok) continue
+          out[i] = 1; left--; progressed = 1
+          print id[i], stg[i], art[i], (after[i] == "" ? "-" : after[i]), (waits[i] == "" ? "-" : waits[i]), ti[i]
+          break
+        }
+        if (!progressed) {
+          c = ""; for (i = 1; i <= n; i++) if (!out[i]) c = c " " id[i]
+          print "yayh: dependency cycle among:" c > "/dev/stderr"; exit 1
+        }
+      }
+    }'
+}

@@ -4,6 +4,7 @@ A Claude Code plugin that gives every Yay WordPress plugin the same harness and 
 
 ```
 /yay:roadmap ─► /yay:brainstorm ─► /yay:plan ─► /yay:implement ─┐
+               └──────── /yay:autopilot (all three, for a whole queue) ┤
 /yay:debug ─► /yay:fix ──────────────────────────────────────────┼─► /yay:changelog ─► /yay:build ─► /yay:release
 /yay:harness-init · /yay:harness-update · /yay:knowledge-init · /yay:knowledge-update
 ```
@@ -13,7 +14,7 @@ A Claude Code plugin that gives every Yay WordPress plugin the same harness and 
 | Path | What |
 |---|---|
 | `skills/` | The `/yay:*` skills (built phase by phase, see `PLAN.md` at the repo root) |
-| `workflows/` | `roadmap-portfolio.js`: the multi-agent roadmap run by `/yay:roadmap --multi-agent` |
+| `workflows/` | `roadmap-portfolio.js`: the multi-agent roadmap run by `/yay:roadmap --multi-agent`. `autopilot.js`: prepare and build for `/yay:autopilot` |
 | `agents/` | `yay:knowledge-scout` (area explorer for the knowledge skills), `yay:hypothesis-checker` (bug hypotheses for `/yay:debug`), `yay:code-reviewer` (reuse and comments review before PRs). All read-only. |
 | `bin/yayh` | Helper CLI the skills call: config, IDs, slugs, front-matter, manifest, git. On PATH while the plugin is enabled. |
 | `lib/` | Bash 3.2-compatible library behind `yayh` |
