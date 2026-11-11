@@ -61,13 +61,14 @@ test_check_reports_missing_paths_links_and_frontmatter() {
   export YAY_REPO; YAY_REPO="$(_krepo)"
   _write_docs "$YAY_REPO"
   printf 'Also `includes/Nope.php`, `Gone.php`, and [x](missing.md).\n' >> "$YAY_REPO/docs/knowledge/architecture.md"
+  printf 'WooCommerce sits at `../woocommerce/woocommerce.php` and `/etc/hosts`.\n' >> "$YAY_REPO/docs/knowledge/architecture.md"
   printf -- '---\narea: x\n---\n# Bad\n' > "$YAY_REPO/docs/knowledge/bad.md"
   local out; out="$("$YAYH" knowledge check 2>&1)"
   assert_contains "$out" "path \`includes/Nope.php\` does not exist"
   assert_contains "$out" "file \`Gone.php\` is not in the repo"
   assert_contains "$out" "link target 'missing.md' does not exist"
   assert_contains "$out" "bad.md:1: front-matter is missing 'covers'"
-  case "$out" in *OnlyInFence*|*app.js*|*'<files>'*|*'*.php'*|*Plugin.php:3*) _fail "false positive: $out";; *) _pass;; esac
+  case "$out" in *woocommerce.php*|*/etc/hosts*|*OnlyInFence*|*app.js*|*'<files>'*|*'*.php'*|*Plugin.php:3*) _fail "false positive: $out";; *) _pass;; esac
 }
 
 test_check_flags_placeholder_and_budget() {

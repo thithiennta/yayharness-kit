@@ -40,7 +40,9 @@ yay_doctor() {
       outdated*) _yay_doc warn harness "$(yay_harness_status)" "/yay:harness-update" ;;
       *) _yay_doc warn harness "$(yay_harness_status 2>/dev/null || echo unknown)" "/yay:harness-update" ;;
     esac
-    if [ -f "$root/CLAUDE.md" ] && grep -q 'yay:project:start' "$root/CLAUDE.md" 2>/dev/null; then _yay_doc ok knowledge "project block present"
+    # The skeleton seeds the block with a placeholder, so a marker alone isn't knowledge.
+    if [ -f "$root/CLAUDE.md" ] && grep -q 'yay:project:start' "$root/CLAUDE.md" 2>/dev/null \
+      && ! grep -q 'has not been written yet' "$root/CLAUDE.md" 2>/dev/null; then _yay_doc ok knowledge "project block present"
     else _yay_doc warn knowledge "no project knowledge yet: Claude knows the workflow, not the plugin" "/yay:knowledge-init"; fi
   else
     _yay_doc warn harness "not set up in this repo (no .yay/config.json)" "/yay:harness-init (one person, then merge the PR)"

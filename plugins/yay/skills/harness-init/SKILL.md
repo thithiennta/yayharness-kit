@@ -54,6 +54,7 @@ Run `yayh harness inventory --keep=<path>` (one `--keep=` per `--keep` option). 
 - **Will be deleted:** each `wipe` target, with its count of tracked files. Expand `docs/` by listing its top-level entries (`git ls-files docs | cut -d/ -f1-2 | sort -u`), so nobody loses user docs by surprise.
 - **Kept:** the `keep` lines.
 - **Untracked (not touched):** the `untracked` lines. Say that the user decides about these.
+- **Left pointing at deleted files:** the `ref` lines, grouped by file with a count (e.g. `README.md` 40, `.github/workflows/php.yml` 2). Each names a tracked path the wipe deletes; paths the kit writes again (`CLAUDE.md`, the rules, settings) aren't listed. These files are team-owned, so the install doesn't edit them. Step 9 records them, and `/yay:knowledge-init` retargets them once the new docs exist.
 
 If anything under `docs/` looks like **user-facing documentation** rather than harness or Claude material (guides, API docs, images used by `readme.txt`), call it out and suggest `--keep`.
 
@@ -81,14 +82,16 @@ Unless `--no-commit` was passed:
 ```
 git add -u                              # the wipe's deletions (the tree was clean, so nothing else)
 git add -- $(yayh harness files)        # exactly the kit's files; never `git add -A`
-git commit -m "chore(harness): install yay harness v$(yayh version)" -m "Removes the previous harness and installs the kit-managed CLAUDE.md block, rules, settings and PR template. Config: .yay/config.json."
+git commit -m "chore(harness): install yay harness v$(yayh version)" -m "Removes the previous harness and installs the kit-managed CLAUDE.md block, rules, settings and PR template. Config: .yay/config.json." [-m "Still pointing at removed files: README.md (40), .github/workflows/php.yml (2)"]
 ```
+Add the last paragraph only when step 3 found `ref` lines: one `<file> (<count>)` per file, comma-separated. `/yay:knowledge-init` reads it from this commit.
 
 ### 10. Hand off
 Report in a few lines:
 - what was removed (counts) and what was installed
 - the config's notable choices
 - the branch, and that it needs a PR into the base branch
+- the files still pointing at wiped paths (the `ref` lines), each with its count. `/yay:knowledge-init` retargets them; a script that only checked the old harness can go.
 
 Then the next steps:
 1. **`/yay:knowledge-init`** writes the project block of `CLAUDE.md` and `docs/knowledge/`. Without it, Claude knows the workflow but not the plugin.

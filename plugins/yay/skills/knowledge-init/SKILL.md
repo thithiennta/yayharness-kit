@@ -71,6 +71,15 @@ Unless `--no-commit` was passed:
 - `git add -- CLAUDE.md docs/knowledge`. Stage nothing else.
 - `git commit -m "docs(knowledge): write project knowledge" -m "<one line per doc written>"`
 
+### 7b. Retarget references to the old harness
+Read the install commit's "Still pointing at removed files" line: `git log -1 --format=%B --grep='^chore(harness): install yay harness'`. If it lists files, fix those references now that the knowledge exists:
+- a link or mention of a removed doc points at the knowledge doc that now holds that fact, or goes;
+- a removed skill (`/yayrelease`…) becomes the `/yay:*` skill that does the job, or goes;
+- comments in code that cite a removed doc point at the new one. Change nothing else in those lines;
+- a script that only checked the old harness is deleted (`git rm`).
+
+Run `yayh knowledge check` again if a doc changed, then commit only those files: `chore(harness): point <files> at the yay harness`. Skip this with `--no-commit`, and list the files in the report instead.
+
 ### 8. Report
 List the docs written, each with one line on what it covers. Then list:
 - the open questions you couldn't resolve, which are now in `known-issues.md` or noted in the docs

@@ -13,6 +13,9 @@ assert_eq() { # expected actual [msg]
 assert_contains() { # haystack needle [msg]
   case "$1" in *"$2"*) _pass ;; *) _fail "${3:-} [$2] not in [$1]" ;; esac
 }
+assert_not_contains() { # haystack needle [msg]
+  case "$1" in *"$2"*) _fail "${3:-} [$2] should not be in [$1]" ;; *) _pass ;; esac
+}
 assert_ok() { # cmd...
   if "$@" >/dev/null 2>&1; then _pass; else _fail "expected success: $*"; fi
 }

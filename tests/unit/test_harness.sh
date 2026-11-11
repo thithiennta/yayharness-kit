@@ -31,6 +31,40 @@ pro" "$("$YAYH" config get editions)"
   assert_ok "$YAYH" config validate
 }
 
+test_detect_free_pro_outputs_wporg_and_scopes() {
+  export YAY_REPO; YAY_REPO="$(_fixture legacy-rich)"
+  local c="$T_TMP/c.json"
+  # without the directory's Contributors header, a Free/Pro repo isn't on wp.org; release/ is ignored
+  "$YAYH" harness detect 2>/dev/null > "$c"
+  assert_eq "null" "$(jq -r .plugin.wporgSlug "$c")"
+  assert_eq "release/*.zip" "$(jq -r .package.output "$c")"
+  # yaycheckout's shapes: /release/* ignore, zips per edition, Contributors header, scoped history
+  printf '/release/*\n' > "$YAY_REPO/.gitignore"
+  printf 'Contributors: yaycommerce\n' >> "$YAY_REPO/readme.txt"
+  mkdir -p "$YAY_REPO/release"; : > "$YAY_REPO/release/fixture-plugin-1.2.3.zip"; : > "$YAY_REPO/release/fixture-plugin-pro-1.2.3.zip"
+  local i; for i in 1 2 3; do git -C "$YAY_REPO" commit -q --allow-empty --no-verify -m "fix(blocks): change $i"; done
+  git -C "$YAY_REPO" commit -q --allow-empty --no-verify -m "fix(once): rare scope"
+  "$YAYH" harness detect 2>/dev/null > "$c"
+  assert_eq "fixture-plugin" "$(jq -r .plugin.wporgSlug "$c")"
+  assert_eq "release/{slug}-{version}.zip" "$(jq -r .package.output.free "$c")"
+  assert_eq "release/{slug}-pro-{version}.zip" "$(jq -r .package.output.pro "$c")"
+  assert_contains "$(jq -c .generatedPaths "$c")" '"release/"'
+  assert_contains "$(jq -c .git.scopes "$c")" '"blocks"'
+  assert_not_contains "$(jq -c .git.scopes "$c")" '"once"'
+  mkdir -p "$YAY_REPO/.yay"; cp "$c" "$YAY_REPO/.yay/config.json"
+  assert_ok "$YAYH" config validate
+}
+
+test_inventory_lists_refs_to_wiped_paths() {
+  export YAY_REPO; YAY_REPO="$(_fixture legacy-rich)"
+  printf 'See CLAUDE.md and docs/architecture.md.\nRead the docs link, or docs/specs/gone.md.\n' > "$YAY_REPO/NOTES.md"
+  git -C "$YAY_REPO" add NOTES.md; git -C "$YAY_REPO" commit -q --no-verify -m "docs(core): notes"
+  local out; out="$("$YAYH" harness inventory)"
+  assert_not_contains "$out" "$(printf 'ref\tNOTES.md:1\tCLAUDE.md')"   # the kit writes CLAUDE.md again
+  assert_contains "$out" "$(printf 'ref\tNOTES.md:1\tdocs/architecture.md')"
+  assert_not_contains "$out" "NOTES.md:2"
+}
+
 test_detect_bare_is_free_with_wporg_slug() {
   export YAY_REPO; YAY_REPO="$(_fixture bare)"
   mkdir -p "$YAY_REPO/.yay"; "$YAYH" harness detect 2>/dev/null > "$YAY_REPO/.yay/config.json"

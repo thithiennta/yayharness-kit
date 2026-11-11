@@ -216,6 +216,7 @@ EOF
 $gen
 GEN
         [ "$skip" = 1 ] && continue
+        case "$tok" in ../*|/*|~/*) continue;; esac   # outside the repo by construction
         case "$tok" in */*)
           # Only paths rooted in this repo: a first segment that isn't a
           # top-level entry here (e.g. WooCommerce's myaccount/orders.php

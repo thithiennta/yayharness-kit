@@ -77,6 +77,17 @@ _hdr() { # _hdr <file> <Header Name> -> value from a WP plugin/readme header
 
 _has_script() { yay_json_get "$1" "scripts.$2" >/dev/null 2>&1; }
 
+_ignored() { # _ignored <root> <dir> -> 0 when .gitignore ignores dir (dir/, /dir, dir/*, /dir/**)
+  grep -qxE "/?$2(/|/\*|/\*\*)?" "$1/.gitignore" 2>/dev/null
+}
+
+_scopes() { # _scopes <root> -> JSON list of commit scopes used 3+ times in the last 300 commits
+  git -C "$1" log --format=%s -300 2>/dev/null \
+    | sed -nE 's/^[a-z]+\(([a-z0-9][a-z0-9-]*)\)!?:.*/\1/p' | sort | uniq -c | sort -rn \
+    | awk '$1 >= 3 { print $2 }' | sed -n 1,20p \
+    | while IFS= read -r s; do printf '%s,' "$(yay_json_str "$s")"; done | sed 's/,$//'
+}
+
 yay_detect_main_file() {
   local root f; root="$(yay_repo_root)"
   for f in "$root"/*.php; do
@@ -113,6 +124,10 @@ yay_detect() {
 
   if [ -d "$root/includes/Pro" ] || [ -d "$root/src/Pro" ] || [ -d "$root/pro" ] || [ -d "$root/editions" ]; then
     editions='["free","pro"]'; wporg='null'
+    # Free ships to WordPress.org when the readme carries the directory's headers.
+    if [ -f "$root/readme.txt" ] && grep -qi '^Stable tag:' "$root/readme.txt" && grep -qi '^Contributors:' "$root/readme.txt"; then
+      wporg="$(yay_json_str "$slug")"
+    fi
   else
     editions='["free"]'
     if [ -f "$root/readme.txt" ] && grep -qi '^Stable tag:' "$root/readme.txt"; then wporg="$(yay_json_str "$slug")"; else wporg='null'; fi
@@ -161,7 +176,7 @@ yay_detect() {
   # Generated paths: present on disk or ignored by git.
   local gp="" p
   for p in vendor/ vendor-prefixed/ node_modules/ assets/dist/ build/ dist/ release/; do
-    if [ -e "$root/${p%/}" ] || grep -qxE "/?${p%/}/?" "$root/.gitignore" 2>/dev/null; then
+    if [ -e "$root/${p%/}" ] || _ignored "$root" "${p%/}"; then
       gp="$gp${gp:+,}$(yay_json_str "$p")"
     fi
   done
@@ -176,7 +191,18 @@ yay_detect() {
       break
     fi
   done
-  grep -qxE '/?release/?' "$root/.gitignore" 2>/dev/null && pkgout="$(yay_json_str 'release/*.zip')"
+  # Zips already built name each edition's output; otherwise one glob over release/.
+  local e i=0 m="" all=1 z
+  for e in $(printf '%s' "$editions" | tr -d '[]"' | tr ',' ' '); do
+    z=""
+    if ls "$root/release/$slug-$e-"[0-9]*.zip >/dev/null 2>&1; then z="release/{slug}-$e-{version}.zip"
+    elif [ "$i" = 0 ] && ls "$root/release/$slug-"[0-9]*.zip >/dev/null 2>&1; then z="release/{slug}-{version}.zip"; fi
+    if [ -n "$z" ]; then m="$m${m:+,}$(yay_json_str "$e"):$(yay_json_str "$z")"; else all=0; fi
+    i=$((i+1))
+  done
+  if [ "$all" = 1 ] && [ "$i" -gt 1 ]; then pkgout="{$m}"
+  elif [ "$all" = 1 ] && [ "$i" = 1 ]; then pkgout="${m#*:}"
+  elif [ -d "$root/release" ] || _ignored "$root" release; then pkgout="$(yay_json_str 'release/*.zip')"; fi
 
   {
     printf '{'
@@ -187,8 +213,8 @@ yay_detect() {
     printf '"requires":{"php":%s,"wp":%s,"wc":%s},' "$(yay_json_str "$rphp")" "$(yay_json_str "${rwp:-6.5}")" \
       "$( [ -n "$rwc" ] && yay_json_str "$rwc" || echo null )"
     printf '"tested":{"wp":%s,"wc":%s},' "$(yay_json_str "${twp:-}")" "$( [ -n "$twc" ] && yay_json_str "$twc" || echo null )"
-    printf '"git":{"baseBranch":%s,"tagFormat":%s,"branchTypes":["feat","fix","chore","hotfix","docs","refactor","test"],"scopes":[]},' \
-      "$(yay_json_str "$base")" "$(yay_json_str "$tagfmt")"
+    printf '"git":{"baseBranch":%s,"tagFormat":%s,"branchTypes":["feat","fix","chore","hotfix","docs","refactor","test"],"scopes":[%s]},' \
+      "$(yay_json_str "$base")" "$(yay_json_str "$tagfmt")" "$(_scopes "$root")"
     printf '"commands":{%s},' "$cmds"
     printf '"package":{"output":%s,"forbidden":%s},' "$pkgout" "$forbidden"
     printf '"versionFiles":[%s],' "$vf"
@@ -264,6 +290,7 @@ _is_kept() {
 #   wipe<TAB><target><TAB><tracked-file-count>
 #   keep<TAB><path><TAB><reason>
 #   untracked<TAB><path>
+#   ref<TAB><file>:<line><TAB><path>     a file the wipe keeps that names a tracked path it deletes
 yay_inventory() {
   local a; for a in "$@"; do case "$a" in --keep=*) YAY_KEEP="${YAY_KEEP:-}${YAY_KEEP:+ }${a#--keep=}";; *) yay_die "inventory: unknown option $a";; esac; done
   local root t n f
@@ -289,6 +316,34 @@ EOF
   for t in $(yay_always_keep); do
     [ -e "$root/$t" ] && printf 'keep\t%s\tpersonal file, never wiped\n' "$t"
   done
+  # Files that survive the wipe but name a path it deletes (README links, CI comments, scripts).
+  # Only paths that are tracked now and inside the wipe count: a link that was already dead isn't the wipe's doing.
+  local ex="" re wiped hit loc ref
+  wiped="$(mktemp)"
+  local kitdest nl='
+'; kitdest="$(yay_registry | cut -f2)"
+  for t in $(yay_wipe_targets); do
+    ex="$ex :(exclude)$t"
+    git -C "$root" ls-files -- "$t" | while IFS= read -r f; do _is_kept "$f" || printf '%s\n' "$f"; done >> "$wiped"
+  done
+  for t in $(yay_wipe_targets); do
+    [ -n "$(git -C "$root" ls-files -- "$t" | sed -n 1p)" ] || continue
+    re="$(printf '%s' "$t" | sed 's/[.]/\\./g')"
+    if [ -d "$root/$t" ]; then re="$re/[A-Za-z0-9_./-]*"; else re="$re([^A-Za-z0-9_-]|\$)"; fi
+    # shellcheck disable=SC2086
+    git -C "$root" grep -noIE "(^|[^A-Za-z0-9_./-])$re" -- . $ex \
+      ':(exclude).yay' ':(exclude)vendor' ':(exclude)vendor-prefixed' ':(exclude)node_modules' ':(exclude)dist' 2>/dev/null \
+      | while IFS= read -r hit; do
+          loc="$(printf '%s' "$hit" | cut -d: -f1-2)"
+          ref="$(printf '%s' "$hit" | cut -d: -f3- | sed -E 's/^[^A-Za-z0-9_./-]//; s/[^A-Za-z0-9_-]$//; s/[.]+$//; s#/$##')"
+          [ -n "$ref" ] || continue
+          grep -qxF -- "$ref" "$wiped" || grep -qF -- "$ref/" "$wiped" || continue
+          # the kit writes it again after the wipe
+          case "$nl$kitdest$nl" in *"$nl$ref$nl"*|*"$nl$ref/"*) continue;; esac
+          printf 'ref\t%s\t%s\n' "$loc" "$ref"
+        done | sort -u || true
+  done
+  rm -f "$wiped"
   return 0
 }
 
