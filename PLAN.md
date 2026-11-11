@@ -1,6 +1,6 @@
 # yayharness build plan
 
-13 skills, all `/yay:*`. `⟵` marks a dependency. A box gets ticked when the task's tests pass.
+15 skills, all `/yay:*`. `⟵` marks a dependency. A box gets ticked when the task's tests pass.
 
 ## Decisions
 - Distribution: plugin `yay` in this marketplace. Local only for now.
@@ -81,3 +81,12 @@ Goal: generated code reuses existing functions instead of re-implementing them, 
 - [x] T7.6 `yay:code-reviewer` agent before the PR in implement and fix ⟵ T7.5
 - [x] T7.7 Edit-time hook hints (similar function exists, comment-only edit) ⟵ T7.5
 - [x] T7.8 Re-run evals vs baseline, kit 0.2.0 ⟵ all
+
+## P8 E2E ✅ ⟵ P7
+Goal: browser tests the flow uses in a targeted way. A plan names the 0–2 flows that only a browser can prove; implement and fix write specs for those, tagged with their artifact, and release runs the whole suite. Decided by the user: targeted (not "run only", not "separate").
+- [x] T8.1 `lib/e2e.sh` + `yayh e2e status|detect|scaffold|port|url|env|run|specs|cli`: one wp-env site per checkout (base port from the slug, worktree ports from the path)
+- [x] T8.2 `templates/e2e/` starter (Playwright, wp-env with the repo mapped as the plugin folder, a repeatable seed, admin and customer logins, `wp()` fixture, smoke spec, CI workflow) ⟵ T8.1
+- [x] T8.3 `reference/e2e.md`, `/yay:e2e-setup` (scaffold or adopt), `/yay:e2e` (write, run, triage) ⟵ T8.2
+- [x] T8.4 Plan `**E2E:**` line + plan-check warning; implement, fix and release steps; workflow rule; `e2e.md` knowledge doc ⟵ T8.3
+- [x] T8.5 Unit tests (`test_e2e.sh`), plus a real run on a throwaway Woo plugin: install, wp-env + WooCommerce, seed, 4/4 smoke ⟵ all
+- Not yet run live: a worktree's own port (`WP_ENV_PORT`) side by side with the main site, adopting YayWholesale's existing setup, the CI workflow on GitHub.

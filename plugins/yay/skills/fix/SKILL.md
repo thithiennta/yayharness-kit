@@ -55,6 +55,8 @@ Read the report's Regression test proposal.
 
 Without a test, do the report's manual check exactly and record the result.
 
+**E2E regression** (only when `commands.e2e` is set, the repro is a browser click path, and no unit test can catch it, for example a JS, template or checkout-markup bug): follow `/yay:e2e B-<n>` steps 1–5. Write one spec tagged `@B-<n>`, and prove it fails with the fix stashed and passes with it. It's part of the fix, so don't ask about it. If a unit test covers the cause, write that instead (it's cheaper). Without Docker, write it and mark it **not run**.
+
 ### 5. Verify and commit
 1. Run the configured checks for what changed (`yayh run lint`, `typecheck`, the relevant `test`). Report pre-existing failures as in `/yay:implement`.
 2. Run `yayh debug markers`. It must print nothing.
@@ -65,7 +67,7 @@ Without a test, do the report's manual check exactly and record the result.
 5. If the bug is a trap others could hit, add an entry to `docs/knowledge/known-issues.md` (with the evidence). `yayh knowledge check` must pass; then stamp it with `yayh knowledge stamp`.
 6. Commit, staging by path:
    ```
-   git add -- <changed files> <report> [docs/knowledge/known-issues.md]
+   git add -- <changed files> <report> [<e2e spec>] [docs/knowledge/known-issues.md]
    git commit -m "fix(<scope>): <what is fixed, user-facing wording>" -m "<root cause in one or two lines>" -m "Fixes: B-<n>"
    ```
 

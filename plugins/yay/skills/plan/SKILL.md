@@ -46,7 +46,8 @@ A plan is the contract `/yay:implement` follows task by task. The format is in `
    Put data and migration first, then server, then UI, then docs. If the work makes a knowledge doc wrong, add a task to update it.
 5. **Tests and Verify.**
    - **Tests:** with `--tests=ask`, draft the worthwhile tests (each with its name, file, suite, and the risk it guards). They're asked about in step 7's single round. Until then, write them into `**Tests:**` as proposed. The repo's test policy is in the project block and `.claude/rules/yay-workflow.md`.
-   - **Verify:** exact checks, each with the command or the UI path, the input, and the result that means it passed. Cover every edition the plan touches.
+   - **E2E** (only when `yayh config get commands.e2e` is set): pick the acceptance criteria that **only a browser can prove**, by the test in `${CLAUDE_PLUGIN_ROOT}/reference/e2e.md` ("When a flow deserves a spec"). Usually that's 0–2: a customer-facing flow, or a JS-rendered admin screen that must save and reload. Write them on the `**E2E:**` line as `<flow>: <the outcome to assert>`, separated by `;`, or write `**E2E:** none`. Decide this yourself; it's not a question.
+   - **Verify:** exact checks, each with the command or the UI path, the input, and the result that means it passed. Cover every edition the plan touches. A Verify item covered by an E2E flow says `(e2e)`.
 6. **Write it.**
    - `yayh artifact new plan "<title>" from=<id> roadmap=<R-n or empty> type=<type>`, then fill in every section.
    - With `--split`, create one plan per shippable slice, each with `from:` pointing at the source.
@@ -63,7 +64,7 @@ A plan is the contract `/yay:implement` follows task by task. The format is in `
    - **The single biggest open decision**, if one remains (the brainstorm option, or a design choice). Your pick comes first.
 
    Apply the answers. Then, when `yayh plan check` has no errors and no hard decision is still unanswered, mark it ready yourself: `yayh fm set <file> status ready`. Every other open point goes under the plan's `## Risks` as "Open: …" with the default you chose, for `/yay:implement` or the PR review. Nothing hard open means no question.
-8. **Report.** Give the file, the task count, the Tests line, any open risks, and the next step: `/yay:implement P-<n>`.
+8. **Report.** Give the file, the task count, the Tests and E2E lines, any open risks, and the next step: `/yay:implement P-<n>`.
 
 ### `--check` mode
 Run `yayh plan check <plan>`. Then review against the code as it is **now**: do the files still exist, is the approach still valid, and are there tasks the self-review list says are missing? Report blocking issues and suggestions separately. Offer to apply the fixes, but don't edit a plan that's `in-progress` without saying so; changes there must be visible to whoever is implementing it.

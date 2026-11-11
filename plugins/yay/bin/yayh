@@ -18,6 +18,7 @@ YAY_LIB_DIR="$YAY_KIT_ROOT/lib"
 . "$YAY_LIB_DIR/roadmap.sh"
 . "$YAY_LIB_DIR/code.sh"
 . "$YAY_LIB_DIR/review.sh"
+. "$YAY_LIB_DIR/e2e.sh"
 
 usage() {
   cat <<'EOF'
@@ -95,6 +96,17 @@ Code (reuse before you write)
   review diff [base] [--plan=P-n]  flag-only findings on this branch's changes: look-alike new functions,
                                    edited/grown/heavy/cross-file/change-log comments, docblock prose,
                                    files outside the plan (kind, where, message; always exits 0)
+
+E2E (Playwright + wp-env, one site per checkout; reference/e2e.md)
+  e2e status                       setup, deps, docker, env (up|down|external) + URL, port, spec files (TSV)
+  e2e detect                       an existing browser-test setup: playwright|wp-env|cypress|script|ci (TSV)
+  e2e scaffold [dir=tests/e2e] [--no-ci]
+                                   write missing starter files and config keys (never overwrites)
+  e2e port | e2e url               this checkout's port / base URL (worktrees get their own)
+  e2e env start|stop|reset         wp-env for this checkout (reset wipes the site and re-seeds it)
+  e2e run [playwright args...]     commands.e2e against this checkout's site, e.g. --grep "@P-4|@smoke"
+  e2e specs [ID]                   spec files with test counts, or the tests tagged @ID (file:line:text)
+  e2e cli <command...>             run in the wp-env cli container: wp option get x, tail -n 50 wp-content/debug.log
 
 Commands and debugging
   run <name> [version=x] [edition=y]
@@ -269,6 +281,20 @@ case "$cmd" in
     esac ;;
   review)
     case "${1:-}" in diff) shift; yay_review_diff "$@" ;; *) yay_die "usage: yayh review diff [base] [--plan=P-n]" ;; esac ;;
+  e2e)
+    sub="${1:-}"; shift || true
+    case "$sub" in
+      status) yay_e2e_status ;;
+      detect) yay_e2e_detect ;;
+      scaffold) yay_e2e_scaffold "$@" ;;
+      port) yay_e2e_port ;;
+      url) yay_e2e_url ;;
+      env) yay_e2e_env "$@" ;;
+      run) yay_e2e_run "$@" ;;
+      specs) yay_e2e_specs "$@" ;;
+      cli) yay_e2e_cli "$@" ;;
+      *) yay_die "usage: yayh e2e status|detect|scaffold|port|url|env|run|specs|cli" ;;
+    esac ;;
   run) [ $# -ge 1 ] || yay_die "usage: yayh run <command-name> [k=v...]"; yay_run "$@" ;;
   debug)
     case "${1:-}" in markers) yay_debug_markers ;; *) yay_die "usage: yayh debug markers" ;; esac ;;

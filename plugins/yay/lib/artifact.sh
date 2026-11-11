@@ -167,6 +167,10 @@ EOF
         esac
       done
   grep -Eq '^\*\*Tests:\*\*[[:space:]]*[^[:space:]]' "$f" || _pe "no '**Tests:** <tests or none>' line"
+  # Repos with e2e set up decide per plan which flows get a browser spec.
+  if yay_config_get commands.e2e >/dev/null 2>&1 && ! grep -Eq '^\*\*E2E:\*\*[[:space:]]*[^[:space:]]' "$f"; then
+    _pw "no '**E2E:** <browser-only flows, or none>' line (this repo has e2e set up)"
+  fi
   if ! awk '/^## Verify/{on=1; next} /^## /{on=0} on && /[^[:space:]]/ && !/^<!--/ && !/^[[:space:]]*([-*]|[0-9]+\.)[[:space:]]*$/{found=1} END{exit !found}' "$f"; then
     _pe "'## Verify' is missing or empty: write exact manual checks"
   fi
@@ -224,6 +228,8 @@ yay_run() {
   cmd="$(yay_config_get "commands.$name" 2>/dev/null)" || yay_die "no commands.$name in .yay/config.json (this step doesn't apply here)"
   cmd="$(yay_fill "$cmd" "slug=$(yay_config_get plugin.slug)" "$@")"
   case "$cmd" in *'{'*'}'*) yay_die "commands.$name still has a placeholder after filling: $cmd (pass k=v)";; esac
+  # YAY_RUN_APPEND: already shell-quoted extra arguments (yayh e2e run passes Playwright's).
+  [ -z "${YAY_RUN_APPEND:-}" ] || cmd="$cmd $YAY_RUN_APPEND"
   root="$(yay_repo_root)"
   # Honour .nvmrc / .node-version through nvm when the active Node differs.
   local pre="" want nvm_sh="${NVM_DIR:-$HOME/.nvm}/nvm.sh"

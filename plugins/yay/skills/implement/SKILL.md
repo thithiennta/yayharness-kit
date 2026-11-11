@@ -23,7 +23,7 @@ Implement a plan exactly, in a worktree, with one commit per task. The rules for
 | `--pr` / `--no-pr` | Push and open the PR without asking, or stop after the last commit. Default: don't ask; finish locally and print the push and PR commands. |
 | `--draft` | Open the PR as a draft. |
 | `--no-push` | Never push (this also means no PR). |
-| `--no-review` | Skip the reuse and comments review (step 4.4). For throwaway branches only. |
+| `--no-review` | Skip the reuse and comments review (step 4.5). For throwaway branches only. |
 
 ## Steps
 
@@ -72,9 +72,10 @@ For each unticked task in order (or only `--task`):
 
 ### 4. Finish
 1. Run all of `lint`, `typecheck`, `test` and `build` that exist in the config (`yayh run <name>`). For `build` with editions, build each edition the plan touches (`edition=<e>`). Report pre-existing failures separately (compare with the base, as in step 3.2).
-2. Walk through the plan's **Verify** list. Do each check you can (CLI, WP-CLI against `yayh config get site.wpPath`, reading the output). List the checks only a human can do (browser flows) for the PR.
-3. Run `yayh debug markers`. It must be empty.
-4. **Review for reuse and comments** (skip with `--no-review`):
+2. **E2E** (when the plan's `**E2E:**` line isn't `none` and `commands.e2e` is set): follow `/yay:e2e P-<n>` steps 1–5 in this worktree. Write the specs, tagged `@P-<n>`. Run `yayh e2e run --grep "@P-<n>|@smoke"` against this worktree's own site (`yayh e2e env start` gives it its own port). Classify any failure: a product bug is yours to fix now, since it's this branch's code. Commit as `test(e2e): <flow>` with the `Plan:` trailer. Without Docker, write and commit the specs anyway, and list them as **not run** in the PR. When you're done, stop the site with `yayh e2e env stop`.
+3. Walk through the plan's **Verify** list. Do each check you can (CLI, WP-CLI against `yayh config get site.wpPath`, reading the output). List the checks only a human can do (browser flows) for the PR.
+4. Run `yayh debug markers`. It must be empty.
+5. **Review for reuse and comments** (skip with `--no-review`):
    - Run `yayh review diff <base> --plan=P-<n>`.
    - Spawn one `yay:code-reviewer` agent. Its brief: the worktree path, the base branch, `P-<n>`, and "review this branch". Don't pass your own reasoning, so its read stays independent.
    - For each finding, either fix it or answer it:
@@ -82,8 +83,8 @@ For each unticked task in order (or only `--task`):
      - **Answer:** you disagree, with a reason. It goes in the PR under "Reuse and comments review".
 
    The review flags, it never blocks.
-5. Run `yayh knowledge stale --since=<base>`. For each doc this branch made wrong, update it now on this branch, following `/yay:knowledge-update`'s rules. Then `yayh knowledge check` must pass, and you run `yayh knowledge stamp <doc>`. Commit it as `docs(knowledge): …`.
-6. Run `yayh fm set <plan> status done` and commit it as `docs(plan): complete P-<n>`.
+6. Run `yayh knowledge stale --since=<base>`. For each doc this branch made wrong, update it now on this branch, following `/yay:knowledge-update`'s rules. Then `yayh knowledge check` must pass, and you run `yayh knowledge stamp <doc>`. Commit it as `docs(knowledge): …`.
+7. Run `yayh fm set <plan> status done` and commit it as `docs(plan): complete P-<n>`.
 
 ### 5. Push and PR
 Do this only with `--pr`, or when step 1's answer said yes. Otherwise don't ask: end the report with the exact commands (`git push -u origin <branch>` and the `gh pr create …` line).
@@ -95,7 +96,7 @@ gh pr create --base <base> --head "$branch" --assignee @me [--draft] \
 Fill the PR body from `.github/pull_request_template.md`:
 - link `P-<n>` (and `R-<n>`, `BS-<n>`)
 - list what changed
-- give the exact checks run, with their results, and the manual checks that are left
+- give the exact checks run, with their results (e2e specs by tag: passed, or not run), and the manual checks that are left
 - name the editions
 - write a customer-facing release note line, or "internal"
 - under "Decided": the choices you made where the plan was silent

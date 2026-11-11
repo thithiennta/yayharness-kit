@@ -38,6 +38,7 @@ Git rules are in `${CLAUDE_PLUGIN_ROOT}/reference/git-conventions.md`. Only this
    - Run `yayh knowledge stale --since=<last tag>`. If anything is stale, suggest `/yay:knowledge-update` first. Don't block on it.
    - Look for open work: `yayh artifact list plan --status=in-progress`. Mention it, since it isn't in this release.
    - Run the tests: `yayh run test`. A failure stops the release, so report it and suggest `/yay:debug`. If `commands.test` isn't set, say that the kit ran no tests. Also run `yayh run lint` when it's set, and report failures without blocking: lint debt often predates the release.
+   - **E2E** (when `commands.e2e` is set and Docker is running): `yayh e2e env start`, then the full suite, `yayh e2e run`. Triage failures as `${CLAUDE_PLUGIN_ROOT}/reference/e2e.md` says. A product bug stops the release, like a failing test. A flaky or environment failure is reported and doesn't block. Without Docker, say the suite wasn't run.
 2. **Version.**
    - Run `yayh changelog baseline`. It prints `<ref> <how>`, and the next step depends on `<how>`:
      - **`tag`:** normal. `last=<ref>`.

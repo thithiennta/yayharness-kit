@@ -144,6 +144,21 @@
         },
         "package": {
           "type": "string"
+        },
+        "e2e": {
+          "type": "string"
+        },
+        "e2e-install": {
+          "type": "string"
+        },
+        "e2e-start": {
+          "type": "string"
+        },
+        "e2e-stop": {
+          "type": "string"
+        },
+        "e2e-reset": {
+          "type": "string"
         }
       }
     },
@@ -249,6 +264,30 @@
         "debugLog": {
           "type": "string",
           "description": "Path to debug.log; default <wpPath>/wp-content/debug.log"
+        }
+      }
+    },
+    "e2e": {
+      "type": "object",
+      "additionalProperties": false,
+      "description": "Browser tests (reference/e2e.md). Written by /yay:e2e-setup.",
+      "properties": {
+        "dir": {
+          "type": "string",
+          "default": "tests/e2e",
+          "description": "The e2e package folder, relative to the repo root"
+        },
+        "port": {
+          "type": "integer",
+          "description": "The main checkout's wp-env port. Default: 8900-9890 derived from plugin.slug. Worktrees always get their own"
+        },
+        "baseUrl": {
+          "type": "string",
+          "description": "Run specs against this external site instead of wp-env (per developer, .yay/local.json)"
+        },
+        "wpEnvArgs": {
+          "type": "string",
+          "description": "Extra wp-env arguments for yayh e2e cli, e.g. --config=.wp-env.single.json"
         }
       }
     }

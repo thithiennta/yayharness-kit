@@ -1,6 +1,6 @@
 # Working on a Yay plugin with Claude: onboarding
 
-Every Yay plugin repo runs the same Claude Code harness, the **`yay`** plugin. It gives each repo the same rules, hooks and settings, project knowledge written from that repo's own code, and 13 `/yay:*` skills that take work from idea to tagged release in the same way for everyone.
+Every Yay plugin repo runs the same Claude Code harness, the **`yay`** plugin. It gives each repo the same rules, hooks and settings, project knowledge written from that repo's own code, and 15 `/yay:*` skills that take work from idea to tagged release in the same way for everyone.
 
 This page is what a new developer needs. The kit internals are in [`plugins/yay/README.md`](plugins/yay/README.md).
 
@@ -73,6 +73,14 @@ Brainstorms, plans and bug reports start as untracked files in your checkout. `/
 
 The gates are soft. You can skip a brainstorm for an obvious change, or fix a tiny bug without `/yay:debug`, and the skills say so when they think you shouldn't.
 
+### Browser tests (e2e)
+```text
+/yay:e2e-setup                             # once per repo: Playwright + wp-env in tests/e2e, seed data, smoke spec, CI workflow
+/yay:e2e "customer redeems points at checkout"   # a spec for one flow, run against this checkout's own site
+/yay:e2e --run=@P-4                        # run the specs that prove P-4 (and triage failures)
+```
+It's targeted. `/yay:plan` writes an `**E2E:**` line with only the flows a browser alone can prove, usually 0–2. `/yay:implement` writes and runs those specs, tagged `@P-<n>`. `/yay:fix` adds an `@B-<n>` regression spec only when the bug is a click path a unit test can't catch. `/yay:release` runs the full suite. Every checkout and worktree gets its own wp-env site and port (`yayh e2e status`), and specs never touch your real local site. Docker must be running; without it, specs are written and marked *not run*.
+
 ## 4. Code rules (loaded into every session)
 
 The plugin loads [`plugins/yay/reference/code-rules.md`](plugins/yay/reference/code-rules.md) into every session in a yay repo:
@@ -110,7 +118,7 @@ When a hook blocks something, its message says why and what to do instead. Claud
 | knowledge | The `yay:project` block of `CLAUDE.md`, `docs/knowledge/` | `/yay:knowledge-update`, or by hand. Keep the facts verifiable. |
 | workflow | `docs/roadmap.md`, brainstorms, plans, bugs, backlog, releases | Through the skills. |
 
-## 7. All 13 skills
+## 7. All 15 skills
 
 | Skill | Most-used options |
 |---|---|
@@ -127,6 +135,8 @@ When a hook blocks something, its message says why and what to do instead. Claud
 | `/yay:changelog` | `--dry-run`, `--since=<tag>` |
 | `/yay:build` | `--edition=pro`, `--zip=<path>` |
 | `/yay:release` | `minor`, `--dry-run`, `--wc-tested=X.Y`, `--tag-only`, `--hotfix` |
+| `/yay:e2e-setup` | `--adopt`, `--no-ci`, `--no-run`, `--dir=tests/e2e` |
+| `/yay:e2e` | `P-<n>`, `B-<n>`, `"<flow>"`, `--run=@P-4`, `--all`, `--triage` |
 
 Every skill shows its full option list as you type it, and explains each option at the top of its `SKILL.md`.
 
