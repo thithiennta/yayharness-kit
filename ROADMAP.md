@@ -64,11 +64,13 @@ Goal: the workflow bends for small work. Safety guards stay. *(7 / 8)* → **shi
 Goal: one front door, and shorter skills. *(8 / 8)*
 
 ### R-7 `/yay`: a front door that routes plain language
+- status: built on `feat/front-door` (not merged) as `/yay:go`, because plugin skills are namespaced
 - size: M · goal: 1 · depends: R-1
 - why: there are 18 skills, `/yay:roadmap` has 21 flags and `/yay:release` has 14, and ONBOARDING §7 needs a table just to remember them.
 - what: `/yay` with no argument shows `yayh status` and offers the next step. `/yay fix the coupon bug`, `/yay build R-12` or `/yay ship it` routes to the right skill and its flags. The other skills stay as they are; this one only adds.
 
 ### R-8 Slimmer skills, details loaded only when needed
+- status: partly built on `feat/front-door` (not merged): roadmap 107, release 140, implement 132 lines. The 80-line target isn't met yet
 - size: M · goal: 1, 4
 - why: release is 166 lines, roadmap 141 and implement 134, and two rule files load in every session. The rarely used branches (Trello, multi-agent, publish, legacy conversion, hotfix) take up context on every run.
 - what: aim for 80 lines or fewer per SKILL.md. Move the rare paths into `reference/<skill>-*.md`, read only when the matching flag is given. Accept words as well as flags (`/yay:roadmap status`, `/yay:release bundle`).
