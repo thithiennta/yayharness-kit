@@ -41,7 +41,7 @@ Turn a topic into a recorded decision: a `BS-<n>` file that `/yay:plan` builds o
    - set `yayh fm set <file> decision "<option letter and name>"`
    - set `yayh fm set <file> status decided`
    - write any extra conditions the user gave into Recommendation
-7. **Report.** Give the file, the recommendation and the decision (if made), the open questions, and the next step: `/yay:plan --from=BS-<n>`.
+7. **Report.** Give the file, the recommendation and the decision (if made), the open questions, and end with the **Next** line (`reference/asking.md`), usually `/yay:plan --from=BS-<n>`.
 
 ## Don'ts
 - Don't write a plan here: no task lists and no file-by-file changes. That's `/yay:plan`.

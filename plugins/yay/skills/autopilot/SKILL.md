@@ -70,6 +70,7 @@ With no scope at all, use `--sprint=current`.
    - the manual checks left for a human
    - the PR links, in stack order (dependencies first), or with `--no-pr` the push and `gh pr create` commands in that order
    - the run sheet's path
+   - the **Next** line (`reference/asking.md`): the resume command when something blocked, else `yayh next`
 
 ## Don'ts
 - Don't ask anything outside step 4. A question that turns up later is decided in the plan's spirit, written as a decision note with its default, and listed under **Decided**. A real blocker blocks only its item.

@@ -78,7 +78,7 @@ A plan is the contract `/yay:implement` follows task by task. The format is in `
    - One check item per task, `T<n> <what>`, in order; tasks already ticked are checked.
    - Save the card URL with `yayh fm set <plan> trello <url>`. Revising a plan that has `trello:` updates that checklist instead of adding one.
    - `--check` never syncs. Trello not connected: say so; the plan is unaffected.
-9. **Report.** Give the file, the task count, the Tests and E2E lines, any open risks, the notes settled into the plan, the notes written or left open (`BL-<n>`, kind, default), and the next step: `/yay:implement P-<n>`.
+9. **Report.** Give the file, the task count, the Tests and E2E lines, any open risks, the notes settled into the plan, the notes written or left open (`BL-<n>`, kind, default), and end with the **Next** line (`reference/asking.md`), usually `/yay:implement P-<n>`.
 
 ### Picking up notes
 For each row of `yayh backlog open --for=<id>`:

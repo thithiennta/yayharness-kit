@@ -97,7 +97,7 @@ With `--trello`, sync only the item that changed (**Trello**).
    - `yayh roadmap check` must have no errors.
 7. **Trello** (only with `--trello`): sync before committing, so the saved card URLs go in the same commit. See **Trello**.
 8. **Commit and PR**: `docs(roadmap): plan to <horizon>`, as above.
-9. **Report** the sprint table with the new ids, what slipped and where it went, what was promoted, the Trello cards (with `--trello`), the PR link, and the next step: `/yay:brainstorm --from=R-<n>` for the first item of the current sprint.
+9. **Report** the sprint table with the new ids, what slipped and where it went, what was promoted, the Trello cards (with `--trello`), the PR link, and end with the **Next** line (`reference/asking.md`), usually the top row of `yayh status` (`/yay:brainstorm --from=R-<n>` for the first item of the current sprint).
 
 ## Multi-agent (`--multi-agent`)
 

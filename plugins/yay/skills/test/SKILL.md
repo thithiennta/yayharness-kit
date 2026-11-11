@@ -61,6 +61,7 @@ Tests at the cheapest layer that proves each risk, tagged with the artifact they
    - the fail-first evidence
    - anything handed to `/yay:e2e`
    - **Decided:** the layers chosen and the cases picked
+   - the **Next** line (`reference/asking.md`): `yayh next <the P-/B-<n>>` when the tests belong to one, else `/yay:debug` for a product bug found
 
 ## Don'ts
 - Don't test at a costlier layer than the ladder picks, and don't assert the same outcome at two layers.

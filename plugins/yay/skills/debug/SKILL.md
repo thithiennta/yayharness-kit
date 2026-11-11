@@ -65,7 +65,7 @@ Set the status:
 ### 7. Wrap up
 - Run `yayh debug markers`. It must print nothing. Run `git status` to confirm no product files changed: `git diff --stat` must be empty apart from the new report.
 - If this is a trap others will hit, say so. `/yay:fix` or `/yay:knowledge-update` adds it to `known-issues.md` in the fix branch.
-- Report the bug ID, the one-paragraph root cause, the confidence, the recommended fix, and the next step: `/yay:fix B-<n>` (or `--hotfix` when severity is critical or high and a release is affected).
+- Report the bug ID, the one-paragraph root cause, the confidence, the recommended fix, and end with the **Next** line (`reference/asking.md`), usually `/yay:fix B-<n>` (or `--hotfix` when severity is critical or high and a release is affected).
 
 ## Don'ts
 - Don't fix the bug here, not even a one-liner. The fix gets its own branch through `/yay:fix`.

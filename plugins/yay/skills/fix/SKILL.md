@@ -79,7 +79,7 @@ As in `/yay:implement` step 5: by default, unless `--no-pr`; then print the comm
 - record `pr` in the report
 
 ### 7. Report
-Give the bug ID, the branch, the change (files), the test (or the manual check and its result), the checks run, the PR URL, and the next step. For a hotfix: `/yay:release patch --hotfix` from this branch.
+Give the bug ID, the branch, the change (files), the test (or the manual check and its result), the checks run, the PR URL, and end with the **Next** line (`reference/asking.md`): `yayh next B-<n>`. For a hotfix: `/yay:release patch --hotfix` from this branch.
 
 ## Don'ts
 - Don't fix without a root cause, and don't widen the fix beyond it.

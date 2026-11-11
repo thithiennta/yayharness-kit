@@ -59,6 +59,7 @@ Specs that prove what only a browser can prove, tagged with the artifact they pr
    - the fail-first evidence for regression specs
    - flaky tests, with their trace paths
    - **Decided:** any choice the plan didn't pin down (which flow got a spec, the seed data you added)
+   - the **Next** line (`reference/asking.md`): `yayh next <the P-/B-<n>>` when the specs belong to one, else `/yay:debug` for a product bug found
 
 ## Don'ts
 - Don't write a spec for something a unit test or `wp` can check (see "When a flow deserves a spec").
