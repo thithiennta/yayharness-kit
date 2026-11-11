@@ -84,7 +84,7 @@ The gates are soft. You can skip a brainstorm for an obvious change, or fix a ti
 
 ### Browser tests (e2e)
 ```text
-/yay:e2e-setup                             # once per repo: Playwright + wp-env in tests/e2e, seed data, smoke spec, CI workflow
+/yay:e2e-init                              # once per repo: scout the flows, Playwright + wp-env in tests/e2e, seed, baseline specs, CI
 /yay:e2e "customer redeems points at checkout"   # a spec for one flow, run against this checkout's own site
 /yay:e2e --run=@P-4                        # run the specs that prove P-4 (and triage failures)
 ```
@@ -145,7 +145,7 @@ When a hook blocks something, its message says why and what to do instead. Claud
 | `/yay:changelog` | `--dry-run`, `--since=<tag>` |
 | `/yay:build` | `--edition=pro`, `--zip=<path>` |
 | `/yay:release` | `minor`, `--dry-run`, `--wc-tested=X.Y`, `--tag-only`, `--hotfix` |
-| `/yay:e2e-setup` | `--adopt`, `--no-ci`, `--no-run`, `--dir=tests/e2e` |
+| `/yay:e2e-init` | `--adopt`, `--depth=quick`, `--max-specs=6`, `--smoke-only`, `--no-ci`, `--no-run`, `--no-pr` |
 | `/yay:e2e` | `P-<n>`, `B-<n>`, `"<flow>"`, `--run=@P-4`, `--all`, `--triage` |
 
 Every skill shows its full option list as you type it, and explains each option at the top of its `SKILL.md`.

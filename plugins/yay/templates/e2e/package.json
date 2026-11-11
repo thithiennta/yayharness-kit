@@ -1,7 +1,7 @@
 {
   "name": "{{plugin.slug}}-e2e",
   "private": true,
-  "description": "End-to-end tests for {{plugin.name}}: Playwright against a wp-env site. Set up by /yay:e2e-setup.",
+  "description": "End-to-end tests for {{plugin.name}}: Playwright against a wp-env site. Set up by /yay:e2e-init.",
   "scripts": {
     "test": "playwright test",
     "test:ui": "playwright test --ui",

@@ -27,7 +27,7 @@ Specs that prove what only a browser can prove, tagged with the artifact they pr
 ## Steps
 
 1. **Preflight.**
-   - `yayh e2e status`. If `setup` is `no`, stop and point to `/yay:e2e-setup`.
+   - `yayh e2e status`. If `setup` is `no`, stop and point to `/yay:e2e-init`.
    - `deps missing` → `yayh run e2e-install`.
    - `env down` with Docker running → `yayh e2e env start`.
    - Docker not running → you can still write specs (steps 2–3), but mark them **not run** in the report. Never wait.
@@ -35,7 +35,7 @@ Specs that prove what only a browser can prove, tagged with the artifact they pr
    - **`P-<n>`:** read the plan's `**E2E:**` line and its Goal and Verify sections. Each item on the E2E line becomes a test. If the line is `none`, say so and stop, unless the user named a flow: then add it to the plan's E2E line first.
    - **`B-<n>`:** read Repro and Root cause. One test that walks the repro and asserts the correct behaviour. If a unit test can cover it (the cause is pure PHP logic), say so and stop: that belongs to `/yay:fix`'s regression test.
    - **`"<flow>"`:** the outcome the user described, at one level of detail: one spec file, one to three tests.
-   - Check existing coverage first: `yayh e2e specs` and `yayh e2e specs <ID>`. Extend the flow's existing file instead of adding a near-copy.
+   - Check existing coverage first: the **Flows** table in `docs/knowledge/e2e.md`, `yayh e2e specs` and `yayh e2e specs <ID>`. Extend the flow's existing file instead of adding a near-copy. For a `"<flow>"` that is a `candidate` row, use its slug, locators source and `needs`.
 3. **Write.** Read `fixtures/test.ts`, `bin/setup-env.sh` and one existing spec, then write in their style, following `reference/e2e.md`'s rules:
    - tag every test with `{ tag: '@<ID>' }`
    - arrange with `wp()`, act and assert in the browser, clean up what you changed
@@ -51,8 +51,9 @@ Specs that prove what only a browser can prove, tagged with the artifact they pr
    - **Product bug:** report it with the evidence and suggest `/yay:debug`. Don't change product code here. Don't weaken the assertion.
    - **Spec bug:** fix the spec and re-run.
    - **Environment:** `yayh e2e env reset` and re-run once. Passing on the re-run without a change means **flaky**. Report it with the trace; it isn't green.
-6. **Commit** (only with `--commit`): stage the spec files and any fixture or seed change by path. Commit them as `test(e2e): <flow>` with the `Plan: P-<n>` or `Refs: B-<n>` trailer. Never commit on the base branch.
-7. **Report:**
+6. **Flow map:** update the flow's row in `docs/knowledge/e2e.md`'s **Flows** table (coverage `specs/<file>` with the tag), or add a row for a new flow, so `/yay:plan` sees it.
+7. **Commit** (only with `--commit`): stage the spec files, `docs/knowledge/e2e.md`, and any fixture or seed change by path. Commit them as `test(e2e): <flow>` with the `Plan: P-<n>` or `Refs: B-<n>` trailer. Never commit on the base branch.
+8. **Report:**
    - the specs written: file, test titles and tags
    - each run with its result: passed twice, failed and classified, or not run (no Docker)
    - the fail-first evidence for regression specs

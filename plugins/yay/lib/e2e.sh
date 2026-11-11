@@ -70,7 +70,7 @@ _e2e_exec() {
 }
 
 _e2e_need_setup() {
-  yay_config_get commands.e2e >/dev/null 2>&1 || yay_die "e2e is not set up here (no commands.e2e): run /yay:e2e-setup"
+  yay_config_get commands.e2e >/dev/null 2>&1 || yay_die "e2e is not set up here (no commands.e2e): run /yay:e2e-init"
 }
 
 # yay_e2e_env start|stop|reset
@@ -152,7 +152,7 @@ yay_e2e_status() {
 }
 
 # yay_e2e_detect -> kind<TAB>path<TAB>detail for an existing browser-test setup
-# (playwright, wp-env, cypress, script, ci), so /yay:e2e-setup can adopt it.
+# (playwright, wp-env, cypress, script, ci), so /yay:e2e-init can adopt it.
 yay_e2e_detect() {
   local root f
   root="$(yay_repo_root)"
@@ -277,4 +277,52 @@ EOF
     yay_json_merge "$cfg" "$tmp" > "$tmp.out" && mv "$tmp.out" "$cfg"
     rm -f "$tmp"
   fi
+}
+
+# yay_e2e_surfaces -> TSV: kind<TAB>file:line<TAB>name. Every place a user can reach the plugin:
+# the starting map for /yay:e2e-init's scouts. Plain grep over tracked source (code.sh's file list).
+yay_e2e_surfaces() {
+  local root f
+  root="$(yay_repo_root)"
+  cd "$root" || return 1
+  _yay_code_files | while IFS= read -r f; do
+    awk -v f="$f" '
+      function out(kind, re,   s, n) {
+        if (match($0, re)) {
+          s = substr($0, RSTART, RLENGTH)
+          n = s; sub(/^[^"\x27]*["\x27]/, "", n); sub(/["\x27].*$/, "", n)
+          if (n == s) { n = s; gsub(/[[:space:]]+/, " ", n); n = substr(n, 1, 70) }
+          printf "%s\t%s:%d\t%s\n", kind, f, FNR, n
+          return 1
+        }
+        return 0
+      }
+      /^[[:space:]]*(\/\/|\*|#)/ { next }
+      {
+        out("admin-page", "add_(sub)?menu_page[[:space:]]*\\([^;]*") ||
+        out("admin-page", "add_(options|management|theme|users|dashboard|plugins)_page[[:space:]]*\\([^;]*")
+        out("shortcode", "add_shortcode[[:space:]]*\\([[:space:]]*[\"\x27][^\"\x27]+")
+        out("block", "register_block_type(_from_metadata)?[[:space:]]*\\([^)]*")
+        out("block", "registerBlockType[[:space:]]*\\([[:space:]]*[\"\x27][^\"\x27]+")
+        out("rest", "register_rest_route[[:space:]]*\\([^;]*")
+        out("ajax", "[\"\x27]wp_ajax_(nopriv_)?[a-z0-9_]+")
+        out("account", "add_rewrite_endpoint[[:space:]]*\\([[:space:]]*[\"\x27][^\"\x27]+") ||
+        out("account", "[\"\x27]woocommerce_account_[a-z0-9_]+")
+        out("wc-settings", "[\"\x27]woocommerce_(settings_tabs_array|get_settings_pages|get_sections_[a-z0-9_]+)")
+        out("checkout", "[\"\x27]woocommerce_(review_order|checkout|cart|before_cart|after_cart|proceed_to_checkout|blocks_)[a-z0-9_]*")
+        out("checkout", "woocommerce_store_api_register_endpoint_data|registerCheckoutFilters|ExperimentalOrderMeta|registerPaymentMethod")
+        out("product", "[\"\x27](woocommerce_(single_product|before_add_to_cart|after_add_to_cart|product_options|product_data_)|product_type_selector)[a-z0-9_]*")
+        out("email", "extends[[:space:]]+WC_Email|[\"\x27]woocommerce_email_classes")
+        out("gateway", "extends[[:space:]]+WC_Payment_Gateway|[\"\x27]woocommerce_payment_gateways")
+        out("shipping", "extends[[:space:]]+WC_Shipping_Method|[\"\x27]woocommerce_shipping_methods")
+        out("widget", "extends[[:space:]]+WP_Widget|register_widget[[:space:]]*\\(")
+        out("metabox", "add_meta_box[[:space:]]*\\([[:space:]]*[\"\x27][^\"\x27]+")
+        out("assets", "wp_enqueue_script[[:space:]]*\\([[:space:]]*[\"\x27][^\"\x27]+")
+        out("cron", "wp_schedule_(single_)?event[[:space:]]*\\(|as_schedule_[a-z_]+action[[:space:]]*\\(")
+      }' "$f"
+  done
+  git ls-files -- '*block.json' 2>/dev/null | while IFS= read -r f; do
+    case "$f" in node_modules/*|*/node_modules/*|vendor/*|*/vendor/*|build/*|*/build/*|dist/*|*/dist/*) continue ;; esac
+    printf 'block\t%s:1\t%s\n' "$f" "$(sed -nE 's/^[[:space:]]*"name"[[:space:]]*:[[:space:]]*"([^"]+)".*/\1/p' "$f" | sed -n 1p)"
+  done
 }

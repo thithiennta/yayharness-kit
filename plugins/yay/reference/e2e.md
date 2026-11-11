@@ -1,6 +1,6 @@
 # E2E: browser tests for Yay plugins
 
-Playwright against a throwaway WordPress site that wp-env runs in Docker, from `tests/e2e/` (`e2e.dir`). `/yay:e2e-setup` creates or adopts it, `/yay:e2e` writes and runs specs, and `/yay:plan`, `/yay:implement`, `/yay:fix` and `/yay:release` use it **in a targeted way**: specs only for what only a browser can prove.
+Playwright against a throwaway WordPress site that wp-env runs in Docker, from `tests/e2e/` (`e2e.dir`). `/yay:e2e-init` scouts the plugin's flows and creates or adopts it, `/yay:e2e` writes and runs specs, and `/yay:plan`, `/yay:implement`, `/yay:fix` and `/yay:release` use it **in a targeted way**: specs only for what only a browser can prove.
 
 ## The setup
 
@@ -17,6 +17,12 @@ Playwright against a throwaway WordPress site that wp-env runs in Docker, from `
 - **Seed data lives in `bin/setup-env.sh`**, which runs after every start and reset, so every step must be safe to repeat (`wp user get x || wp user create …`). Data one spec needs goes in that spec (`wp()` in `beforeAll`), not in the seed.
 - **`e2e.baseUrl`** points the specs at an external site (Local, branchpress) instead of wp-env. yayh then doesn't start, stop or reset anything, and `wp()` doesn't work; use it only for a one-off check.
 - **Docker is required.** When `yayh e2e status` says Docker isn't running, write the specs anyway, mark them *not run*, and say so in the report or PR. Never block on it.
+
+## The flow map
+
+`docs/knowledge/e2e.md` has a **Flows** table: every user flow `/yay:e2e-init` found (from `yayh e2e surfaces` and the `yay:e2e-scout` reports), with its actor, priority (`critical`: money, checkout, data loss or the plugin's main promise; `important`; `minor`), coverage and entry point. Coverage is one of `specs/<file>` with its `@flow-<slug>` tag, `candidate` (browser-only, no spec yet), `unit: <test>` or `manual: <why>`. `/yay:e2e` updates a row when it writes a spec; `/yay:plan` reads the table to see which spec a change touches. Re-running `/yay:e2e-init` adds the flows that are new since.
+
+A baseline spec describes behaviour the plugin has today, so it must pass on the current code, and it must fail when its one precondition is broken (an option turned off, the product deleted). A product bug found by a baseline spec becomes a `B-<n>` artifact and the test is marked `test.fail( true, 'B-<n>: …' )`, which `/yay:fix B-<n>` removes.
 
 ## When a flow deserves a spec (targeted)
 

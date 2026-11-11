@@ -125,3 +125,33 @@ PY
   "$YAYH" e2e scaffold --no-ci >/dev/null
   assert_contains "$("$YAYH" plan check "$plan" 2>&1)" "warn: no '**E2E:**"
 }
+
+test_surfaces_lists_where_users_reach_the_plugin() {
+  export YAY_REPO; YAY_REPO="$(_e2erepo wc)"
+  mkdir -p "$YAY_REPO/src" "$YAY_REPO/blocks/card" "$YAY_REPO/vendor/x" "$YAY_REPO/tests/e2e"
+  cat > "$YAY_REPO/src/boot.php" <<'PHP'
+<?php
+add_submenu_page( 'woocommerce', 'Giftly', 'Giftly', 'manage_options', 'giftly', array( $this, 'render' ) );
+add_shortcode( 'giftly_balance', array( $this, 'balance' ) );
+// add_shortcode( 'old_one', 'x' );
+add_action( 'woocommerce_review_order_before_payment', array( $this, 'field' ) );
+add_filter( 'woocommerce_account_menu_items', array( $this, 'menu' ) );
+add_rewrite_endpoint( 'gift-cards', EP_ROOT | EP_PAGES );
+add_action( 'wp_ajax_giftly_redeem', array( $this, 'redeem' ) );
+class Giftly_Email extends WC_Email {}
+PHP
+  printf '{\n  "name": "giftly/card",\n  "title": "Card"\n}\n' > "$YAY_REPO/blocks/card/block.json"
+  echo "<?php add_shortcode( 'vendored', 'x' );" > "$YAY_REPO/vendor/x/a.php"
+  echo "<?php add_shortcode( 'in_tests', 'x' );" > "$YAY_REPO/tests/e2e/a.php"
+  commit_all "$YAY_REPO"
+  local out; out="$("$YAYH" e2e surfaces)"
+  assert_contains "$out" "admin-page	src/boot.php:2	woocommerce"
+  assert_contains "$out" "shortcode	src/boot.php:3	giftly_balance"
+  assert_contains "$out" "checkout	src/boot.php:5	woocommerce_review_order_before_payment"
+  assert_contains "$out" "account	src/boot.php:6	woocommerce_account_menu_items"
+  assert_contains "$out" "account	src/boot.php:7	gift-cards"
+  assert_contains "$out" "ajax	src/boot.php:8	wp_ajax_giftly_redeem"
+  assert_contains "$out" "email	src/boot.php:9	"
+  assert_contains "$out" "block	blocks/card/block.json:1	giftly/card"
+  assert_eq "" "$(printf '%s\n' "$out" | grep -E 'old_one|vendored|in_tests' || true)" "comments, vendor and tests skipped"
+}

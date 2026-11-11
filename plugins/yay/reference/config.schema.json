@@ -270,7 +270,7 @@
     "e2e": {
       "type": "object",
       "additionalProperties": false,
-      "description": "Browser tests (reference/e2e.md). Written by /yay:e2e-setup.",
+      "description": "Browser tests (reference/e2e.md). Written by /yay:e2e-init.",
       "properties": {
         "dir": {
           "type": "string",

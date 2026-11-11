@@ -93,7 +93,7 @@ Report in a few lines:
 Then the next steps:
 1. **`/yay:knowledge-init`** writes the project block of `CLAUDE.md` and `docs/knowledge/`. Without it, Claude knows the workflow but not the plugin.
 2. Teammates install the plugin once with `claude plugin install yay@yayharness`. The repo's settings only register the marketplace.
-3. **`/yay:e2e-setup`** adds browser tests (Playwright + wp-env), or adopts the repo's existing ones when `yayh e2e detect` finds them. Optional; plan, implement and fix use it once it's there.
+3. **`/yay:e2e-init`** scouts the plugin's flows and adds browser tests for the critical ones (Playwright + wp-env), or adopts the repo's existing setup when `yayh e2e detect` finds one. Optional; plan, implement and fix use it once it's there.
 
 ## Hard wipe means hard wipe
 The team chose to delete the whole old harness, `docs/` included, and rebuild from code. Everything stays reachable in git history on the base branch. So:

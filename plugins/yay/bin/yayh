@@ -108,6 +108,7 @@ E2E (Playwright + wp-env, one site per checkout; reference/e2e.md)
   e2e env start|stop|reset         wp-env for this checkout (reset wipes the site and re-seeds it)
   e2e run [playwright args...]     commands.e2e against this checkout's site, e.g. --grep "@P-4|@smoke"
   e2e specs [ID]                   spec files with test counts, or the tests tagged @ID (file:line:text)
+  e2e surfaces                     where users reach the plugin: admin pages, shortcodes, blocks, Woo hooks, REST... (TSV)
   e2e cli <command...>             run in the wp-env cli container: wp option get x, tail -n 50 wp-content/debug.log
 
 Commands and debugging
@@ -296,7 +297,8 @@ case "$cmd" in
       run) yay_e2e_run "$@" ;;
       specs) yay_e2e_specs "$@" ;;
       cli) yay_e2e_cli "$@" ;;
-      *) yay_die "usage: yayh e2e status|detect|scaffold|port|url|env|run|specs|cli" ;;
+      surfaces) yay_e2e_surfaces ;;
+      *) yay_die "usage: yayh e2e status|detect|scaffold|port|url|env|run|specs|surfaces|cli" ;;
     esac ;;
   run) [ $# -ge 1 ] || yay_die "usage: yayh run <command-name> [k=v...]"; yay_run "$@" ;;
   debug)
