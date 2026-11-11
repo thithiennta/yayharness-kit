@@ -1,8 +1,8 @@
 ---
 name: roadmap
-description: Plan, re-plan or report a Yay plugin roadmap (docs/roadmap.md). Use when the user says "roadmap", "plan the next sprints", "what should we build next", "sprint status", "where are we", "add to the roadmap". Schedules evidenced R-<n> items into dated sprints against capacity and freezes. --status reports read-only; --multi-agent co-plans several plugins; --publish shares a page.
-argument-hint: "[--status] [--horizon=<YYYY-MM-DD|<n>sprints|eoq|eoy>] [--sprint-length=2w] [--start=YYYY-MM-DD] [--capacity=<dev-days/sprint>] [--freeze=YYYY-MM-DD..YYYY-MM-DD] [--focus=\"<theme>\"] [--web] [--add=\"<title>\" [--sprint=<n|later>] [--size=S|M|L]] [--move=R-<n>:<n|later>] [--drop=R-<n>] [--multi-agent] [--plugins=<a,b|all>] [--rounds=1|2] [--publish] [--dry-run] [--no-pr] [--draft]"
-allowed-tools: Bash(yayh *), Bash(git *), Bash(gh *), Read, Grep, Glob, Write, Edit, Agent, AskUserQuestion, WebSearch, WebFetch, Workflow, Skill, Artifact
+description: Plan, re-plan or report a Yay plugin roadmap (docs/roadmap.md). Use when the user says "roadmap", "plan the next sprints", "what should we build next", "sprint status", "where are we", "add to the roadmap". Schedules evidenced R-<n> items into dated sprints against capacity and freezes. --status reports read-only; --multi-agent co-plans several plugins; --publish shares a page; --trello (optional) mirrors the sprints and items to a Trello board.
+argument-hint: "[--status] [--horizon=<YYYY-MM-DD|<n>sprints|eoq|eoy>] [--sprint-length=2w] [--start=YYYY-MM-DD] [--capacity=<dev-days/sprint>] [--freeze=YYYY-MM-DD..YYYY-MM-DD] [--focus=\"<theme>\"] [--web] [--add=\"<title>\" [--sprint=<n|later>] [--size=S|M|L]] [--move=R-<n>:<n|later>] [--drop=R-<n>] [--multi-agent] [--plugins=<a,b|all>] [--rounds=1|2] [--publish] [--trello] [--dry-run] [--no-pr] [--draft]"
+allowed-tools: Bash(yayh *), Bash(git *), Bash(gh *), Read, Grep, Glob, Write, Edit, Agent, AskUserQuestion, WebSearch, WebFetch, Workflow, Skill, Artifact, mcp__trello__trelloReadBoard, mcp__trello__trelloReadList, mcp__trello__trelloReadCard, mcp__trello__trelloReadMember, mcp__trello__trelloWriteList, mcp__trello__trelloWriteCard
 ---
 
 # /yay:roadmap
@@ -28,6 +28,7 @@ Always edit through `yayh roadmap` where a command exists (`add`, `set`, `move`)
 | `--add="<title>"` (with `--sprint=<n\|later>`, `--size=S\|M\|L`), `--move=R-<n>:<n\|later>`, `--drop=R-<n>` | Quick edits. See **Quick edits**. |
 | `--multi-agent` / `--plugins=a,b\|all` / `--rounds=1\|2` | Co-plan several plugins. See **Multi-agent**. |
 | `--publish` | Publish the roadmap as a private page. See **Publish**. |
+| `--trello` | Optional. Also mirror the sprints and items to a Trello board. Off unless given. See **Trello**. |
 | `--dry-run` | Show the proposed roadmap and change nothing. |
 | `--no-pr`, `--draft` | As in `/yay:implement`: the PR is opened by default; `--no-pr` finishes locally and prints the commands; draft PR. |
 
@@ -59,6 +60,8 @@ One small change, on a branch as above, then `yayh roadmap check`, commit and th
 - `--drop=R-<n>`: `yayh roadmap set R-<n> status dropped`, then record the reason given in the request (or "dropped <date>") with `yayh roadmap set R-<n> note "<reason>"`. Don't ask for one. Never delete an item: ids aren't reused.
 
 Commit: `docs(roadmap): add R-<n> <title>` / `move R-<n> to sprint <n>` / `drop R-<n>`.
+
+With `--trello`, sync only the item that changed (**Trello**).
 
 ## Plan (default)
 
@@ -92,8 +95,9 @@ Commit: `docs(roadmap): add R-<n> <title>` / `move R-<n> to sprint <n>` / `drop 
    - New items: `yayh roadmap add "<title>" sprint=<n|later> size=… "why=…" ["editions=free, pro"] [from=…]`. It prints the id. Write `editions` with the config's edition names, comma and space separated.
    - Backlog ideas that became items: `yayh fm set docs/backlog/<file> status promoted:R-<n>`. A deferred note that became an item: `yayh fm set <file> affects "[R-<n>]"`, so the item's plan picks it up (it stays `open` until a plan takes it).
    - `yayh roadmap check` must have no errors.
-7. **Commit and PR**: `docs(roadmap): plan to <horizon>`, as above.
-8. **Report** the sprint table with the new ids, what slipped and where it went, what was promoted, the PR link, and the next step: `/yay:brainstorm --from=R-<n>` for the first item of the current sprint.
+7. **Trello** (only with `--trello`): sync before committing, so the saved card URLs go in the same commit. See **Trello**.
+8. **Commit and PR**: `docs(roadmap): plan to <horizon>`, as above.
+9. **Report** the sprint table with the new ids, what slipped and where it went, what was promoted, the Trello cards (with `--trello`), the PR link, and the next step: `/yay:brainstorm --from=R-<n>` for the first item of the current sprint.
 
 ## Multi-agent (`--multi-agent`)
 
@@ -119,6 +123,15 @@ One read-only owner agent per plugin researches its repo; the owners then read e
 1. Load the `artifact-design` skill, then build one HTML page from the committed roadmap(s): the current sprint first, then a timeline of sprints with item cards (id, title, size, status colour), Later, open critical and high bugs, and for multi-agent runs the shared initiatives and one tab per plugin. Write it to the session scratchpad, not the repo.
 2. If `docs/roadmap.md` has `published: <url>` (or `hub:` for a portfolio), republish to that URL with the Artifact tool. Otherwise publish a new private page and save its URL with `yayh fm set docs/roadmap.md published <url>` (`hub` in every plugin of a portfolio), committed with the roadmap.
 3. If the Artifact tool isn't available, say so and leave the HTML file's path.
+
+## Trello (`--trello`)
+
+Optional, and only when the flag is given. The contract (board setup, list and card mapping, re-runs) is `${CLAUDE_PLUGIN_ROOT}/reference/trello.md`.
+1. Find the board (`trello.board`), or ask for it once.
+2. For every sprint heading in the horizon and `Later`: find or create its list.
+3. For every item in those sections: create its card, or update and move the one in its `trello:` bullet. Shipped cards are marked done, dropped ones archived. Save new card URLs with `yayh roadmap set R-<n> trello <url>`, then `yayh roadmap check`.
+4. `--status` and `--dry-run` never sync. With `--multi-agent`, each plugin uses its own `trello.board`; a plugin with none is skipped (say so).
+5. Trello not connected: say so and carry on (the roadmap is still written and committed).
 
 ## Don'ts
 - Never renumber, reuse or delete an `R-<n>`. Dropped items stay with `status: dropped`.

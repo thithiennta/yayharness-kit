@@ -5,6 +5,7 @@ status: draft
 from: {{from}}
 roadmap: {{roadmap}}
 design:
+trello:
 type: {{ptype}}
 branch:
 pr:

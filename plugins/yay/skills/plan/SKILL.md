@@ -1,8 +1,8 @@
 ---
 name: plan
-description: Write or review a Yay plugin implementation plan. Use when the user says "plan this", "write a plan", "break this down", "review the plan", before any non-trivial change, or when /yay:fix escalates. Turns a brainstorm, roadmap item, bug or request into docs/plans/ P-<n> with goal, approach, tasks naming their files, an agreed Tests line and exact Verify checks. --check reviews one.
-argument-hint: "<topic|BS-<n>|R-<n>|B-<n>|UX-<n>|P-<n>> [--from=<id>] [--check] [--split] [--type=feat|fix|chore|refactor|perf] [--tests=ask|none] [--edition=<name>|all] [--commit]"
-allowed-tools: Bash(yayh *), Bash(git *), Read, Grep, Glob, Write, Edit, Agent, AskUserQuestion
+description: Write or review a Yay plugin implementation plan. Use when the user says "plan this", "write a plan", "break this down", "review the plan", before any non-trivial change, or when /yay:fix escalates. Turns a brainstorm, roadmap item, bug or request into docs/plans/ P-<n> with goal, approach, tasks naming their files, an agreed Tests line and exact Verify checks. --check reviews one; --trello (optional) adds the tasks to a Trello card.
+argument-hint: "<topic|BS-<n>|R-<n>|B-<n>|UX-<n>|P-<n>> [--from=<id>] [--check] [--split] [--type=feat|fix|chore|refactor|perf] [--tests=ask|none] [--edition=<name>|all] [--commit] [--trello]"
+allowed-tools: Bash(yayh *), Bash(git *), Read, Grep, Glob, Write, Edit, Agent, AskUserQuestion, mcp__trello__trelloReadBoard, mcp__trello__trelloReadList, mcp__trello__trelloReadCard, mcp__trello__trelloReadChecklist, mcp__trello__trelloReadMember, mcp__trello__trelloWriteCard, mcp__trello__trelloWriteChecklist
 ---
 
 # /yay:plan
@@ -23,6 +23,7 @@ A plan is the contract `/yay:implement` follows task by task. The format is in `
 | `--tests=auto\|none` | `auto` (default; `ask` is accepted as the same): pick the tests yourself, one per risk at the right layer, and ask only if the repo's rules require approval for tests. `none`: write `**Tests:** none` and verify by manual checks. |
 | `--edition=<e>` | Which editions the plan touches. Default: inferred from where the code lives. |
 | `--commit` | Commit the plan when you're on a non-base branch. |
+| `--trello` | Optional. After the plan is written, add its tasks to Trello as a checklist. Off unless given. See step 8. |
 
 ## Steps
 
@@ -71,7 +72,12 @@ A plan is the contract `/yay:implement` follows task by task. The format is in `
    Apply the answers. Then, when `yayh plan check` has no errors and no hard decision is still unanswered, mark it ready yourself: `yayh fm set <file> status ready`. Nothing hard open means no question.
 
    **Park what's still open.** A decision that can't be made now, and isn't worth the question round, becomes a decision note: `yayh artifact new backlog "<the question>" kind=decision from=P-<n> default="<what the plan does for now>" [affects="<other P-/R-ids>"]`. Plan the default, and add the line `Open: BL-<n> <question> (default: …)` under `## Risks`. Work you leave out of scope that someone will want later becomes `kind=deferred from=P-<n>`; name it under **Non-goals** as `BL-<n>`. Neither one stops the plan or keeps it `draft`.
-8. **Report.** Give the file, the task count, the Tests and E2E lines, any open risks, the notes settled into the plan, the notes written or left open (`BL-<n>`, kind, default), and the next step: `/yay:implement P-<n>`.
+8. **Trello** (only with `--trello`; contract in `${CLAUDE_PLUGIN_ROOT}/reference/trello.md`). Once the plan is written and checked:
+   - If its roadmap item has a card (`yayh roadmap get R-<n> trello`), add a checklist `P-<n> <title>` to that card. Otherwise create a card `P-<n> <title>` in `trello.list` (default `To Do`) with the Goal as its description and a `Tasks` checklist.
+   - One check item per task, `T<n> <what>`, in order; tasks already ticked are checked.
+   - Save the card URL with `yayh fm set <plan> trello <url>`. Revising a plan that has `trello:` updates that checklist instead of adding one.
+   - `--check` never syncs. Trello not connected: say so; the plan is unaffected.
+9. **Report.** Give the file, the task count, the Tests and E2E lines, any open risks, the notes settled into the plan, the notes written or left open (`BL-<n>`, kind, default), and the next step: `/yay:implement P-<n>`.
 
 ### Picking up notes
 For each row of `yayh backlog open --for=<id>`:
@@ -84,6 +90,6 @@ A note that's become pointless (the code it named is gone, the item was dropped)
 Run `yayh plan check <plan>`. Then review against the code as it is **now**: do the files still exist, is the approach still valid, and are there tasks the self-review list says are missing? Report blocking issues and suggestions separately. Offer to apply the fixes, but don't edit a plan that's `in-progress` without saying so; changes there must be visible to whoever is implementing it.
 
 ## Don'ts
-- Don't write code or change anything except the plan file.
+- Don't write code or change anything except the plan file (and, with `--trello`, its Trello card).
 - Don't put the same assertion at two layers, or a test at a costlier layer than the ladder picks.
 - Don't plan from memory: open the files first.

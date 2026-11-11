@@ -45,6 +45,8 @@ JSON, not YAML, so hooks can read it with `jq`, `node` or `php` and nothing to i
 | `tests.js` | string | JS tests folder. Default `tests/js`. |
 | `tests.jsRunner` | string | `vitest`, `jest`, `wp-scripts` or `none`. Default: what `package.json` uses. |
 | `e2e.wpEnvArgs` | string | Extra wp-env arguments for `yayh e2e cli`, e.g. `--config=.wp-env.single.json` in adopted setups. |
+| `trello.board` | string | Optional. The Trello board (URL or ARI) that `/yay:roadmap --trello` and `/yay:plan --trello` sync to. Shared in this file, or per developer in `.yay/local.json`. See `trello.md`. |
+| `trello.list` | string | Optional. The list for plan cards whose roadmap item has no card. Default `To Do`. |
 | `keep` | string[] | Paths `/yay:harness-init` must not wipe, e.g. user docs that live in `docs/`. |
 
 ## Per-developer overrides: `.yay/local.json`

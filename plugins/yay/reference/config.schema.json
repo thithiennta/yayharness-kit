@@ -355,6 +355,22 @@
           "description": "port of the UI check's wp-env site, default e2e base port + 4"
         }
       }
+    },
+    "trello": {
+      "type": "object",
+      "additionalProperties": false,
+      "description": "Optional Trello sync for /yay:roadmap --trello and /yay:plan --trello (reference/trello.md)",
+      "properties": {
+        "board": {
+          "type": "string",
+          "description": "board URL or ARI"
+        },
+        "list": {
+          "type": "string",
+          "default": "To Do",
+          "description": "list for plan cards whose roadmap item has no card"
+        }
+      }
     }
   }
 }
