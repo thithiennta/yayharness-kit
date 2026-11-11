@@ -3,6 +3,7 @@
 `/yay:harness-update` reads this file to tell a repo what changed between its recorded kit version and the installed one. Each entry lists new skills, config keys, template changes and behavior changes.
 
 ## Unreleased (0.5.0)
+- **One item, end to end, in one session: `/yay:implement R-<n> --explore`.** With no brainstorm yet, implement runs a quick two-option brainstorm, plans the chosen option, and builds it, all in the session. The option choice joins implement's single question round. Without the flag, it explores only when there are really different ways to build the item. `/yay:go` adds the flag for "from scratch", "end to end" or "explore first".
 - **Lessons loop.**
   - **Logging:** `yayh lessons add "<what happened>" kind=hook|review|blocked|env|plan|retry|kit [from=<id>]` logs friction to `.yay/runs/lessons.md` (gitignored, per checkout). `yayh lessons list [--kind=] [--since=] [--counts]` reads it back.
   - **When:** a new asking rule, loaded every session, says to log one line whenever a hook rejects something, a check can't run, a reviewer finds something worth remembering, an item blocks or a step needs a retry.

@@ -114,6 +114,7 @@ Goal: measure quality, so every later change can show it helped. *(8 / 8)*
 - what: write Verify as `command → expected`, run them with `yayh verify P-<n>`, and have an agent outside the build check the Goal against the diff.
 
 ### R-14 One item, end to end, interactively
+- status: built on `feat/later-items` (not merged) as `/yay:implement R-<n> --explore`
 - size: M · goal: 2
 - why: brainstorm → plan → implement takes three invocations. Autopilot chains them, but through background workflow agents.
 - what: `/yay:implement R-12 --from-scratch` (or `/yay go R-12`) brainstorms, plans and builds in the session, with one question round.

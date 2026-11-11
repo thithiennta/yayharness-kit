@@ -32,7 +32,7 @@ Route by what the user wants, not by keywords. Pass the user's own words on as t
 | options for an idea, "how should we…" | `/yay:brainstorm "<topic>"` (`--from=R-<n>` when it names an item) |
 | a design for a screen, modal or email | `/yay:design "<topic>"` |
 | a plan, "break this down" | `/yay:plan "<topic>"` or `--from=<id>` |
-| something built or changed: "add…", "make…", "rename…", "build R-12" | `/yay:implement "<requirement>"` or `<id>` (it picks the lane: tiny, small or standard) |
+| something built or changed: "add…", "make…", "rename…", "build R-12" | `/yay:implement "<requirement>"` or `<id>` (it picks the lane: tiny, small or standard). Add `--explore` when they say "from scratch", "explore first" or "end to end", or ask to compare approaches. |
 | a whole sprint or many items done | `/yay:autopilot` (`--sprint=current`, or the ids) |
 | to know why something breaks: a symptom, an error, a log | `/yay:debug "<symptom>"` |
 | a bug fixed: a `B-<n>`, or a bug whose cause is already clear | `/yay:fix B-<n>`; an unexplained bug goes to `/yay:debug` first |

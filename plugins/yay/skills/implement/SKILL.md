@@ -1,7 +1,7 @@
 ---
 name: implement
 description: Build a Yay plugin plan task by task in its own worktree and branch, or plan a requirement first and then build it. Use when the user says "implement P-4", "build this plan", "start on the plan", "continue the implementation", or "implement <a requirement>" / "implement R-12" when no plan exists yet. Implements, verifies and ticks each task, commits with a Plan trailer, runs the full checks, refreshes knowledge it made stale, and opens a PR assigned to its owner.
-argument-hint: "<P-<n>|plan-slug|\"<requirement>\"|R-<n>|BS-<n>|B-<n>> [--type=feat|fix|chore|refactor|perf] [--task=T<n>] [--continue] [--lane=tiny|small|standard] [--no-worktree] [--base=<branch>] [--no-pr] [--draft] [--no-review]"
+argument-hint: "<P-<n>|plan-slug|\"<requirement>\"|R-<n>|BS-<n>|B-<n>> [--type=feat|fix|chore|refactor|perf] [--task=T<n>] [--continue] [--explore] [--lane=tiny|small|standard] [--no-worktree] [--base=<branch>] [--no-pr] [--draft] [--no-review]"
 allowed-tools: Bash, Read, Grep, Glob, Write, Edit, Agent, AskUserQuestion
 ---
 
@@ -20,6 +20,7 @@ Implement a plan exactly, in a worktree, with one commit per task. Given a requi
 | `R-<n>` / `BS-<n>` / `B-<n>` | Build the plan made from this source, or plan it first when there is none (step 0). |
 | `--type=<t>` | Branch and commit type for a plan written in step 0 (default `feat`; `fix` for a bug). |
 | `--task=T<n>` | Do only this task, then stop (still verify, tick and commit it). |
+| `--explore` | For an `R-<n>` or a requirement with no brainstorm: compare two approaches first (a quick brainstorm), then plan and build, all in this session, with one question round. Default: only when the approach isn't obvious. |
 | `--lane=tiny\|small\|standard` | How much planning a requirement gets in step 0. Default: you pick (see step 0). |
 | `--continue` | Resume an `in-progress` plan in its existing worktree, starting at the first unticked task. |
 | `--no-worktree` | Create the branch in the current checkout (`git switch -c`) instead of a worktree. |

@@ -17,6 +17,15 @@ Skip this when the argument is a plan: a `P-<n>`, or text that `yayh artifact re
    - When the skill's step 1 round leaves nothing open, mark it ready: `yayh fm set <plan> status ready`.
 3. The plan is a new, untracked file in the main checkout, like any plan. It's carried into the branch in the skill's step 2, so it's committed with the code. Report it as "planned by /yay:implement".
 
+## Explore first (`--explore`, or an unclear approach)
+
+For a **small** or **standard** lane, when the source has no brainstorm and either `--explore` was given or there are two or more really different ways to build it (a different hook, storage or UI place, a different edition split), brainstorm before step 2:
+1. Follow `/yay:brainstorm` (`${CLAUDE_PLUGIN_ROOT}/skills/brainstorm/SKILL.md`) with `--quick --from=<the source>` (or the requirement as the topic): two options, grounded in the code, and a recommendation. Skip its question round and its report.
+2. Carry "which option?" (recommended first) into the skill's step 1 round, with the plan's own hard questions. It's still one round at most. With nobody to ask, build the recommended option, set the brainstorm `decided`, and say so under **Decided**.
+3. Plan from it (`--from=BS-<n>`) in step 2 below. The brainstorm is carried into the branch with the plan.
+
+An obvious approach (one sensible way to do it) skips this, even with a roadmap item.
+
 ## Tiny lane (no plan)
 1. Find the code and the existing helpers it should call, as for any task (the skill's step 3.1 reuse rules).
 2. Branch as in the skill's step 2.1–2.2, with a branch type that fits the change (`fix`, `chore`, `feat`). There's nothing to carry or set.
