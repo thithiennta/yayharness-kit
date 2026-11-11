@@ -25,7 +25,7 @@ EOF
 }
 
 # _bl_related <ID> -> ids whose notes apply to <ID>: itself; for a plan, its roadmap
-# item and source; for a roadmap item or brainstorm, the plans made from it.
+# item, source and design; for a roadmap item, brainstorm or design, the plans made from it.
 _bl_related() {
   local id="$1" root f v
   root="$(yay_repo_root)"
@@ -33,11 +33,11 @@ _bl_related() {
   case "$id" in
     P-[0-9]*)
       f="$(yay_artifact_resolve "$id" 2>/dev/null)" || return 0
-      for v in roadmap from; do yay_fm_get "$root/$f" "$v" 2>/dev/null | grep -E '^[A-Z]+-[0-9]+$' || true; done ;;
+      for v in roadmap from design; do yay_fm_get "$root/$f" "$v" 2>/dev/null | grep -E '^[A-Z]+-[0-9]+$' || true; done ;;
     *)
       for f in "$root"/docs/plans/*.md; do
         [ -f "$f" ] || continue
-        if [ "$(yay_fm_get "$f" roadmap 2>/dev/null)" = "$id" ] || [ "$(yay_fm_get "$f" from 2>/dev/null)" = "$id" ]; then
+        if [ "$(yay_fm_get "$f" roadmap 2>/dev/null)" = "$id" ] || [ "$(yay_fm_get "$f" from 2>/dev/null)" = "$id" ] || [ "$(yay_fm_get "$f" design 2>/dev/null)" = "$id" ]; then
           yay_fm_get "$f" id 2>/dev/null || true
         fi
       done ;;

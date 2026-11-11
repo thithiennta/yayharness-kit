@@ -1,6 +1,6 @@
 # yayharness build plan
 
-17 skills, all `/yay:*`. `⟵` marks a dependency. A box gets ticked when the task's tests pass.
+18 skills, all `/yay:*`. `⟵` marks a dependency. A box gets ticked when the task's tests pass.
 
 ## Decisions
 - Distribution: plugin `yay` in this marketplace. Local only for now.
@@ -91,6 +91,13 @@ Goal: browser tests the flow uses in a targeted way. A plan names the 0–2 flow
 - [x] T8.5 Unit tests (`test_e2e.sh`), plus a real run on a throwaway Woo plugin: install, wp-env + WooCommerce, seed, 4/4 smoke ⟵ all
 - [x] T8.6 `/yay:e2e-init` replaces `/yay:e2e-setup`: `yayh e2e surfaces`, `yay:e2e-scout` agents, a Flows table in `docs/knowledge/e2e.md`, baseline specs for critical browser-only flows (pass twice, fail when the precondition breaks; bugs become `B-<n>` with `test.fail`); plan, e2e and fix read the map ⟵ T8.5
 - Not yet run live: a worktree's own port (`WP_ENV_PORT`) side by side with the main site, adopting YayWholesale's existing setup, the CI workflow on GitHub.
+
+## P11 UI/UX design ✅ ⟵ P10
+Goal: a change that people will see gets a small design before it's planned: the smallest UI that does the job, in the plugin's existing screens and components, with every state and its copy written down.
+- [x] T11.1 `UX-<n>` design artifact (`docs/designs/`, template, `yayh artifact new design`, `yayh design check`), plan `design:` field, notes on a design reach its plan
+- [x] T11.2 `/yay:design` (gate, ground in `yayh e2e surfaces` and the nearest screen, wireframes, states, copy, a11y, simplify review, optional HTML mockup in `.yay/designs/`)
+- [x] T11.3 Plan writes or uses a design for UI work (UI tasks name the screen, Acceptance into Verify), implement builds to it; artifacts contract, managed CLAUDE block, onboarding
+- Not yet run live on a real plugin screen, and no eval yet.
 
 ## P10 Parked decisions and later work ✅ ⟵ P9
 Goal: a decision that can't be made while planning or building, or work that should wait, is written down instead of stopping the run or getting lost. The next step that works on the same plan picks it up again and updates the plan.

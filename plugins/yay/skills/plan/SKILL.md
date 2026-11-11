@@ -1,7 +1,7 @@
 ---
 name: plan
 description: Write or review a Yay plugin implementation plan. Use when the user says "plan this", "write a plan", "break this down", "review the plan", before any non-trivial change, or when /yay:fix escalates. Turns a brainstorm, roadmap item, bug or request into docs/plans/ P-<n> with goal, approach, tasks naming their files, an agreed Tests line and exact Verify checks. --check reviews one.
-argument-hint: "<topic|BS-<n>|R-<n>|B-<n>|P-<n>> [--from=<id>] [--check] [--split] [--type=feat|fix|chore|refactor|perf] [--tests=ask|none] [--edition=<name>|all] [--commit]"
+argument-hint: "<topic|BS-<n>|R-<n>|B-<n>|UX-<n>|P-<n>> [--from=<id>] [--check] [--split] [--type=feat|fix|chore|refactor|perf] [--tests=ask|none] [--edition=<name>|all] [--commit]"
 allowed-tools: Bash(yayh *), Bash(git *), Read, Grep, Glob, Write, Edit, Agent, AskUserQuestion
 ---
 
@@ -29,6 +29,7 @@ A plan is the contract `/yay:implement` follows task by task. The format is in `
 1. **Source.** Run `yayh artifact resolve <id>` and read it:
    - **Brainstorm:** use its decision. If its `status` isn't `decided`, plan its recommended option, and make "plan option <X>?" a question in step 7's round.
    - **Bug:** use its root cause. If it isn't `root-caused`, suggest `/yay:debug` first.
+   - **Design (`UX-<n>`):** plan from the design's own source (its `from:`), and set the plan's `design: UX-<n>`.
    - **Roadmap item:** if there's no brainstorm and the approach isn't obvious, plan the most likely approach, and say in the report that `/yay:brainstorm --from=R-<n>` would compare options.
    - **Open notes:** run `yayh backlog open --for=<source id>` (and `--for=P-<n>` when revising a plan). These are decisions and work an earlier step parked for later. Settle each one now if you can; see "Picking up notes" below.
 2. **Ground it.** Read the project block and the relevant `docs/knowledge/` docs. Read **every file the plan will touch**. A plan that names a file you haven't opened is a guess.
@@ -37,6 +38,7 @@ A plan is the contract `/yay:implement` follows task by task. The format is in `
    - **Non-goals.**
    - **Approach:** hooks, storage and option keys, REST, UI, the edition split, compatibility, migration.
    - **Risks** with a rollback.
+   - **UI:** when the change adds or changes something people see (an admin screen, tab or modal, a storefront, cart, checkout or My Account element, a block, an email), it follows a design. Use the one that exists (`yayh artifact list design`, or a `UX-<n>` that names this source), else write one now with `/yay:design --quick` (`${CLAUDE_PLUGIN_ROOT}/skills/design/SKILL.md`; the full skill when there are several screens). Set the plan's `design:` with `yayh fm set <plan> design UX-<n>`. A UI that only adds an option to an existing, obvious place needs no design file; give its place, label and default in the Approach.
    - Follow the repo's hard rules and conventions. Cite them where they shape the design.
 4. **Tasks.** Number them `T1…Tn`, in the order they'll be built. Each task:
    - is one commit's worth of change that leaves the tree working
@@ -44,13 +46,13 @@ A plan is the contract `/yay:implement` follows task by task. The format is in `
    - says what changes, not how to type it
    - has an indented `Reuse:` line naming the existing functions, hooks or settings it will call, with their file (`Reuse: Format::price() in includes/Support/Format.php`). Find them before writing the task: `yayh code find <verb> <noun>`, `docs/knowledge/helpers.md`, and how neighbouring code does the same job. If the task really needs a new function, write `Reuse: none, new <name>() because <why the existing ones don't fit>`. For tasks with no code, write `Reuse: n/a`.
 
-   Put data and migration first, then server, then UI, then docs. If the work makes a knowledge doc wrong, add a task to update it.
+   A UI task names the design screen it builds (`UX-<n> "<screen>"`) and reuses the components the design names. Put data and migration first, then server, then UI, then docs. If the work makes a knowledge doc wrong, add a task to update it.
 5. **Tests and Verify.**
    - **Tests:** list the risks in the change (acceptance criteria, branches of logic, data written, hooks touched). Give each one the **first layer down the ladder** in `${CLAUDE_PLUGIN_ROOT}/reference/testing.md` that can prove it: unit, integration, js, e2e or manual. Add a second layer only for a second, named risk. Check `yayh test status` and the **Coverage** table in `docs/knowledge/testing.md`: extend an existing test class rather than adding a new one, and mark a layer that isn't set up `(not set up: /yay:test-init)`.
      - Write them on the `**Tests:**` line as `[unit] <test_name> (<file>) — <risk>`, separated by `;`. Use `[integration]`, `[js]` or `[manual]` the same way. Browser-only risks go on the **E2E** line instead.
      - A typical plan has 1–4 tests, mostly unit. Decide this yourself. Only when the repo's rules require approval for tests (the project block or `.claude/rules/`) do they become step 7's question.
    - **E2E** (only when `yayh config get commands.e2e` is set): pick the acceptance criteria that **only a browser can prove**, by the test in `${CLAUDE_PLUGIN_ROOT}/reference/e2e.md` ("When a flow deserves a spec"). Usually that's 0–2: a customer-facing flow, or a JS-rendered admin screen that must save and reload. Read the **Flows** table in `docs/knowledge/e2e.md` first: when the change touches a flow that already has a spec, name that flow (its spec gets extended), and a touched `candidate` row is a strong reason to add it. Write them on the `**E2E:**` line as `<flow>: <the outcome to assert>`, separated by `;`, or write `**E2E:** none`. Decide this yourself; it's not a question.
-   - **Verify:** exact checks, each with the command or the UI path, the input, and the result that means it passed. Cover every edition the plan touches. A Verify item covered by a test says its layer: `(unit)`, `(integration)`, `(js)` or `(e2e)`.
+   - **Verify:** exact checks, each with the command or the UI path, the input, and the result that means it passed. With a design, its **Acceptance** checks go here, and the browser-only ones are candidates for the E2E line. Cover every edition the plan touches. A Verify item covered by a test says its layer: `(unit)`, `(integration)`, `(js)` or `(e2e)`.
 6. **Write it.**
    - `yayh artifact new plan "<title>" from=<id> roadmap=<R-n or empty> type=<type>`, then fill in every section.
    - With `--split`, create one plan per shippable slice, each with `from:` pointing at the source.

@@ -3,6 +3,10 @@
 `/yay:harness-update` reads this file to tell a repo what changed between its recorded kit version and the installed one. Each entry lists new skills, config keys, template changes and behavior changes.
 
 ## 0.2.0
+- **`/yay:design`: a simple UI/UX before the plan.** For a change people will see (an admin screen, tab or modal, a product/cart/checkout/My Account element, a block, an email), it writes `docs/designs/` `UX-<n>`. The design is grounded in `yayh e2e surfaces` and the plugin's nearest existing screen and components. It holds the job, where the UI lives, the flow, an ASCII wireframe per screen, every state (empty, saving, success, error, no permission, Pro seen in Free), the copy, accessibility, the decisions and the acceptance checks. A simplify review cuts fields, screens and settings the job doesn't need. `--mockup` adds a self-contained HTML preview in `.yay/designs/` (new `.gitignore` line). `--quick` does a one-screen pass, and `--check` reviews a design.
+  - `yayh design check` validates a design, `yayh artifact new design` creates one, and `yayh id next UX` gives its id.
+  - Plans gain `design: UX-<n>`. `/yay:plan` uses or writes a design for UI work: UI tasks name the screen they build, and the Acceptance checks go into Verify. `/yay:implement` builds to the design and updates it when the code forces a change.
+  - The managed CLAUDE.md block lists `/yay:design`.
 - **Parked decisions and later work are picked up again.** Backlog files gain `kind: idea | decision | deferred`, plus `affects:`, `default:`, `decision:` and `settled:`. Files without `kind` are ideas, as before.
   - A **decision** note is a call that couldn't be made while planning or building. The work builds its `default:` and never stops for it.
   - A **deferred** note is work left for later: out of scope, a follow-up, a nice-to-have found while building.

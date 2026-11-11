@@ -33,7 +33,7 @@ A repo's `.claude/settings.json` enables the plugin, but that alone does **not**
 ## 3. The workflow
 
 ```
-Feature   /yay:roadmap ─► /yay:brainstorm ─► /yay:plan ─► /yay:implement ─┐
+Feature   /yay:roadmap ─► /yay:brainstorm ─► (/yay:design) ─► /yay:plan ─► /yay:implement ─┐
 Bug       /yay:debug ─► /yay:fix ─────────────────────────────────────────┼─► /yay:release ─► (merge) ─► /yay:release --tag-only
 Hotfix    /yay:fix B-<n> --hotfix ─► /yay:release --hotfix ───────────────┘
 ```
@@ -42,7 +42,8 @@ Hotfix    /yay:fix B-<n> --hotfix ─► /yay:release --hotfix ─────�
 ```text
 /yay:roadmap --status                      # what's in this sprint, what slipped
 /yay:brainstorm --from=R-12                # 2-4 options, a recommendation → BS-3
-/yay:plan --from=BS-3                      # tasks, tests, verify checks → P-4
+/yay:design --from=BS-3 --mockup           # only when people will see something new: wireframes, states, copy → UX-2
+/yay:plan --from=BS-3                      # tasks, tests, verify checks → P-4 (uses UX-2, or writes a quick design itself)
 /yay:implement P-4                         # its own worktree + branch, a commit per task, PR assigned to you
 ```
 
@@ -76,6 +77,7 @@ Each step leaves a markdown artifact in `docs/`, so the next step (or the next p
 |---|---|---|
 | `R-<n>` | Roadmap item | `docs/roadmap.md` |
 | `BS-<n>` | Brainstorm | `docs/brainstorms/` |
+| `UX-<n>` | UI/UX design | `docs/designs/` |
 | `P-<n>` | Plan | `docs/plans/` |
 | `B-<n>` | Bug report | `docs/bugs/` |
 | `BL-<n>` | Backlog idea, pending decision or work left for later | `docs/backlog/` |
@@ -148,7 +150,7 @@ When a hook blocks something, its message says why and what to do instead. Claud
 | knowledge | The `yay:project` block of `CLAUDE.md`, `docs/knowledge/` | `/yay:knowledge-update`, or by hand. Keep the facts verifiable. |
 | workflow | `docs/roadmap.md`, brainstorms, plans, bugs, backlog, releases | Through the skills. |
 
-## 7. All 17 skills
+## 7. All 18 skills
 
 | Skill | Most-used options |
 |---|---|
@@ -158,6 +160,7 @@ When a hook blocks something, its message says why and what to do instead. Claud
 | `/yay:knowledge-update` | `--since=<tag>`, `--check`, `--doc=<file>` |
 | `/yay:roadmap` | `--status`, `--horizon=eoy`, `--capacity=8`, `--freeze=a..b`, `--add="…"`, `--multi-agent --plugins=a,b`, `--publish` |
 | `/yay:brainstorm` | `--from=R-<n>\|BL-<n>\|B-<n>`, `--quick`, `--research` |
+| `/yay:design` | `--from=BS-<n>\|R-<n>\|P-<n>`, `--quick`, `--mockup`, `--check` |
 | `/yay:plan` | `--from=BS-<n>`, `--check`, `--tests=auto\|none` |
 | `/yay:implement` | `P-<n>`, `"<requirement>"` or `R-<n>` (plans it first), `--task=T3`, `--continue`, `--no-pr`, `--draft` |
 | `/yay:autopilot` | `--sprint=current`, `R-<n>…`, `--ready`, `--parallel=N`, `--plan-only`, `--no-ask`, `--no-pr` |

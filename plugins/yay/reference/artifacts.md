@@ -18,6 +18,7 @@ Every step of the workflow leaves a markdown file in the repo. Its front-matter 
 | `BS-<n>` | Brainstorm | `docs/brainstorms/YYYY-MM-DD-<slug>.md` |
 | `P-<n>` | Plan | `docs/plans/<slug>.md` |
 | `B-<n>` | Bug report | `docs/bugs/YYYY-MM-DD-<slug>.md` |
+| `UX-<n>` | UI/UX design | `docs/designs/<slug>.md` |
 | `BL-<n>` | Backlog idea, or a note: a pending decision or work left for later | `docs/backlog/<slug>.md` |
 
 Get the next free ID with `yayh id next <PREFIX>`. It scans `docs/` and returns one more than the highest ID found. IDs never get reused, so when deleting an artifact, set its `status` to `dropped` instead. Two branches can claim the same ID. `/yay:implement` and `/yay:fix` check this before opening a PR, and the later branch renumbers.
@@ -83,6 +84,7 @@ title: Express checkout buttons
 status: draft | ready | in-progress | done | dropped
 from: BS-3                      # brainstorm, roadmap item or bug id
 roadmap: R-12
+design: UX-2                    # the UI it builds, when it has one
 type: feat                      # branch type for /yay:implement (feat fix chore refactor perf docs test)
 branch: feat/express-checkout   # set by /yay:implement
 pr:                             # PR number, set by /yay:implement
@@ -90,6 +92,19 @@ editions: [free, pro]
 created: 2026-11-10
 ```
 Body: Goal, Non-goals, Approach, `## Tasks` as `- [ ] T1 …` checkboxes, each naming the files it touches and followed by an indented `- Reuse: …` line (the existing code it calls, `none, new X() because …`, or `n/a`), then a `**Tests:**` line (tests the user accepted, or `none`) and a `## Verify` section with exact manual checks. `/yay:implement` ticks the boxes as it goes.
+
+### Design: `docs/designs/<slug>.md`
+```
+id: UX-2
+title: Express checkout buttons
+status: draft | ready | dropped
+from: BS-3                      # brainstorm, roadmap item, bug or plan
+surfaces: [admin, checkout]     # where it shows: admin, product, cart, checkout, my-account, block, email
+editions: [free, pro]
+mockup: .yay/designs/express-checkout-buttons.html   # optional local preview (gitignored)
+created: 2026-11-10
+```
+Body: Job, Where it lives, Flow, Screens (one `###` per screen, each with an ASCII wireframe in a code block and the existing components it reuses), States (empty, saving, success, error, no permission, Pro in Free), Copy, Accessibility, Decisions, Acceptance. `/yay:design` writes it and `yayh design check` validates it. A plan that builds it sets `design: UX-<n>`. Its UI tasks name the screen they build, and its Verify includes the Acceptance checks.
 
 ### Bug report: `docs/bugs/YYYY-MM-DD-<slug>.md`
 ```

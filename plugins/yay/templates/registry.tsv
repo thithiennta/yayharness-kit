@@ -13,5 +13,6 @@ docs/knowledge-readme.md	docs/knowledge/README.md	seed	docs
 -	docs/plans/.gitkeep	seed	docs
 -	docs/bugs/.gitkeep	seed	docs
 -	docs/backlog/.gitkeep	seed	docs
+-	docs/designs/.gitkeep	seed	docs
 -	docs/releases/.gitkeep	seed	docs
 gitignore.lines	.gitignore	lines	git

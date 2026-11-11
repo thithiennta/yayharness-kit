@@ -3,4 +3,5 @@
 CLAUDE.local.md
 .yay/local.json
 .yay/runs/
+.yay/designs/
 .yay-release/

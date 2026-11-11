@@ -3,8 +3,8 @@
 
 _art_prefix() {
   case "$1" in
-    brainstorm) echo BS ;; plan) echo P ;; bug) echo B ;; backlog) echo BL ;;
-    *) yay_die "unknown artifact type '$1' (brainstorm, plan, bug, backlog)" ;;
+    brainstorm) echo BS ;; plan) echo P ;; bug) echo B ;; backlog) echo BL ;; design) echo UX ;;
+    *) yay_die "unknown artifact type '$1' (brainstorm, plan, bug, backlog, design)" ;;
   esac
 }
 
@@ -15,6 +15,7 @@ _art_path() {
     plan)       printf 'docs/plans/%s.md\n' "$2" ;;
     bug)        printf 'docs/bugs/%s-%s.md\n' "$(yay_today)" "$2" ;;
     backlog)    printf 'docs/backlog/%s.md\n' "$2" ;;
+    design)     printf 'docs/designs/%s.md\n' "$2" ;;
   esac
 }
 
@@ -81,7 +82,7 @@ yay_artifact_resolve() {
   root="$(yay_repo_root)"
   if [ -f "$root/$q" ]; then printf '%s\n' "$q"; return 0; fi
   if [ -f "$q" ]; then printf '%s\n' "${q#"$root"/}"; return 0; fi
-  if printf '%s' "$q" | grep -Eq '^(BS|BL|P|B|R)-[0-9]+$'; then
+  if printf '%s' "$q" | grep -Eq '^(BS|BL|UX|P|B|R)-[0-9]+$'; then
     hits="$(yay_id_find "$q" 2>/dev/null | sed "s|^$root/||")" || hits=""
   else
     hits="$(cd "$root" && find docs -type f -name "*$(yay_slugify "$q")*.md" 2>/dev/null)" || hits=""
@@ -98,8 +99,8 @@ yay_artifact_list() {
   for a in "$@"; do case "$a" in --status=*) status="${a#--status=}";; *) type="$a";; esac; done
   root="$(yay_repo_root)"
   case "$type" in
-    "") dirs="brainstorms plans bugs backlog" ;; brainstorm) dirs=brainstorms ;; plan) dirs=plans ;;
-    bug) dirs=bugs ;; backlog) dirs=backlog ;; *) yay_die "unknown type $type" ;;
+    "") dirs="brainstorms plans bugs backlog designs" ;; brainstorm) dirs=brainstorms ;; plan) dirs=plans ;;
+    bug) dirs=bugs ;; backlog) dirs=backlog ;; design) dirs=designs ;; *) yay_die "unknown type $type" ;;
   esac
   for d in $dirs; do
     for f in "$root/docs/$d"/*.md; do
@@ -203,6 +204,36 @@ EOF
   if ! awk '/^## Verify/{on=1; next} /^## /{on=0} on && /[^[:space:]]/ && !/^<!--/ && !/^[[:space:]]*([-*]|[0-9]+\.)[[:space:]]*$/{found=1} END{exit !found}' "$f"; then
     _pe "'## Verify' is missing or empty: write exact manual checks"
   fi
+  [ "$errs" -eq 0 ]
+}
+
+# ---------- designs ----------
+
+# yay_design_check <design> -> "error: …" / "warn: …" lines; exit 1 on any error.
+yay_design_check() {
+  local rel f errs=0 st k sec n
+  rel="$(yay_artifact_resolve "$1")" || yay_die "no design '$1'"
+  f="$(yay_repo_root)/$rel"
+  for k in id title status created; do yay_fm_get "$f" "$k" >/dev/null 2>&1 || { echo "error: front-matter is missing '$k'"; errs=$((errs+1)); }; done
+  st="$(yay_fm_get "$f" status 2>/dev/null || true)"
+  case "$st" in draft|ready|dropped) ;; *) echo "error: status '$st' is not draft|ready|dropped"; errs=$((errs+1)) ;; esac
+  # A section counts as written when it has a line that isn't a comment, a bare bullet or a bare "Label:".
+  _ux_filled() { awk -v h="## $1" '$0 == h { on = 1; next } /^## / { on = 0 }
+    on && /[^[:space:]]/ && !/^<!--/ && !/-->$/ && !/^[[:space:]]*([-*]|[0-9]+\.)[[:space:]]*([A-Za-z ]+:)?[[:space:]]*$/ { found = 1 }
+    END { exit !found }' "$f"; }
+  for sec in Job Flow Screens States Copy Acceptance; do
+    if ! grep -qx "## $sec" "$f"; then echo "error: no '## $sec' section"; errs=$((errs+1))
+    elif ! _ux_filled "$sec"; then echo "error: '## $sec' is empty"; errs=$((errs+1)); fi
+  done
+  for sec in "Where it lives" Accessibility; do
+    grep -qx "## $sec" "$f" && _ux_filled "$sec" || echo "warn: '## $sec' is missing or empty"
+  done
+  n="$(awk '/^## Screens/{on=1; next} /^## /{on=0} on && /^### /{n++} END{print n+0}' "$f")"
+  awk '/^## Screens/{on=1; next} /^## /{on=0} on && /^```/{found=1} END{exit !found}' "$f" \
+    || echo "warn: '## Screens' has no wireframe: draw each screen in a \`\`\` block"
+  [ "$n" -le 4 ] || echo "warn: $n screens: a simple design rarely needs more than 4; merge or cut some"
+  awk '/^## States/{on=1; next} /^## /{on=0} on && !/^<!--/' "$f" | grep -iE 'error|fail' >/dev/null \
+    || echo "warn: '## States' says nothing about errors"
   [ "$errs" -eq 0 ]
 }
 

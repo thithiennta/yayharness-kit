@@ -48,7 +48,7 @@ Skip this when the argument is a plan: a `P-<n>`, or text that `yayh artifact re
   - `draft` → proceed, and say so in the report (a draft that passes `plan check` is buildable).
   - `in-progress` → behave as `--continue`.
   - `done` or `dropped` → stop.
-- Read the project block, the knowledge docs the plan touches, and every file the tasks name.
+- Read the project block, the knowledge docs the plan touches, and every file the tasks name. When the plan has `design: UX-<n>`, read the design too: UI tasks build its screens, states and copy exactly, with the components it names.
 - **Pick up open notes:** run `yayh backlog open --for=P-<n>`. These are decisions and later work that earlier steps parked for this plan, its roadmap item or its source, including notes on other branches. Handle each one as `/yay:plan` describes under "Picking up notes" (`${CLAUDE_PLUGIN_ROOT}/skills/plan/SKILL.md`): settle the ones the code, the finished work or this round can now answer, and update the plan to match. That means rewriting the tasks, the `Reuse:` lines and the Tests and Verify items they change, and adding a task where a settled decision differs from what an earlier plan already built. Then run `yayh plan check` again. Also apply any `Settles: BL-<n> …` lines the plan carries under `## Risks`. Plan edits and settles happen in the branch: if there's no branch yet, make them right after step 2. A decision that still can't be made stays open, and the plan follows its default. It never stops the run.
 - **Hard questions only, once, now** (`${CLAUDE_PLUGIN_ROOT}/reference/asking.md`). Include any carried over from step 0. Ask only if the plan leaves a decision that's expensive to undo or that only the user can make (for example, customer-visible behaviour the plan doesn't pin down): at most 3, in one AskUserQuestion. Everything else the plan leaves open, decide in its spirit and list under **Decided** in the PR. Usually that means no questions at all. Never stop mid-task to ask, unless the plan turns out to be wrong (step 3.1).
 
@@ -72,6 +72,7 @@ Install dependencies if the worktree needs them: `yayh run install`, once.
 For each unticked task in order (or only `--task`):
 1. **Do exactly the task, reusing what exists.** Call what the task's `Reuse:` line names. Before adding any function the plan didn't name, run `yayh code find <verb> <noun>` and check `docs/knowledge/helpers.md`. Follow the code rules loaded at session start (`${CLAUDE_PLUGIN_ROOT}/reference/code-rules.md`): small diffs, and no new, grown or reworded comments beyond what WPCS needs. If the plan turns out to be wrong (a file moved, an approach fails), stop and tell the user. With their agreement, edit the plan's task text first, then continue. Never drift silently.
    - **A decision the plan doesn't settle and you can't responsibly make** (customer-visible wording, a behaviour product must choose, an outcome that depends on other work): don't stop. Take the default that fits the plan, write it as a decision note (`yayh artifact new backlog "<question>" kind=decision from=P-<n> default="<what you built>" [affects=…]`), and go on. Any later plan that touches this one finds the note and settles it.
+   - **The design doesn't fit the code** (a component it names doesn't exist, a state it missed): build the closest thing in the design's spirit, update the design file in the same commit (its Screens, States or Copy), and list it under "Decided" in the PR.
    - **Work you find that the plan doesn't list** (a follow-up, an adjacent gap, a nice-to-have): don't build it. Write a `kind=deferred` note (`from=P-<n>`, plus `affects=` when you know which item it belongs to).
 2. **Verify the task:** run the configured checks that apply to what changed:
    - `yayh run lint`, or the linter on the changed files if the project block says how
@@ -90,7 +91,7 @@ For each unticked task in order (or only `--task`):
 ### 4. Finish
 1. Run all of `lint`, `typecheck` and `build` that exist in the config (`yayh run <name>`), and the tests with `yayh test run all` (every configured layer: unit, integration when the tests site is up, and js; it falls back to `commands.test`). For `build` with editions, build each edition the plan touches (`edition=<e>`). Report pre-existing failures separately (compare with the base, as in step 3.2).
 2. **E2E** (when the plan's `**E2E:**` line isn't `none` and `commands.e2e` is set): follow `/yay:e2e P-<n>` steps 1–5 in this worktree. Write the specs, tagged `@P-<n>`. Run `yayh e2e run --grep "@P-<n>|@smoke"` against this worktree's own site (`yayh e2e env start` gives it its own port). Classify any failure: a product bug is yours to fix now, since it's this branch's code. Commit as `test(e2e): <flow>` with the `Plan:` trailer. Without Docker, write and commit the specs anyway, and list them as **not run** in the PR. When you're done, stop the site with `yayh e2e env stop`.
-3. Walk through the plan's **Verify** list. Do each check you can (CLI, WP-CLI against `yayh config get site.wpPath`, reading the output). List the checks only a human can do (browser flows) for the PR.
+3. Walk through the plan's **Verify** list (it includes the design's Acceptance checks). Do each check you can (CLI, WP-CLI against `yayh config get site.wpPath`, reading the output). List the checks only a human can do (browser flows) for the PR.
 4. Run `yayh debug markers`. It must be empty.
 5. **Review for reuse and comments** (skip with `--no-review`):
    - Run `yayh review diff <base> --plan=P-<n>`.
@@ -111,7 +112,7 @@ gh pr create --base <base> --head "$branch" --assignee @me [--draft] \
   --title "<type>(<scope>): <plan title, lowercase summary>" --body-file <tmp>
 ```
 Fill the PR body from `.github/pull_request_template.md`:
-- link `P-<n>` (and `R-<n>`, `BS-<n>`)
+- link `P-<n>` (and `R-<n>`, `BS-<n>`, `UX-<n>`; with a design, mention its mockup path when one exists, which reviewers can regenerate with `/yay:design UX-<n> --mockup`)
 - list what changed
 - give the exact checks run, with their results (e2e specs by tag: passed, or not run), and the manual checks that are left
 - name the editions

@@ -3,8 +3,8 @@
 A Claude Code plugin that gives every Yay WordPress plugin the same harness and the same workflow. Once it's installed, each plugin repo gets a kit-managed CLAUDE.md block, rules, hooks and settings, plus knowledge docs written from its own code. Every developer then works through the same skills:
 
 ```
-/yay:roadmap ─► /yay:brainstorm ─► /yay:plan ─► /yay:implement ─┐
-               └──────── /yay:autopilot (all three, for a whole queue) ┤
+/yay:roadmap ─► /yay:brainstorm ─► (/yay:design) ─► /yay:plan ─► /yay:implement ─┐
+               └──────── /yay:autopilot (all of them, for a whole queue) ──────────┤
 /yay:debug ─► /yay:fix ──────────────────────────────────────────┼─► /yay:release --bundle (QA) ─► /yay:release
 /yay:harness-init · /yay:harness-update · /yay:knowledge-init · /yay:knowledge-update
 ```

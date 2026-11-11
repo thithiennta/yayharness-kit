@@ -4,6 +4,7 @@ title: {{title}}
 status: draft
 from: {{from}}
 roadmap: {{roadmap}}
+design:
 type: {{ptype}}
 branch:
 pr:

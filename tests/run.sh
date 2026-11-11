@@ -44,12 +44,12 @@ _cover() { # path -> test file basenames, or ALL
     tests/unit/test_*.sh) basename "$1" ;;
     tests/lib/*|tests/run.sh|tests/fixtures/*|plugins/yay/bin/yayh) echo ALL ;;
     plugins/yay/lib/common.sh|plugins/yay/lib/config.sh|plugins/yay/lib/frontmatter.sh|plugins/yay/lib/git.sh|plugins/yay/lib/manifest.sh|plugins/yay/lib/harness.sh) echo ALL ;;
-    plugins/yay/lib/artifact.sh) printf '%s\n' test_artifact.sh test_backlog.sh test_roadmap.sh ;;
+    plugins/yay/lib/artifact.sh) printf '%s\n' test_artifact.sh test_backlog.sh test_design.sh test_roadmap.sh ;;
     plugins/yay/lib/backlog.sh) printf '%s\n' test_backlog.sh test_artifact.sh ;;
     plugins/yay/lib/bundle.sh) echo test_release.sh ;;
     plugins/yay/lib/*.sh) echo "test_$(basename "$1")" ;;
     plugins/yay/hooks/*) echo test_hooks.sh ;;
-    plugins/yay/templates/artifacts/*) printf '%s\n' test_artifact.sh test_backlog.sh ;;
+    plugins/yay/templates/artifacts/*) printf '%s\n' test_artifact.sh test_backlog.sh test_design.sh ;;
     plugins/yay/templates/tests/*) echo test_tests.sh ;;
     plugins/yay/templates/e2e/*) echo test_e2e.sh ;;
     plugins/yay/templates/*) echo test_harness.sh ;;

@@ -8,6 +8,7 @@ This repo uses the **yay** harness. Work through its skills so every developer a
 |---|---|---|
 | Plan the horizon | `/yay:roadmap` | `docs/roadmap.md` (`R-<n>`) |
 | Explore an idea | `/yay:brainstorm` | `docs/brainstorms/` (`BS-<n>`) |
+| Design a UI | `/yay:design` | `docs/designs/` (`UX-<n>`) |
 | Decide the work | `/yay:plan` | `docs/plans/` (`P-<n>`) |
 | Build it | `/yay:implement` | worktree, branch, commits, PR |
 | Run a whole queue | `/yay:autopilot` | all of the above per item, one decision sheet, `.yay/runs/` |
@@ -19,7 +20,7 @@ This repo uses the **yay** harness. Work through its skills so every developer a
 
 - Each skill checks for the previous step's output and says when it's missing. You can still run any skill on its own.
 - The repo's commands, editions, branches and generated paths are in `.yay/config.json`. Read them with `yayh config get <key>`; never guess a command.
-- Get IDs and slugs from `yayh id next <R|BS|P|B|BL>` and `yayh slug "<text>"`.
+- Get IDs and slugs from `yayh id next <R|BS|P|B|BL|UX>` and `yayh slug "<text>"`.
 - Git: branches are `<type>/<slug>`, commits are `type(scope): summary`, and you never commit to `{{git.baseBranch}}` directly. The full rules are in `.claude/rules/yay-git.md`.
 - Never hand-edit generated paths: {{generatedPaths}}. A hook blocks it.
 - Product PHP runs on PHP {{requires.php}}+. `.claude/rules/yay-wordpress.md` lists what that rules out.

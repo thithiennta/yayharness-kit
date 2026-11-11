@@ -48,7 +48,7 @@ yay_fm_set() {
 # `id: PREFIX-<n>` front-matter and `### PREFIX-<n>` roadmap headings.
 yay_id_next() {
   local prefix="$1" max wt m
-  case "$prefix" in R|BS|P|B|BL) ;; *) yay_die "unknown id prefix '$prefix' (R, BS, P, B, BL)";; esac
+  case "$prefix" in R|BS|P|B|BL|UX) ;; *) yay_die "unknown id prefix '$prefix' (R, BS, P, B, BL, UX)";; esac
   max=0
   # This checkout and every other worktree of the repo: artifacts carried into a
   # worktree have left this checkout, but their ids are still taken.
