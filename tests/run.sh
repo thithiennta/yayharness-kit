@@ -93,6 +93,8 @@ run_one() {
     ( unset YAY_REPO; cd "$T_TMP" && "$t" ) || true
     rm -rf "$T_TMP"
   ) > "$out.log" 2>&1
+  # A typo'd assertion or helper in the test file itself is a failure, not a silent pass.
+  grep -F "$f: line " "$out.log" | grep ': command not found$' | sed "s|^|    FAIL $(basename "$f" .sh):$t: |" >> "$out.log" || true
   grep '^    FAIL' "$out.log" > "$out" || true
   printf 'RESULT %s %s\n' "$(grep -c '^    FAIL' "$out.log" || true)" "$(( $(date +%s) - start ))" >> "$out"
 }
