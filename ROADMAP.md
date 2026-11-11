@@ -18,16 +18,19 @@ Sizes: S = 1.5, M = 4, L = 8 dev-days. Capacity: 8 dev-days per 2-week sprint (o
 Goal: you always know where you are and what comes next. *(7 / 8)*
 
 ### R-1 `yayh status` / `yayh next`: one view of all work in flight
+- status: built on `feat/yayh-status` (not merged)
 - size: M · goal: 2 (it also feeds R-4 and R-7)
 - why: state is spread across `yayh roadmap status`, `roadmap links`, `roadmap queue`, `backlog open`, `artifact list`, worktrees and PRs. Only roadmap items get a "next action" (roadmap SKILL.md, Status step 3). Bugs without a fix, unpushed worktrees and plans that are half done get none.
 - what: one command that lists every chain (R → BS → UX → P → branch → PR → release) with its stage and the single next command. `yayh next <id>` prints just that command. It reuses `roadmap queue`'s stage logic.
 
 ### R-2 Resume where you stopped, at session start
+- status: built on `feat/session-resume` (not merged)
 - size: S · goal: 2
 - why: `hooks/session-start.sh` only prints the rules and the harness version. A new session in a worktree doesn't know that it's P-4, task 3 of 7.
 - what: when the checkout or worktree is on a work branch, add one line: `P-4 "<title>" · 3/7 tasks · next: /yay:implement P-4 --continue` (from R-1). On the base branch, show the current sprint's next item. At most 3 lines.
 
 ### R-3 The same "Next:" footer on every skill
+- status: built on `feat/next-footer` (not merged)
 - size: S · goal: 2
 - why: each skill writes its next step differently (brainstorm step 7, roadmap step 9, implement's report has none). Some skills end without one.
 - what: every report ends with `Next: <one command>` plus at most 2 alternatives, taken from `yayh next`. If the user replies "go", "next" or "continue", that command runs.
