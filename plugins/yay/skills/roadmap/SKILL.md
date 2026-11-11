@@ -81,7 +81,7 @@ With `--trello`, sync only the item that changed (**Trello**).
    - `readme.txt`: features, recent changelog, and "Requires at least" / "Tested up to" / "WC tested up to". A newer WordPress or WooCommerce release than "tested up to" is a compat item.
    - `git log --since=90.days --oneline` and unmerged branches, for work already under way.
    - `gh issue list --state open --limit 100` and `gh pr list --state open`, if gh works.
-   - With `--web`: the plugin's wordpress.org page (installs, rating, the latest support threads, 1–3★ reviews) and 3–5 competitors. Hand this to one `Agent` with a fixed report format (pain points with links, competitor gaps), so the page dumps stay out of this context.
+   - With `--web`: the plugin's wordpress.org page (installs, rating, the latest support threads, 1–3★ reviews) and 3–5 competitors. Hand this to one `Agent` with a fixed report format (pain points with links, competitor gaps), so the page dumps stay out of this context. Give it the model and effort from `yayh model resolve web-research` (model routing: `${CLAUDE_PLUGIN_ROOT}/reference/models.md`).
 3. **Candidates.** For each, write: title, why (the customer value and its evidence: `B-<n>`, `BL-<n>`, `#issue`, a review URL), size S/M/L, editions, value high/medium/low, and `from` when it came from a backlog idea, bug or issue. Prefer small, evidenced items. A bug only becomes an item when it's bigger than a `/yay:fix` (otherwise it's just fixed).
 4. **Schedule.**
    - Unfinished items in past sprints have slipped. Each one moves to the current or a new sprint, or to Later. Say which.
@@ -109,11 +109,11 @@ One read-only owner agent per plugin researches its repo; the owners then read e
 4. **Run** the Workflow tool with `scriptPath: ${CLAUDE_PLUGIN_ROOT}/workflows/roadmap-portfolio.js` and `args`:
    ```json
    { "today": "YYYY-MM-DD", "horizon": "YYYY-MM-DD", "sprintLength": "2w", "capacity": 8,
-     "focus": "", "web": false, "rounds": 2,
+     "focus": "", "web": false, "rounds": 2, "models": { /* yayh model table --json */ },
      "sprints": [{ "n": 1, "start": "…", "end": "…", "freeze": false }],
      "plugins": [{ "name": "YayReturns", "slug": "yayreturns", "path": "/abs/path", "repo": "owner/name or empty", "version": "1.1.0", "harnessed": true }] }
    ```
-   Get `repo` from `gh repo view --json nameWithOwner -q .nameWithOwner` in each repo (empty if gh fails), and `version` from `YAY_REPO=<path> yayh version current`.
+   Take `models` from `yayh model table --json` in this repo (`${CLAUDE_PLUGIN_ROOT}/reference/models.md`). Get `repo` from `gh repo view --json nameWithOwner -q .nameWithOwner` in each repo (empty if gh fails), and `version` from `YAY_REPO=<path> yayh version current`.
 5. **Show, don't ask again.** Show the portfolio summary, the shared initiatives (owner, sprint, per-plugin work), the conventions, and a sprint table per plugin. Then go on to write: every repo's change is its own branch and PR, easy to change or drop; with `--no-pr`, keep them local and print the commands.
 6. **Write each harnessed plugin's roadmap**, in its own repo (`YAY_REPO=<path>` for every `yayh` call, `git -C <path>`), following Plan steps 6–7: on its own branch, `existing_id` items moved, new items added. A shared initiative's part gets `- shared: <initiative title> (owner <plugin>)` and `- depends: <plugin>:R-<n>` where the dependency is known. Skip `cut` items.
 7. **Report** one line per plugin (items per sprint, PR link) and the shared initiatives. With `--publish`, publish a hub (below).

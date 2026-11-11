@@ -47,6 +47,9 @@ JSON, not YAML, so hooks can read it with `jq`, `node` or `php` and nothing to i
 | `e2e.wpEnvArgs` | string | Extra wp-env arguments for `yayh e2e cli`, e.g. `--config=.wp-env.single.json` in adopted setups. |
 | `trello.board` | string | Optional. The Trello board (URL or ARI) that `/yay:roadmap --trello` and `/yay:plan --trello` sync to. Shared in this file, or per developer in `.yay/local.json`. See `trello.md`. |
 | `trello.list` | string | Optional. The list for plan cards whose roadmap item has no card. Default `To Do`. |
+| `models.steps.<step>` | string or object | Optional. The tier (`veryfast`, `fast`, `balanced`, `deep`), `inherit` (the default), or `{ "model", "effort" }` for one agent step. See `models.md`. |
+| `models.tiers.<tier>` | object | Optional. Override or add a tier: `{ "model": "sonnet"|"opus", "effort": "low"…"max" }`. |
+| `models.sizeBump` | object | Optional. Tier shift per roadmap size for sized steps. Default `{ "S": -1, "M": 0, "L": 1 }`. |
 | `keep` | string[] | Paths `/yay:harness-init` must not wipe, e.g. user docs that live in `docs/`. |
 
 ## Per-developer overrides: `.yay/local.json`

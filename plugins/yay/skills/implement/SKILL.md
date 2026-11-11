@@ -70,6 +70,7 @@ Install dependencies if the worktree needs them: `yayh run install`, once.
 
 ### 3. Task loop
 For each unticked task in order (or only `--task`):
+0. **Route it.** `yayh model resolve task --plan=P-<n> --task=T<n>`. `{}` (the usual case) means do it inline as below. Anything else means delegate the task to one `general-purpose` agent with that model and effort, briefed as in `${CLAUDE_PLUGIN_ROOT}/reference/models.md` (Per-task delegation). Then review its diff and carry on from step 2 yourself: verify, tick, commit.
 1. **Do exactly the task, reusing what exists.** Call what the task's `Reuse:` line names. Before adding any function the plan didn't name, run `yayh code find <verb> <noun>` and check `docs/knowledge/helpers.md`. Follow the code rules loaded at session start (`${CLAUDE_PLUGIN_ROOT}/reference/code-rules.md`): small diffs, and no new, grown or reworded comments beyond what WPCS needs. If the plan turns out to be wrong (a file moved, an approach fails), stop and tell the user. With their agreement, edit the plan's task text first, then continue. Never drift silently.
    - **A decision the plan doesn't settle and you can't responsibly make** (customer-visible wording, a behaviour product must choose, an outcome that depends on other work): don't stop. Take the default that fits the plan, write it as a decision note (`yayh artifact new backlog "<question>" kind=decision from=P-<n> default="<what you built>" [affects=…]`), and go on. Any later plan that touches this one finds the note and settles it.
    - **The design doesn't fit the code** (a component it names doesn't exist, a state it missed): build the closest thing in the design's spirit, update the design file in the same commit (its Screens, States or Copy), and list it under "Decided" in the PR.
@@ -95,7 +96,7 @@ For each unticked task in order (or only `--task`):
 4. Run `yayh debug markers`. It must be empty.
 5. **Review for reuse and comments** (skip with `--no-review`):
    - Run `yayh review diff <base> --plan=P-<n>`.
-   - Spawn one `yay:code-reviewer` agent. Its brief: the worktree path, the base branch, `P-<n>`, and "review this branch". Don't pass your own reasoning, so its read stays independent.
+   - Spawn one `yay:code-reviewer` agent, with the model and effort from `yayh model resolve review --plan=P-<n>` (model routing: `${CLAUDE_PLUGIN_ROOT}/reference/models.md`). Its brief: the worktree path, the base branch, `P-<n>`, and "review this branch". Don't pass your own reasoning, so its read stays independent.
    - For each finding, either fix it or answer it:
      - **Fix:** call the existing helper, delete or restore the comment. Commit `refactor(<scope>): reuse <helper>` or `style(<scope>): restore comments` with the `Plan:` trailer, then re-run the checks the change touches.
      - **Answer:** you disagree, with a reason. It goes in the PR under "Reuse and comments review".

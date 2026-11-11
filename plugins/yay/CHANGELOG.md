@@ -2,6 +2,17 @@
 
 `/yay:harness-update` reads this file to tell a repo what changed between its recorded kit version and the installed one. Each entry lists new skills, config keys, template changes and behavior changes.
 
+## 0.3.0
+- **Model and effort per step.** Each agent step can run on its own model and effort, set in `.yay/config.json` (or `.yay/local.json`) under `models`:
+  - **Tiers:** `veryfast` (Sonnet, medium), `fast` (Opus, low), `balanced` (Opus, medium) and `deep` (Opus, high).
+  - **Steps:** `scout`, `web-research`, `feasibility`, `revise`, `resolve`, `review`, `hypothesis`, `portfolio-research`, `cowork`, `prepare`, `implement`, `synthesis` and `task`. Each takes a tier, `inherit` (the default, so nothing changes until a repo opts in), or an inline `{ model, effort }`.
+  - **Size bump:** `prepare`, `implement`, `review` and `task` move one tier down for an S roadmap item and one up for an L item (`models.sizeBump`).
+  - **Commands:** `yayh model resolve <step> [--size] [--tier] [--plan] [--task]` and `yayh model table [--json]`. `yayh config validate` checks the block.
+  - **Where it applies:** every skill that spawns an agent passes the resolved model and effort. `/yay:autopilot` and `/yay:roadmap --multi-agent` pass `yayh model table --json` to their workflows, which route each `agent()` call.
+  - **Per-task delegation:** a plan task may end with `[tier: veryfast]` or `[tier: deep]`. `/yay:implement` then delegates that task to a subagent on that tier, and verifies, ticks and commits it itself. Untagged tasks still run inline. `yayh plan check` rejects unknown tiers.
+
+  New optional config keys: `models.tiers`, `models.steps`, `models.sizeBump`. Contract: `reference/models.md`.
+
 ## 0.2.0
 - **Optional Trello sync: `/yay:roadmap --trello` and `/yay:plan --trello`.** Off unless the flag is given. The roadmap gets one Trello list per sprint (plus `Later`) and one card per `R-<n>` item, due at the sprint's end; shipped cards are marked done and dropped ones archived. A plan's tasks become a checklist on its roadmap item's card, or on a new `P-<n>` card in `trello.list`. Card URLs are saved (`- trello:` on the item, `trello:` in the plan's front-matter), so re-runs update cards instead of duplicating them. New optional config keys `trello.board` and `trello.list`; with no board set, the run asks once and saves it to `.yay/local.json`. Without the Trello MCP server connected, the run says so and finishes normally. Contract: `reference/trello.md`.
 - **`/yay:design`: a simple UI/UX before the plan.** For a change people will see (an admin screen, tab or modal, a product/cart/checkout/My Account element, a block, an email), it writes `docs/designs/` `UX-<n>`. The design is grounded in `yayh e2e surfaces` and the plugin's nearest existing screen and components. It holds the job, where the UI lives, the flow, an ASCII wireframe per screen, every state (empty, saving, success, error, no permission, Pro seen in Free), the copy, accessibility, the decisions and the acceptance checks. A simplify review cuts fields, screens and settings the job doesn't need. `--mockup` adds a self-contained HTML preview in `.yay/designs/` (new `.gitignore` line). `--quick` does a one-screen pass, and `--check` reviews a design.

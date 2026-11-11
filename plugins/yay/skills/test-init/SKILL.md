@@ -41,7 +41,7 @@ Give this repo the unit, integration and JS test layers in one pass, with real t
 - Split the code into **2–5 areas** by what it does: rules and pricing, settings and storage, REST and AJAX, WooCommerce integration, admin JS, storefront JS. Leave out generated paths, `vendor/`, and tests.
 
 ### 3. Scout (`--depth=full`)
-Spawn one `yay:test-scout` per area, **all in one message**, up to `--agents`. Each brief has the area's paths, the repo facts (editions, PHP floor, `requires.wc`, generated paths), and the knowledge docs covering it.
+Spawn one `yay:test-scout` per area, **all in one message**, up to `--agents`, with the model and effort from `yayh model resolve scout` (model routing: `${CLAUDE_PLUGIN_ROOT}/reference/models.md`). Each brief has the area's paths, the repo facts (editions, PHP floor, `requires.wc`, generated paths), and the knowledge docs covering it.
 
 Wait for every report. Treat the reports as claims: before you write a test, open the cited lines of every `critical` unit's `cases`. An expected value you can't confirm becomes an open question, not a test. With `--depth=quick`, do the scout's job yourself, area by area.
 

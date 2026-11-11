@@ -1,6 +1,6 @@
 {
   "name": "yay",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "description": "One workflow for every Yay plugin: harness and knowledge init and update, brainstorm, plan, implement, debug, fix, roadmap, changelog, build and release.",
   "author": { "name": "YayCommerce" },
   "license": "UNLICENSED",

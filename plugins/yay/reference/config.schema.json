@@ -371,6 +371,34 @@
           "description": "list for plan cards whose roadmap item has no card"
         }
       }
+    },
+    "models": {
+      "type": "object",
+      "additionalProperties": false,
+      "description": "Optional model and effort per agent step (reference/models.md). Every step inherits the session's model unless set.",
+      "properties": {
+        "tiers": {
+          "type": "object",
+          "description": "tier name -> { model, effort }; built-ins veryfast, fast, balanced, deep",
+          "additionalProperties": { "type": "object", "additionalProperties": false, "properties": { "model": { "enum": ["sonnet", "opus"] }, "effort": { "enum": ["low", "medium", "high", "xhigh", "max"] } } }
+        },
+        "steps": {
+          "type": "object",
+          "description": "step -> a tier name, inherit, or an inline { model, effort }",
+          "propertyNames": { "enum": ["scout", "web-research", "feasibility", "revise", "resolve", "review", "hypothesis", "portfolio-research", "cowork", "prepare", "implement", "synthesis", "task"] },
+          "additionalProperties": { "oneOf": [ { "type": "string" }, { "type": "object", "additionalProperties": false, "properties": { "model": { "enum": ["sonnet", "opus"] }, "effort": { "enum": ["low", "medium", "high", "xhigh", "max"] } } } ] }
+        },
+        "sizeBump": {
+          "type": "object",
+          "additionalProperties": false,
+          "description": "tier shift per roadmap size, for prepare, implement, review and task",
+          "properties": {
+            "S": { "type": "integer", "default": -1 },
+            "M": { "type": "integer", "default": 0 },
+            "L": { "type": "integer", "default": 1 }
+          }
+        }
+      }
     }
   }
 }

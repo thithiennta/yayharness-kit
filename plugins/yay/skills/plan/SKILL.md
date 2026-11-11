@@ -46,6 +46,7 @@ A plan is the contract `/yay:implement` follows task by task. The format is in `
    - names its files in backticks (new files marked `(new)`)
    - says what changes, not how to type it
    - has an indented `Reuse:` line naming the existing functions, hooks or settings it will call, with their file (`Reuse: Format::price() in includes/Support/Format.php`). Find them before writing the task: `yayh code find <verb> <noun>`, `docs/knowledge/helpers.md`, and how neighbouring code does the same job. If the task really needs a new function, write `Reuse: none, new <name>() because <why the existing ones don't fit>`. For tasks with no code, write `Reuse: n/a`.
+   - optionally ends with a tier tag, `[tier: veryfast]` or `[tier: deep]`, but only when the task is clearly mechanical (a rename, copy, config) or clearly hard. `/yay:implement` then hands it to a subagent on that model (`${CLAUDE_PLUGIN_ROOT}/reference/models.md`). Most tasks have no tag.
 
    A UI task names the design screen it builds (`UX-<n> "<screen>"`) and reuses the components the design names. Put data and migration first, then server, then UI, then docs. If the work makes a knowledge doc wrong, add a task to update it.
 5. **Tests and Verify.**

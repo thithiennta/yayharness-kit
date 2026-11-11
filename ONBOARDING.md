@@ -188,6 +188,7 @@ Every skill shows its full option list as you type it, and explains each option 
 | The release asks about the size | The zip moved more than 25% or 1 MB against the last release, or has a file over 2 MB. The report lists the largest files. Tune it with `release.sizeChangePct` / `sizeChangeKb` / `largeFileKb`. |
 | The UI check is skipped | It needs `/yay:e2e-init` (wp-env and Playwright installed) and Docker running. Without them, the release lists the plugin's links from the code and asks you to click each one on a test site. |
 | Wrong Node version for builds | Add `.nvmrc`. `yayh run` uses it through nvm. |
+| Agents run on an unexpected model | `yayh model table` shows each step's tier, model and effort. Set them under `models` in `.yay/config.json` (see `reference/models.md`). |
 | JSON errors from `yayh` | Install `jq`, or force an engine with `YAY_JSON_ENGINE=php`. |
 
 ## 9. Updating the kit

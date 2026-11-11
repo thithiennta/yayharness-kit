@@ -61,7 +61,7 @@ Without a test, do the report's manual check exactly and record the result.
 ### 5. Verify and commit
 1. Run the configured checks for what changed (`yayh run lint`, `typecheck`, the relevant `test`). Report pre-existing failures as in `/yay:implement`.
 2. Run `yayh debug markers`. It must print nothing.
-3. **Review for reuse and comments**: run `yayh review diff <base>`. When it reports findings, or the fix is more than about 20 changed lines, also spawn one `yay:code-reviewer` (brief: worktree path, base, "review this branch"). Fix each finding, or answer it with a reason for the PR's "Reuse and comments review" section. It flags, never blocks.
+3. **Review for reuse and comments**: run `yayh review diff <base>`. When it reports findings, or the fix is more than about 20 changed lines, also spawn one `yay:code-reviewer` (brief: worktree path, base, "review this branch"), with the model and effort from `yayh model resolve review` (model routing: `${CLAUDE_PLUGIN_ROOT}/reference/models.md`). Fix each finding, or answer it with a reason for the PR's "Reuse and comments review" section. It flags, never blocks.
 4. Update the report:
    - append `## Fix` with what changed, why it's enough, and how it was verified
    - `yayh fm set <report> status fixed` (`fixed_in` is set by `/yay:release`)

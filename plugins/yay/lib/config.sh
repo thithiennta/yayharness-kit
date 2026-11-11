@@ -13,6 +13,12 @@ yay_config_default() {
     changelog.readme) echo 'readme.txt' ;;
     changelog.notesDir) echo 'docs/releases' ;;
     requires.php)     echo '7.4' ;;
+    # Model tiers (lib/model.sh, reference/models.md). Steps default to inherit.
+    models.tiers.veryfast.model) echo sonnet ;;  models.tiers.veryfast.effort) echo medium ;;
+    models.tiers.fast.model)     echo opus ;;    models.tiers.fast.effort)     echo low ;;
+    models.tiers.balanced.model) echo opus ;;    models.tiers.balanced.effort) echo medium ;;
+    models.tiers.deep.model)     echo opus ;;    models.tiers.deep.effort)     echo high ;;
+    models.sizeBump.S) echo -1 ;; models.sizeBump.M) echo 0 ;; models.sizeBump.L) echo 1 ;;
     site.wpPath)      # a checkout inside <wp>/wp-content/plugins/ (worktrees included)
       local r; r="$(yay_repo_root)"
       case "$r" in */wp-content/plugins/*) printf '%s\n' "${r%%/wp-content/plugins/*}" ;; esac ;;

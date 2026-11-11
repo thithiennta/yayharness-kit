@@ -22,6 +22,7 @@ YAY_LIB_DIR="$YAY_KIT_ROOT/lib"
 . "$YAY_LIB_DIR/review.sh"
 . "$YAY_LIB_DIR/e2e.sh"
 . "$YAY_LIB_DIR/tests.sh"
+. "$YAY_LIB_DIR/model.sh"
 
 usage() {
   cat <<'EOF'
@@ -36,6 +37,11 @@ Config (.yay/config.json)
   config fill <template> k=v...    substitute {version} {edition} {slug} {zip}
   config path                      path of the repo config
   config validate                  check required keys, files and formats
+
+Models (which model and effort each step runs on; reference/models.md)
+  model resolve <step> [--size=S|M|L] [--tier=<tier>] [--plan=P-n] [--task=Tn]
+                                   {"model":…,"effort":…} for one step, or {} to inherit the session's
+  model table [--json]             every step: tier, model, effort (TSV), or the table workflows take
 
 IDs, slugs, front-matter
   slug <text>                      kebab-case slug, max 50 chars
@@ -216,6 +222,13 @@ case "$cmd" in
       path) yay_config_file ;;
       validate) yay_config_validate && echo "config ok" ;;
       *) yay_die "usage: yayh config get|fill|path|validate" ;;
+    esac ;;
+  model)
+    sub="${1:-}"; shift || true
+    case "$sub" in
+      resolve) yay_model_resolve "$@" ;;
+      table) yay_model_table "$@" ;;
+      *) yay_die "usage: yayh model resolve|table" ;;
     esac ;;
   id)
     sub="${1:-}"; shift || true

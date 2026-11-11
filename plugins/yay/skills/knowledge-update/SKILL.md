@@ -41,7 +41,7 @@ For each stale doc, read what actually changed: `git log --oneline <ref>..HEAD -
 
 For **`helpers.md`**, compare the code against it: `yayh code new <ref>` lists the symbols added since the doc was verified. Add the ones meant for reuse, and drop or repoint entries whose symbol no longer exists (`yayh code find <name>`). If the repo has no `helpers.md` yet, create it as `/yay:knowledge-init` would.
 
-When several docs are stale with large diffs, spawn `yay:knowledge-scout` agents in parallel, one per doc. Brief each with the doc's current text, the commit range, the changed files, and the instruction to report only facts that are now wrong, missing or new. Spot-check what they bring back.
+When several docs are stale with large diffs, spawn `yay:knowledge-scout` agents in parallel, one per doc, with the model and effort from `yayh model resolve scout` (model routing: `${CLAUDE_PLUGIN_ROOT}/reference/models.md`). Brief each with the doc's current text, the commit range, the changed files, and the instruction to report only facts that are now wrong, missing or new. Spot-check what they bring back.
 
 ### 3. Edit
 - Make the smallest edits that make each doc true. Keep its structure and voice, and don't rewrite sections that are still right.

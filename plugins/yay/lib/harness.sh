@@ -241,6 +241,7 @@ yay_config_validate() {
   done <<EOF
 $(yay_json_get "$f" versionFiles 2>/dev/null)
 EOF
+  yay_model_validate || errs=$((errs+1))
   [ "$errs" -eq 0 ]
 }
 

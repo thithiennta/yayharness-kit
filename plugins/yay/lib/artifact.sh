@@ -180,6 +180,14 @@ EOF
           nowhy) echo "warn: task $t adds new code ('Reuse: none') without saying why the existing code doesn't fit ('because …')" ;;
         esac
       done
+  # A [tier: <name>] tag sends the task to a subagent on that tier (reference/models.md).
+  local tag
+  while IFS="$(printf '\t')" read -r t _ k; do
+    tag="$(printf '%s' "$k" | sed -nE 's/.*\[tier:[[:space:]]*([^]]*)\].*/\1/p' | sed -E 's/[[:space:]]+$//')"
+    [ -z "$tag" ] || _yay_model_tier_known "$tag" || _pe "task $t has unknown tier '$tag' (one of: $YAY_MODEL_ORDER, or a models.tiers key)"
+  done <<EOF
+$tasks
+EOF
   # Notes left for this plan (lib/backlog.sh): settle them or keep their default on purpose.
   case "$st" in draft|ready|in-progress)
     yay_backlog_open --for="$(yay_fm_get "$f" id 2>/dev/null || echo -)" 2>/dev/null | while IFS="$(printf '\t')" read -r k kind _ _ def ti _; do

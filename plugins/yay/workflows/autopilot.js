@@ -12,8 +12,8 @@ export const meta = {
 }
 
 // args (built by /yay:autopilot):
-// { mode: 'prepare' | 'build', kit, repo, base, today, parallel, pr, draft,
-//   items: [{ id, stage, artifact, after: [ids], waits: [ids], title }],
+// { mode: 'prepare' | 'build', kit, repo, base, today, parallel, pr, draft, models,
+//   items: [{ id, stage, artifact, after: [ids], waits: [ids], title, size }],
 //   answers: { '<id>': '<what the user decided for this item, or empty>' } }   // build only
 const A = args || {}
 const KIT = A.kit
@@ -22,6 +22,24 @@ const PAR = Math.max(1, Number(A.parallel) || 1)
 const PR = A.pr !== false
 if (!KIT || !A.repo) throw new Error('kit and repo are required')
 if (!ITEMS.length) throw new Error('no items')
+
+// Model routing (reference/models.md): A.models is `yayh model table --json`.
+// route(step, size) -> { model, effort } options for agent(), or {} to inherit.
+function route(step, size) {
+  const M = A.models
+  const s = M && M.steps && M.steps[step]
+  if (!s || s.tier === 'inherit') return {}
+  let tier = s.tier
+  if (size && (M.sized || []).includes(step) && (M.order || []).includes(tier)) {
+    const i = Math.min(M.order.length - 1, Math.max(0, M.order.indexOf(tier) + Number((M.sizeBump || {})[size] || 0)))
+    tier = M.order[i]
+  }
+  const f = tier === s.tier ? s : (M.tiers || {})[tier] || s
+  const out = {}
+  if (f.model) out.model = f.model
+  if (f.effort) out.effort = f.effort
+  return out
+}
 
 const CTX = `Repo: ${A.repo} (the main checkout). Base branch: ${A.base}. Today: ${A.today}.
 The yay kit is at ${KIT}: wherever a skill says \${CLAUDE_PLUGIN_ROOT}, read ${KIT}. If \`yayh\` isn't on PATH, use ${KIT}/bin/yayh.
@@ -110,7 +128,7 @@ if (A.mode === 'prepare') {
   const todo = ITEMS.filter(it => ['brainstorm', 'decide', 'plan'].includes(it.stage))
   const skipped = ITEMS.filter(it => !todo.includes(it))
   if (skipped.length) log(`Already planned (no prepare needed): ${skipped.map(it => `${it.id} (${it.stage})`).join(', ')}`)
-  const prepared = await runLimited(todo, PAR, it => agent(preparePrompt(it), { label: `prepare:${it.id}`, phase: 'Prepare', schema: PREPARED }))
+  const prepared = await runLimited(todo, PAR, it => agent(preparePrompt(it), { label: `prepare:${it.id}`, phase: 'Prepare', schema: PREPARED, ...route('prepare', it.size) }))
   return { mode: 'prepare', prepared: prepared.map((p, i) => p || { id: todo[i].id, blocked: 'prepare agent failed', plan: '', plan_status: 'none', questions: [], decided: [] }) }
 }
 
@@ -160,9 +178,9 @@ ${findings}
 async function review(it, built, prBase) {
   const brief = `Worktree: ${built.worktree}. Base branch: ${prBase}. Plan: ${it.artifact}. Review this branch.`
   try {
-    return await agent(brief, { label: `review:${it.id}`, phase: 'Review', agentType: 'yay:code-reviewer' })
+    return await agent(brief, { label: `review:${it.id}`, phase: 'Review', agentType: 'yay:code-reviewer', ...route('review', it.size) })
   } catch (e) {
-    return await agent(`${brief}\nYou are the reviewer defined in ${KIT}/agents/code-reviewer.md: read it and follow it exactly. Read-only.`, { label: `review:${it.id}`, phase: 'Review' })
+    return await agent(`${brief}\nYou are the reviewer defined in ${KIT}/agents/code-reviewer.md: read it and follow it exactly. Read-only.`, { label: `review:${it.id}`, phase: 'Review', ...route('review', it.size) })
   }
 }
 
@@ -183,17 +201,17 @@ for (const it of ITEMS) {
     const release = await slots()
     try {
       const answer = ANSWERS[it.id]
-      if (answer) await agent(revisePrompt(it, answer), { label: `revise:${it.id}`, phase: 'Revise' })
+      if (answer) await agent(revisePrompt(it, answer), { label: `revise:${it.id}`, phase: 'Revise', ...route('revise') })
 
       const depBranches = (it.after || []).map(d => branchOf[d]).filter(Boolean)
       const baseBranch = depBranches[0] || A.base
-      const built = await agent(implementPrompt(it, baseBranch, depBranches.slice(1)), { label: `implement:${it.id}`, phase: 'Implement', schema: BUILT })
+      const built = await agent(implementPrompt(it, baseBranch, depBranches.slice(1)), { label: `implement:${it.id}`, phase: 'Implement', schema: BUILT, ...route('implement', it.size) })
       if (!built) return (results[it.id] = { id: it.id, status: 'blocked', blocked: 'implement agent failed' })
       if (built.branch) branchOf[it.id] = built.branch
       if (built.status !== 'done') return (results[it.id] = { ...built, base: baseBranch })
 
       const findings = await review(it, built, baseBranch)
-      const resolved = await agent(resolvePrompt(it, built, findings || '(the reviewer returned nothing)', baseBranch), { label: `resolve:${it.id}`, phase: 'Resolve', schema: RESOLVED })
+      const resolved = await agent(resolvePrompt(it, built, findings || '(the reviewer returned nothing)', baseBranch), { label: `resolve:${it.id}`, phase: 'Resolve', schema: RESOLVED, ...route('resolve') })
       return (results[it.id] = { ...built, base: baseBranch, review: resolved })
     } finally {
       release()

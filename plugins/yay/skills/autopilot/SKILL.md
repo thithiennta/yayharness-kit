@@ -37,9 +37,10 @@ With no scope at all, use `--sprint=current`.
 3. **Prepare.** Run the Workflow tool with `scriptPath: ${CLAUDE_PLUGIN_ROOT}/workflows/autopilot.js` and
    ```json
    { "mode": "prepare", "kit": "<yayh root>", "repo": "<repo root>", "base": "<yayh git base>", "today": "YYYY-MM-DD",
-     "parallel": 1, "items": [{ "id": "R-3", "stage": "decide", "artifact": "BS-1", "after": [], "waits": [], "title": "…" }] }
+     "parallel": 1, "models": { /* yayh model table --json */ },
+     "items": [{ "id": "R-3", "stage": "decide", "artifact": "BS-1", "after": [], "waits": [], "title": "…", "size": "M" }] }
    ```
-   Map the TSV's `-` to `""` or `[]`, and split `after`/`waits` on commas. Pass `parallel` from `--parallel` (`yayh artifact new` locks ids, so parallel prepare is safe). Each agent brainstorms (when needed) and plans its item in the main checkout, settles the open backlog notes the evidence now answers (`yayh backlog open --for=<id>`), marks the plan `ready` unless it hit a hard call, and returns at most 2 hard questions. Calls it can't make and that aren't worth a question become decision notes with a default; they never keep an item from building.
+   Map the TSV's `-` to `""` or `[]`, and split `after`/`waits` on commas. Take each item's `size` from `yayh roadmap get <id> size`, and `models` verbatim from `yayh model table --json`. The workflow picks each agent's model and effort from these (`${CLAUDE_PLUGIN_ROOT}/reference/models.md`). Pass `parallel` from `--parallel` (`yayh artifact new` locks ids, so parallel prepare is safe). Each agent brainstorms (when needed) and plans its item in the main checkout, settles the open backlog notes the evidence now answers (`yayh backlog open --for=<id>`), marks the plan `ready` unless it hit a hard call, and returns at most 2 hard questions. Calls it can't make and that aren't worth a question become decision notes with a default; they never keep an item from building.
 4. **The decision sheet: the one stop of the run** (`${CLAUDE_PLUGIN_ROOT}/reference/asking.md`).
    - Collect every returned question, plus every open decision note on the queue's items that no agent asked about (`yayh backlog open --kind=decision --for=<id>` per item). Rank them by cost of a wrong call (customer-visible, hard to undo, wide blast radius).
    - Ask the top ones in **one** AskUserQuestion (up to 4 questions; each names its item and puts the plan's current option first, marked "(Recommended)"). Every question that doesn't fit takes its recommendation; say so under **Decided** in the sheet.
@@ -49,8 +50,8 @@ With no scope at all, use `--sprint=current`.
    - With `--plan-only`, report and stop. The plans are ready for `/yay:implement` or a later `/yay:autopilot --ready`.
 5. **Build.** Run the Workflow tool again with the same `scriptPath` and
    ```json
-   { "mode": "build", "kit": "…", "repo": "…", "base": "…", "today": "…", "parallel": 1, "pr": true, "draft": false,
-     "items": [ /* the queue again, from a fresh `yayh roadmap queue`, so each artifact is now the P-<n> */ ],
+   { "mode": "build", "kit": "…", "repo": "…", "base": "…", "today": "…", "parallel": 1, "pr": true, "draft": false, "models": { /* as in prepare */ },
+     "items": [ /* the queue again, from a fresh `yayh roadmap queue`, so each artifact is now the P-<n>; with size */ ],
      "answers": { "R-3": "Option B (no free-text coupon field); include test X" } }
    ```
    `answers` holds every item that returned a question, with its answer (or its recommendation, when it wasn't asked), written so an agent can apply it: the revise step records the decision, clears the plan's "Open (autopilot sheet)" risks and marks it ready. Per item the workflow:

@@ -10,7 +10,7 @@ export const meta = {
 }
 
 // args (built by /yay:roadmap):
-// { today, horizon, sprintLength, capacity, focus, web, rounds,
+// { today, horizon, sprintLength, capacity, focus, web, rounds, models,
 //   sprints: [{ n, start, end, freeze }],
 //   plugins: [{ name, slug, path, repo, version, harnessed }] }
 const A = args || {}
@@ -18,6 +18,24 @@ const PLUGINS = A.plugins || []
 if (PLUGINS.length < 2) throw new Error('need at least two plugins')
 const SPRINT_IDS = A.sprints.map(s => `S${s.n}`).concat(['later'])
 const CAPACITY = A.capacity || 8
+
+// Model routing (reference/models.md): A.models is `yayh model table --json`.
+// route(step, size) -> { model, effort } options for agent(), or {} to inherit.
+function route(step, size) {
+  const M = A.models
+  const s = M && M.steps && M.steps[step]
+  if (!s || s.tier === 'inherit') return {}
+  let tier = s.tier
+  if (size && (M.sized || []).includes(step) && (M.order || []).includes(tier)) {
+    const i = Math.min(M.order.length - 1, Math.max(0, M.order.indexOf(tier) + Number((M.sizeBump || {})[size] || 0)))
+    tier = M.order[i]
+  }
+  const f = tier === s.tier ? s : (M.tiers || {})[tier] || s
+  const out = {}
+  if (f.model) out.model = f.model
+  if (f.effort) out.effort = f.effort
+  return out
+}
 
 const CAL = `Today is ${A.today}. Horizon: ${A.horizon}. Sprints (${A.sprintLength}):
 ${A.sprints.map(s => `- S${s.n} ${s.start} → ${s.end}${s.freeze ? ' — FREEZE: hotfix-class items only (fixes, compat, docs)' : ''}`).join('\n')}
@@ -111,7 +129,7 @@ Research in this order:
 ${A.web ? `3. The web: the wordpress.org page (installs, rating, recent support threads, 1–3★ reviews), and 3–5 competitors (what they have that this plugin lacks).` : '3. Skip web research.'}
 
 Return the unfinished existing items plus 5–12 new candidates with honest sizes, evidence and a suggested sprint that respects freezes. Also list integration offers (hooks, data or UI this plugin could give the others) and concrete asks of specific plugins in the roster.`,
-  { label: `research:${p.name}`, phase: 'Research', schema: BRIEF }
+  { label: `research:${p.name}`, phase: 'Research', schema: BRIEF, ...route('portfolio-research') }
 )))).filter(Boolean)
 log(`Research: ${briefs.length}/${PLUGINS.length} briefs`)
 if (briefs.length < PLUGINS.length) log(`Missing briefs: ${PLUGINS.map(p => p.name).filter(n => !briefs.some(b => b.plugin === n)).join(', ')}`)
@@ -135,7 +153,7 @@ For ${p.name}:
 2. Propose joint initiatives with real customer value that fit the horizon.
 3. Flag conflicts or overlaps with other plugins (duplicate features, competing discounts or widgets, inconsistent UX), with a recommendation.
 4. Return the FULL revised item list for ${p.name}: own items plus accepted integration items, with sprint and priority. Keep existing_id on items that came from the roadmap. Freeze sprints hold hotfix-class items only.`,
-    { label: `cowork:${p.name}`, phase: 'Co-work', schema: COWORK }
+    { label: `cowork:${p.name}`, phase: 'Co-work', schema: COWORK, ...route('cowork') }
   )))).filter(Boolean)
   log(`Co-work: ${rounds.length}/${PLUGINS.length} responses`)
 } else {
@@ -159,7 +177,7 @@ Rules:
 - Capacity per plugin per sprint is about ${CAPACITY} dev-days (S=1.5, M=4, L=8). Freeze sprints hold hotfix-class items only. Move overflow to "later" or mark it cut.
 - Turn conflicts into explicit conventions or plugin risks.
 - Keep every existing_id, why and evidence. Include every plugin: ${PLUGINS.map(p => p.name).join(', ')}.`,
-  { label: 'synthesis', phase: 'Synthesis', schema: ROADMAP, effort: 'high' }
+  { label: 'synthesis', phase: 'Synthesis', schema: ROADMAP, effort: 'high', ...route('synthesis') }
 )
 
 return { briefs, rounds, roadmap }

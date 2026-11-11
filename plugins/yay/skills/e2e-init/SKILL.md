@@ -41,7 +41,7 @@ Give this repo browser tests that fit the plugin, in one pass: scout every place
 - Group the surfaces into **2–5 groups** by who uses them, for example: admin settings screens; storefront (product, cart, checkout classic and block, My Account); blocks and the editor; emails and orders; integrations with other plugins. REST, AJAX and cron lines go with the screen that calls them, not in a group of their own.
 
 ### 3. Scout (`--depth=full`)
-Spawn one `yay:e2e-scout` per group, **all in one message**, up to `--agents`. Each brief has:
+Spawn one `yay:e2e-scout` per group, **all in one message**, up to `--agents`, with the model and effort from `yayh model resolve scout` (model routing: `${CLAUDE_PLUGIN_ROOT}/reference/models.md`). Each brief has:
 - the group name and its `yayh e2e surfaces` lines
 - the repo facts the scout needs: slug, editions, `requires.wc`, PHP floor, generated paths (never read those), and the admin page slug
 - the knowledge docs that cover its paths
