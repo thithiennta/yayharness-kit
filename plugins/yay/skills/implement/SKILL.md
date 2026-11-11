@@ -100,7 +100,7 @@ For each unticked task in order (or only `--task`):
      - `yay:bug-reviewer`. Its brief: the worktree path, the base branch, and the plan's **Goal** paragraph copied as it is, and "review this branch for correctness".
      - `yay:code-reviewer`. Its brief: the worktree path, the base branch, `P-<n>`, and "review this branch".
    - For each finding, either fix it or answer it:
-     - **Fix:** the change the finding names. Commit `fix(<scope>): <what>` for a correctness finding, or `refactor(<scope>): reuse <helper>` / `style(<scope>): restore comments`, with the `Plan:` trailer, then re-run the checks the change touches. A bug fix gets a test at the cheapest layer that proves it, when it's a real risk.
+     - **Fix:** the change the finding names. Commit `fix(<scope>): <what>` for a correctness finding, or `refactor(<scope>): reuse <helper>` / `refactor(<scope>): restore comments`, with the `Plan:` trailer, then re-run the checks the change touches. A bug fix gets a test at the cheapest layer that proves it, when it's a real risk.
      - **Answer:** you disagree, with a reason. It goes in the PR under "Review".
    - **A `blocker`** (a security hole, or data lost or corrupted) is fixed before the PR, never answered away. If you can't fix it, open the PR as a draft and put the blocker first in its body.
    - Each reviewer's **Questions**: check the ones you can, and list the rest for the human reviewer.

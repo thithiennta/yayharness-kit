@@ -13,7 +13,7 @@ The yay plugin's SessionStart hook loads these into every session in a yay repo,
 - Match the file's existing style and structure.
 
 ## Comments
-WPCS requires docblocks, but never inline comments.
+WPCS requires docblocks. It doesn't require inline comments, so add one only where the rule below allows it.
 - **Docblocks** on new files, classes, functions and hooks, as WPCS requires: a one-line summary plus the `@param`, `@return` and `@since` tags the repo uses. No prose paragraphs. A filter or action gets the usual hook docblock.
 - **Inline comments** only for a non-obvious *why* about the line right below them. Never say what the code plainly does, and never add a comment to a self-describing key or setting.
 - **Never edit, extend or reword an existing comment** unless the code it describes changed in this task. Don't append lines to an existing comment block.

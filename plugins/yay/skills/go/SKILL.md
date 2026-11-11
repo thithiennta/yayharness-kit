@@ -9,7 +9,7 @@ allowed-tools: Bash(yayh *), Bash(git *), Read, Grep, Glob, Skill, AskUserQuesti
 
 Arguments: `$ARGUMENTS`
 
-One entry point, so nobody has to remember 18 skills and their options. This skill only routes: the skill it hands off to does the work, under its own rules. It writes nothing itself.
+One entry point, so nobody has to remember every skill and its options. This skill only routes: the skill it hands off to does the work, under its own rules. It writes nothing itself.
 
 ## No argument, or "next" / "continue" / "go on"
 

@@ -46,7 +46,7 @@ function route(step, size) {
 
 const CTX = `Repo: ${A.repo} (the main checkout). Base branch: ${A.base}. Today: ${A.today}.
 The yay kit is at ${KIT}: wherever a skill says \${CLAUDE_PLUGIN_ROOT}, read ${KIT}. If \`yayh\` isn't on PATH, use ${KIT}/bin/yayh.
-You are one step of /yay:autopilot, running unattended. NOBODY IS THERE TO ASK: never call AskUserQuestion. Follow ${KIT}/reference/asking.md as for a non-interactive run: take the recommended answer, write it under **Decided**, and never stop the work for an open point. Never push, tag or open a PR unless this prompt says to. Never use git add -A, --no-verify or --force.`
+You are one step of /yay:autopilot, running unattended, so nobody is there to answer: don't call AskUserQuestion. Follow ${KIT}/reference/asking.md as for a non-interactive run: take the recommended answer, write it under **Decided**, and never stop the work for an open point. Never push, tag or open a PR unless this prompt says to. Never use git add -A, --no-verify or --force.`
 
 const QUESTION = {
   type: 'object',
@@ -117,7 +117,7 @@ function preparePrompt(it) {
 Bring roadmap item **${it.id} ${it.title}** to an implementable plan, in the main checkout. Create only new artifact files (\`yayh artifact new …\`); don't create branches, commit, or edit tracked files.${it.after.length ? `\nIt will be built after ${it.after.join(', ')} in this run, on top of their branches: plan it assuming their plans are done (read their brainstorms or plans under docs/ for what they add).` : ''}
 
 1. ${start}
-2. Follow ${KIT}/skills/plan/SKILL.md with \`--from=<the brainstorm id>\`, \`roadmap=${it.id}\`, the type that fits (feat unless it's a fix or refactor), and \`--tests=ask\`. Do every step, including the self-review and \`yayh plan check\` with no errors. That includes "Picking up notes": run \`yayh backlog open --for=${it.id}\` and settle into the plan every decision and deferred note the evidence now answers (tracked notes as \`Settles:\` lines under the plan's ## Risks).
+2. Follow ${KIT}/skills/plan/SKILL.md with \`--from=<the brainstorm id>\`, \`roadmap=${it.id}\`, the type that fits (feat unless it's a fix or refactor), and \`--tests=auto\`. Do every step, including the self-review and \`yayh plan check\` with no errors. That includes "Picking up notes": run \`yayh backlog open --for=${it.id}\` and settle into the plan every decision and deferred note the evidence now answers (tracked notes as \`Settles:\` lines under the plan's ## Risks).
 3. The plan skill's "Hard questions only" step is where you would ask. Don't ask. Instead:
    - Return as **questions** only the calls that are expensive to undo or that only the user can make: which brainstorm option (only when the options are genuinely close or change what customers see), customer-visible behaviour the source doesn't pin down, tests when the repo's rules say tests need approval. At most 2, usually 0. Each names the item and lists the option the plan follows first.
    - If a question is returned, leave the plan \`draft\` and write the question under the plan's ## Risks as "Open (autopilot sheet): …". Otherwise mark it ready (\`yayh fm set <plan> status ready\`).
@@ -172,7 +172,7 @@ Branch \`${built.branch}\` (worktree ${built.worktree}) builds ${it.artifact} fo
 
 1. The reviewers returned:
 ${findings}
-   For each finding: fix it (the change the finding names; commit \`fix(<scope>): <what>\` for a correctness finding, \`refactor(<scope>): reuse <helper>\` or \`style(<scope>): restore comments\` for the others, with the \`Plan: ${it.artifact}\` trailer, then re-run the checks the change touches), or answer it with a reason. A \`blocker\` (security hole, data lost or corrupted) must be fixed, never answered; if you can't fix it, open the PR as a draft with the blocker first in its body. Nothing else blocks. List the reviewers' open questions for the human reviewer.
+   For each finding: fix it (the change the finding names; commit \`fix(<scope>): <what>\` for a correctness finding, \`refactor(<scope>): reuse <helper>\` or \`refactor(<scope>): restore comments\` for the others, with the \`Plan: ${it.artifact}\` trailer, then re-run the checks the change touches), or answer it with a reason. A \`blocker\` (security hole, data lost or corrupted) must be fixed, never answered; if you can't fix it, open the PR as a draft with the blocker first in its body. Nothing else blocks. List the reviewers' open questions for the human reviewer.
    Then \`yayh fm set <plan> reviewed yes\` and commit it (\`docs(plan): reviewed ${it.artifact}\`, with the \`Plan: ${it.artifact}\` trailer), even when every finding was answered rather than fixed.
 2. ${PR
     ? `Push and open the PR as in the "Push and PR" section of ${KIT}/skills/implement/SKILL.md: \`git push -u origin ${built.branch}\` and \`gh pr create --base ${prBase} --head ${built.branch} --assignee @me${A.draft ? ' --draft' : ''}\`. Fill the body from .github/pull_request_template.md. Under "Decided" list: ${JSON.stringify(built.decided)}. Under "Review", the fixed and answered findings and the open questions.${prBase !== A.base ? ` Start the body with "Stacked on ${prBase}: merge that first."` : ''} Then \`yayh fm set <plan> pr <number>\`, commit and push.`
