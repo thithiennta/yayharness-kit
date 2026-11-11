@@ -135,6 +135,21 @@ test_session_start_loads_code_rules_only_in_yay_repos() {
   assert_eq "" "$(_bash session-start.sh "$(mk_repo)" '')"
 }
 
+test_session_start_says_where_the_work_stands() {
+  local r out; r="$(_repo)"
+  case "$(_bash session-start.sh "$r" '')" in *"work in flight"*|*"this branch is"*) _fail "nothing in flight was reported" ;; *) _pass ;; esac
+  mkdir -p "$r/docs/plans" "$r/docs/bugs"
+  printf -- '---\nid: P-1\ntitle: Gift wrap\nstatus: in-progress\nbranch: chore/yay-harness\n---\n## Tasks\n- [x] T1 a\n- [ ] T2 b\n' > "$r/docs/plans/gift.md"
+  printf -- '---\nid: B-1\ntitle: Crash\nstatus: root-caused\nseverity: high\n---\n' > "$r/docs/bugs/b1.md"
+  out="$(_bash session-start.sh "$r" '')"
+  assert_contains "$out" 'yay: this branch is P-1 "Gift wrap · 1/2 tasks" (in-progress). Next: /yay:implement P-1 --continue'
+  git -C "$r" switch -q -c feat/other
+  out="$(_bash session-start.sh "$r" '')"
+  assert_contains "$out" "yay: work in flight"
+  assert_contains "$out" "- P-1 Gift wrap · 1/2 tasks (plan, continue): /yay:implement P-1 --continue"
+  assert_contains "$out" "- B-1 Crash (high) (bug, fix): /yay:fix B-1"
+}
+
 test_debug_check_ignores_mentions_and_markdown() {
   local r; r="$(_repo)"
   printf '# notes\nUse `// yay:debug` markers.\n' > "$r/docs/x.md"
