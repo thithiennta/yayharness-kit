@@ -71,6 +71,7 @@ _yay_st_stage_next() {
     decide|plan) printf '/yay:plan --from=%s\n' "$2" ;;
     implement) printf '/yay:implement %s\n' "$2" ;;
     continue) printf '/yay:implement %s --continue\n' "$2" ;;
+    review) printf '/yay:autopilot %s\n' "$3" ;;
   esac
 }
 
@@ -144,7 +145,7 @@ yay_status() {
       case "$stage" in done|dropped) continue ;; esac
       case " $covered " in *" $qid "*) continue ;; esac
       scope="$(printf '%s\n' "$secs" | awk -F '\t' -v i="$qid" '$1 == i { print $2; exit }')"
-      [ "$stage" != continue ] || scope=active
+      case "$stage" in continue|review) scope=active ;; esac
       case "$scope" in active) pri=2 ;; slipped) pri=3 ;; *) pri=5 ;; esac
       extra=""
       [ "$after" = - ] || extra="$extra (after $after)"

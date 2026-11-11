@@ -422,13 +422,16 @@ EOT
 # _yay_queue_artifacts -> TSV: kind(plan|bs) id status roadmap from, for plans and
 # brainstorms in this checkout and every other worktree (carried artifacts live there).
 _yay_queue_artifacts() {
-  local wt f kind
+  local wt f kind st
   while IFS= read -r wt; do
     for f in "$wt"/docs/plans/*.md "$wt"/docs/brainstorms/*.md; do
       [ -f "$f" ] || continue
       case "$f" in */plans/*) kind=plan ;; *) kind=bs ;; esac
+      st="$(yay_fm_get "$f" status 2>/dev/null || echo -)"
+      # autopilot built it, but its reviews haven't run yet (an interrupted run)
+      [ "$kind:$st" != plan:done ] || [ "$(yay_fm_get "$f" reviewed 2>/dev/null || true)" != pending ] || st=review
       printf '%s\t%s\t%s\t%s\t%s\n' "$kind" \
-        "$(yay_fm_get "$f" id 2>/dev/null || echo -)" "$(yay_fm_get "$f" status 2>/dev/null || echo -)" \
+        "$(yay_fm_get "$f" id 2>/dev/null || echo -)" "$st" \
         "$(yay_fm_get "$f" roadmap 2>/dev/null || echo -)" "$(yay_fm_get "$f" from 2>/dev/null || echo -)"
     done
   done <<EOT
@@ -439,7 +442,8 @@ EOT
 # yay_roadmap_queue [R-n|P-n...] [--sprint=n|current|later] [--ready] [--today=YYYY-MM-DD]
 #   -> TSV in build order: id stage artifact after waits title
 # stage: brainstorm (nothing yet) | decide (open brainstorm) | plan (decided brainstorm)
-#        | implement (draft or ready plan) | continue (plan in progress) | done | dropped
+#        | implement (draft or ready plan) | continue (plan in progress)
+#        | review (autopilot built it, its reviews didn't run: `reviewed: pending`) | done | dropped
 # after: dependencies inside this run (comma-separated, or -), built first.
 # waits: unmet dependencies outside this run (other plugins, items not in scope), or -.
 yay_roadmap_queue() {
@@ -486,7 +490,7 @@ yay_roadmap_queue() {
         deps="$(yay_roadmap_get "$id" depends 2>/dev/null || true)"
         # the most advanced plan for the item, else its brainstorm
         pst="$(printf '%s\n' "$arts" | awk -F '\t' -v i="$id" '
-          function rank(s) { return s == "done" ? 4 : s == "in-progress" ? 3 : s == "ready" ? 2 : s == "draft" ? 1 : 0 }
+          function rank(s) { return (s == "done" || s == "review") ? 4 : s == "in-progress" ? 3 : s == "ready" ? 2 : s == "draft" ? 1 : 0 }
           $1 == "plan" && ($4 == i || $5 == i) && $3 != "dropped" && rank($3) >= best { best = rank($3); out = $2 "\t" $3 }
           END { print out }')"
         if [ -z "$pst" ]; then
@@ -505,6 +509,7 @@ yay_roadmap_queue() {
     case "$st:$pst" in
       shipped*|*:*"	done") stage=done ;;
       dropped:*) stage=dropped ;;
+      *:*"	review") stage=review ;;
       *:bs:*"	decided") stage=plan ;;
       *:bs:*) stage=decide ;;
       *:*"	in-progress") stage=continue ;;

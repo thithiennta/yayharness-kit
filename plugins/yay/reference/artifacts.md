@@ -90,6 +90,7 @@ type: feat                      # branch type for /yay:implement (feat fix chore
 lane: small                     # optional: small plans need only Goal, Tasks and Verify (default standard)
 branch: feat/express-checkout   # set by /yay:implement
 pr:                             # PR number, set by /yay:implement
+reviewed:                       # autopilot only: pending once built, yes once both reviews are handled
 editions: [free, pro]
 created: 2026-11-10
 ```

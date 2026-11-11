@@ -31,7 +31,7 @@ With no scope at all, use `--sprint=current`.
 **Wait for every workflow.** The Workflow tool returns at once and runs in the background. Don't end your turn while a prepare or build workflow is running: wait for its completion notification, then go on to the next step. In a non-interactive run (`claude -p`, CI), ending the turn ends the session, and that kills the workflow half-built.
 
 1. **Queue.** `yayh roadmap queue <ids> [--sprint=…] [--ready]` prints the build order as TSV: `id stage artifact after waits title`.
-   - `stage` is where each item is: `brainstorm`, `decide` (open brainstorm), `plan` (decided brainstorm), `implement` (draft or ready plan), `continue` (in progress), `done`, `dropped`. Re-running autopilot on the same scope therefore resumes where the last run stopped.
+   - `stage` is where each item is: `brainstorm`, `decide` (open brainstorm), `plan` (decided brainstorm), `implement` (draft or ready plan), `continue` (in progress), `review` (built by an earlier run that stopped before its reviews: the plan is `done` with `reviewed: pending`), `done`, `dropped`. Re-running autopilot on the same scope therefore resumes where the last run stopped.
    - `after` are dependencies inside the run (built first; the dependent's branch stacks on theirs). `waits` are unmet dependencies outside it (another plugin, an item not in scope): those items are planned but not built. Say which.
    - A dependency cycle is an error: report it and stop.
    - Check `git status`: the main checkout must have no tracked changes (`yayh artifact carry` refuses tracked, modified artifacts).
@@ -56,6 +56,7 @@ With no scope at all, use `--sprint=current`.
      "items": [ /* the queue again, from a fresh `yayh roadmap queue`, so each artifact is now the P-<n>; with size */ ],
      "answers": { "R-3": "Option B (no free-text coupon field); include test X" } }
    ```
+   For a `review` item, add `branch` (`yayh fm get <plan> branch`), `worktree` (`yayh git worktree <branch>`, which reuses the existing one) and `base` (the branch it was built on, from its first commit's parent or `git.baseBranch`). The workflow runs only the reviewers and resolve on it.
    `answers` holds every item that returned a question, with its answer (or its recommendation, when it wasn't asked), written so an agent can apply it: the revise step records the decision, clears the plan's "Open (autopilot sheet)" risks and marks it ready. Per item the workflow:
    - waits for its `after` items (a blocked dependency skips it, with the reason)
    - applies its answer to the brainstorm and plan (revise)

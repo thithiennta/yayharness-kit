@@ -13,7 +13,8 @@ export const meta = {
 
 // args (built by /yay:autopilot):
 // { mode: 'prepare' | 'build', kit, repo, base, today, parallel, pr, draft, models,
-//   items: [{ id, stage, artifact, after: [ids], waits: [ids], title, size }],
+//   items: [{ id, stage, artifact, after: [ids], waits: [ids], title, size,
+//             branch, worktree, base (stage review only: the existing branch to review) }],
 //   answers: { '<id>': '<what the user decided for this item, or empty>' } }   // build only
 const A = args || {}
 const KIT = A.kit
@@ -159,7 +160,7 @@ Build plan **${it.artifact}** (roadmap ${it.id} ${it.title}). Follow ${KIT}/skil
 - The "Hard questions only" round in Load and gate: don't ask. Decide in the plan's spirit and record it. Do "Pick up open notes" as written.
 - A decision you can't make while building: build the default, write the decision note (the task loop's rule), list it in decided as "BL-<n>: default …", and go on. It never blocks.${mergeIn.length ? `\n- After the Branch and worktree section creates the worktree, merge the other dependency branches into it: ${mergeIn.map(b => `\`git merge --no-ff --no-edit ${b}\``).join(', ')}. On a conflict, abort the merge and return blocked.` : ''}
 - When the plan turns out wrong (implement step 3.1): if the goal, scope and customer-visible behaviour stay the same, adapt the task text in the same commit, note it under decided, and go on. Otherwise stop, leave the branch as it is (commit what works), and return blocked with the exact problem.
-- Skip the "Review for reuse and comments" step of Finish (--no-review): the autopilot runs the reviewer next. Skip the "Push and PR" section (--no-push).
+- Skip the review step of Finish (--no-review): the autopilot runs both reviewers next. When you mark the plan done (Finish), also run \`yayh fm set <plan> reviewed pending\` and commit it with the plan, so an interrupted run still reviews this branch on resume. Skip the "Push and PR" section (--no-push).
 - A check that fails because of your change and that you can't fix in three attempts: return blocked. A pre-existing failure (also on ${A.base}) is reported, not fixed, and doesn't block.
 Return the branch, worktree, commits, checks, manual checks left for a human, and every decision you made.`
 }
@@ -172,6 +173,7 @@ Branch \`${built.branch}\` (worktree ${built.worktree}) builds ${it.artifact} fo
 1. The reviewers returned:
 ${findings}
    For each finding: fix it (the change the finding names; commit \`fix(<scope>): <what>\` for a correctness finding, \`refactor(<scope>): reuse <helper>\` or \`style(<scope>): restore comments\` for the others, with the \`Plan: ${it.artifact}\` trailer, then re-run the checks the change touches), or answer it with a reason. A \`blocker\` (security hole, data lost or corrupted) must be fixed, never answered; if you can't fix it, open the PR as a draft with the blocker first in its body. Nothing else blocks. List the reviewers' open questions for the human reviewer.
+   Then \`yayh fm set <plan> reviewed yes\` and commit it (\`docs(plan): reviewed ${it.artifact}\`, with the \`Plan: ${it.artifact}\` trailer), even when every finding was answered rather than fixed.
 2. ${PR
     ? `Push and open the PR as in the "Push and PR" section of ${KIT}/skills/implement/SKILL.md: \`git push -u origin ${built.branch}\` and \`gh pr create --base ${prBase} --head ${built.branch} --assignee @me${A.draft ? ' --draft' : ''}\`. Fill the body from .github/pull_request_template.md. Under "Decided" list: ${JSON.stringify(built.decided)}. Under "Review", the fixed and answered findings and the open questions.${prBase !== A.base ? ` Start the body with "Stacked on ${prBase}: merge that first."` : ''} Then \`yayh fm set <plan> pr <number>\`, commit and push.`
     : `Don't push. Return the exact commands instead: \`git push -u origin ${built.branch}\` and the \`gh pr create --base ${prBase} --head ${built.branch} --assignee @me …\` line.`}`
@@ -218,6 +220,15 @@ for (const it of ITEMS) {
 
       const depBranches = (it.after || []).map(d => branchOf[d]).filter(Boolean)
       const baseBranch = depBranches[0] || A.base
+      if (it.stage === 'review') {
+        // Built by an earlier, interrupted run: only its reviews are left.
+        if (!it.branch || !it.worktree) return (results[it.id] = { id: it.id, status: 'blocked', blocked: 'stage review, but the skill passed no branch or worktree' })
+        branchOf[it.id] = it.branch
+        const built = { id: it.id, status: 'done', branch: it.branch, worktree: it.worktree, decided: [] }
+        const findings = await review(it, built, it.base || baseBranch)
+        const resolved = await agent(resolvePrompt(it, built, findings, it.base || baseBranch), { label: `resolve:${it.id}`, phase: 'Resolve', schema: RESOLVED, ...route('resolve') })
+        return (results[it.id] = { ...built, base: it.base || baseBranch, review: resolved })
+      }
       const built = await agent(implementPrompt(it, baseBranch, depBranches.slice(1)), { label: `implement:${it.id}`, phase: 'Implement', schema: BUILT, ...route('implement', it.size) })
       if (!built) return (results[it.id] = { id: it.id, status: 'blocked', blocked: 'implement agent failed' })
       if (built.branch) branchOf[it.id] = built.branch

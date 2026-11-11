@@ -289,3 +289,15 @@ test_queue_sees_plans_carried_into_worktrees_and_cycles_fail() {
   "$YAYH" roadmap set R-3 depends R-1 >/dev/null
   assert_exit 1 "$YAYH" roadmap queue R-1 R-3
 }
+
+test_queue_reviews_a_plan_an_interrupted_run_built() {
+  export YAY_REPO; YAY_REPO="$(_qrepo)"
+  local p="$YAY_REPO/docs/plans/gift-wrap.md"
+  "$YAYH" fm set "$p" status done >/dev/null
+  assert_eq "R-5	done	P-1	-	-	Gift wrap" "$("$YAYH" roadmap queue R-5)"
+  "$YAYH" fm set "$p" reviewed pending >/dev/null
+  assert_eq "R-5	review	P-1	-	-	Gift wrap" "$("$YAYH" roadmap queue R-5)"
+  assert_eq "/yay:autopilot R-5" "$("$YAYH" next R-5)"
+  "$YAYH" fm set "$p" reviewed yes >/dev/null
+  assert_eq "R-5	done	P-1	-	-	Gift wrap" "$("$YAYH" roadmap queue R-5)"
+}
