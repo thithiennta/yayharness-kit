@@ -26,6 +26,7 @@ YAY_LIB_DIR="$YAY_KIT_ROOT/lib"
 . "$YAY_LIB_DIR/status.sh"
 . "$YAY_LIB_DIR/doctor.sh"
 . "$YAY_LIB_DIR/verify.sh"
+. "$YAY_LIB_DIR/lessons.sh"
 
 usage() {
   cat <<'EOF'
@@ -42,6 +43,10 @@ Where am I (all work in flight, every worktree)
                                    this branch's work or the most urgent item; exit 3 when nothing is left
 
   doctor                           is this machine and repo ready? status, check, detail, fix (TSV; exit 1 on a fail)
+  lessons add "<what>" [kind=hook|review|blocked|env|plan|retry|kit] [from=<id>]
+                                   log friction a run hit to .yay/runs/lessons.md (gitignored)
+  lessons list [--kind=] [--since=] [--counts]
+                                   date, kind, from, text (TSV), then count lines per kind
 
 Config (.yay/config.json)
   config get <key> [fallback]      dotted key; arrays print one per line
@@ -327,6 +332,13 @@ case "$cmd" in
     case "${1:-}" in check) [ $# -eq 2 ] || yay_die "usage: yayh design check <design>"; yay_design_check "$2" ;; *) yay_die "usage: yayh design check <design>" ;; esac ;;
   doctor) yay_doctor ;;
   verify) yay_verify "$@" ;;
+  lessons)
+    sub="${1:-}"; shift || true
+    case "$sub" in
+      add) yay_lessons_add "$@" ;;
+      list) yay_lessons_list "$@" ;;
+      *) yay_die "usage: yayh lessons add|list" ;;
+    esac ;;
   status) yay_status "$@" ;;
   next) [ $# -le 2 ] || yay_die "usage: yayh next [ID] [--today=YYYY-MM-DD]"; yay_next "$@" ;;
   roadmap)

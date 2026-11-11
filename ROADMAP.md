@@ -119,6 +119,7 @@ Goal: measure quality, so every later change can show it helped. *(8 / 8)*
 - what: `/yay:implement R-12 --from-scratch` (or `/yay go R-12`) brainstorms, plans and builds in the session, with one question round.
 
 ### R-15 Lessons loop
+- status: built on `feat/later-items` (not merged)
 - size: M · goal: 4
 - why: blocked items, hook rejections and review findings end up in `.yay/runs/` and PR bodies, and nothing reads them again.
 - what: every run appends its friction to `.yay/runs/lessons.md`. `/yay:knowledge-update` turns patterns that repeat into `docs/knowledge/` entries, and kit-level ones into notes for this repo.

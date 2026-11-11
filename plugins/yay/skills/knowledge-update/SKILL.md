@@ -49,6 +49,12 @@ When several docs are stale with large diffs, spawn `yay:knowledge-scout` agents
 - `uncovered` files: widen a doc's `covers`, add a section, or (rarely) create an area doc. If a whole new area appeared, document it in `architecture.md` for now and suggest an area doc in the report.
 - Changes that conflict with what the doc says, where you can't tell which is right: collect them all, then ask about the 1–3 that matter most in **one** AskUserQuestion. Write the rest into `known-issues.md` under **Open questions**, and leave those facts unchanged. Don't guess.
 
+### 3b. Promote repeated lessons
+`yayh lessons list --counts` and `yayh lessons list` show the friction this checkout's runs logged (`.yay/runs/lessons.md`).
+- A lesson that repeats (the same problem twice or more, in different runs or items) and is about **this plugin** becomes knowledge: a trap goes in `known-issues.md`, a rule in the project block's hard rules or `conventions.md`, and a missing setup step in the project block's commands. Write it as a verifiable fact with its evidence, like any knowledge.
+- A lesson about **the kit itself** (kind `kit`, or a hook or skill behaving wrongly) isn't project knowledge. List it in the report under "For the kit", ready to paste into an issue on the yayharness repo.
+- One-off lessons stay in the log.
+
 ### 4. Verify and stamp
 - `yayh knowledge check` must pass.
 - Stamp every doc you verified, including stale-but-unchanged ones: `yayh knowledge stamp <doc>` / `yayh knowledge stamp CLAUDE.md`.
@@ -63,4 +69,4 @@ Unless `--no-commit` was passed:
 When this runs inside a feature or fix branch (suggested by `/yay:implement` or `/yay:fix`), commit on that branch, so the docs ship with the change.
 
 ### 6. Report
-Per doc: one of `updated (<what>)`, `re-verified, no change` or `skipped (<why>)`. Then the open questions, and the uncovered areas you didn't document.
+Per doc: one of `updated (<what>)`, `re-verified, no change` or `skipped (<why>)`. Then the open questions, the uncovered areas you didn't document, the lessons promoted (and where to), and **For the kit**: the kit-level lessons, one line each.

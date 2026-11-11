@@ -3,6 +3,10 @@
 `/yay:harness-update` reads this file to tell a repo what changed between its recorded kit version and the installed one. Each entry lists new skills, config keys, template changes and behavior changes.
 
 ## Unreleased (0.5.0)
+- **Lessons loop.**
+  - **Logging:** `yayh lessons add "<what happened>" kind=hook|review|blocked|env|plan|retry|kit [from=<id>]` logs friction to `.yay/runs/lessons.md` (gitignored, per checkout). `yayh lessons list [--kind=] [--since=] [--counts]` reads it back.
+  - **When:** a new asking rule, loaded every session, says to log one line whenever a hook rejects something, a check can't run, a reviewer finds something worth remembering, an item blocks or a step needs a retry.
+  - **Promoting:** `/yay:knowledge-update` gains step 3b. A lesson that repeats and is about the plugin becomes knowledge (known issues, hard rules, setup commands). One about the kit is listed under "For the kit", ready to file on this repo.
 - **How strict, per repo: `workflow.strictness`.** `relaxed`, `standard` (the default) or `strict`, in `.yay/config.json`, or per developer in `.yay/local.json`.
   - **relaxed:** `yayh plan check` drops the Reuse, Tests and E2E checks for every plan.
   - **strict:** every plan gets the standard checks (a small plan is warned about and checked in full), `/yay:implement` has no tiny lane and asks before any plan change, and the post-commit hook blocks on style again.
