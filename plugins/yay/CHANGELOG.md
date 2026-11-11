@@ -21,6 +21,7 @@
   Each finding has a severity (`blocker`, `bug` or `risk`), `path:line`, and the input that fails. A blocker is fixed before the PR, or the PR opens as a draft with the blocker first. Everything else is fixed or answered. The PR template's "Reuse and comments review" section becomes **Review**. Both reviewers use the `review` model step.
 - **Fixes from the yaycheckout pilot (R-10):**
   - `yayh status` showed nothing before the first sprint started, or between two sprints. The next sprint now counts as current.
+  - In a non-interactive run (`claude -p`), `/yay:autopilot` ended its turn while the build workflow was still running, so the workflow was killed halfway through. Autopilot (and `/yay:roadmap --multi-agent`) now wait for every workflow's completion notification.
   - `yayh plan check` warned that a note "follows the default" even when the plan answers it with a `Settles: BL-<n> …` line. It no longer warns about those notes.
   - `/yay:roadmap` scheduled around dependencies but didn't record them. It now writes `depends=` on items, which autopilot and `yayh status` order by.
 - **Words work as options.** A new asking rule: plain words in a `/yay:*` argument that name an option mean that option (`/yay:roadmap status`, `/yay:release dry run`).

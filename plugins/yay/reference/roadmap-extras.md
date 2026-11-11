@@ -25,6 +25,7 @@ One read-only owner agent per plugin researches its repo; the owners then read e
      "plugins": [{ "name": "YayReturns", "slug": "yayreturns", "path": "/abs/path", "repo": "owner/name or empty", "version": "1.1.0", "harnessed": true }] }
    ```
    Take `models` from `yayh model table --json` in this repo (`${CLAUDE_PLUGIN_ROOT}/reference/models.md`). Get `repo` from `gh repo view --json nameWithOwner -q .nameWithOwner` in each repo (empty if gh fails), and `version` from `YAY_REPO=<path> yayh version current`.
+   The workflow runs in the background: don't end your turn until its completion notification arrives. In a non-interactive run, ending the turn kills it.
 5. **Show, don't ask again.** Show the portfolio summary, the shared initiatives (owner, sprint, per-plugin work), the conventions, and a sprint table per plugin. Then go on to write: every repo's change is its own branch and PR, easy to change or drop; with `--no-pr`, keep them local and print the commands.
 6. **Write each harnessed plugin's roadmap**, in its own repo (`YAY_REPO=<path>` for every `yayh` call, `git -C <path>`), following Plan steps 6–7: on its own branch, `existing_id` items moved, new items added. A shared initiative's part gets `- shared: <initiative title> (owner <plugin>)` and `- depends: <plugin>:R-<n>` where the dependency is known. Skip `cut` items.
 7. **Report** one line per plugin (items per sprint, PR link) and the shared initiatives. With `--publish`, publish a hub (**Publish**, below).
