@@ -1,6 +1,6 @@
 # Working on a Yay plugin with Claude: onboarding
 
-Every Yay plugin repo runs the same Claude Code harness, the **`yay`** plugin. It gives each repo the same rules, hooks and settings, project knowledge written from that repo's own code, and 19 `/yay:*` skills that take work from idea to tagged release in the same way for everyone.
+Every Yay plugin repo runs the same Claude Code harness, the **`yay`** plugin. It gives each repo the same rules, hooks and settings, project knowledge written from that repo's own code, and 20 `/yay:*` skills that take work from idea to tagged release in the same way for everyone.
 
 This page is what a new developer needs. The kit internals are in [`plugins/yay/README.md`](plugins/yay/README.md).
 
@@ -13,7 +13,7 @@ claude plugin marketplace add ~/yayharness       # for now; later: YayCommerce/y
 claude plugin install yay@yayharness
 ```
 
-To check it worked, open any harnessed plugin repo and run `claude`. Typing `/yay:` lists the skills, and `yayh version` prints the kit version.
+To check it worked, open any harnessed plugin repo and run `claude`. Typing `/yay:` lists the skills, and `yayh version` prints the kit version. `yayh doctor` checks the rest: gh, the JSON reader, PHP against the plugin's floor, Node against `.nvmrc`, Composer and npm dependencies, Docker, and the harness itself, each with its fix.
 
 A repo's `.claude/settings.json` enables the plugin, but that alone does **not** install it. Every teammate runs the install command once.
 
@@ -21,7 +21,7 @@ A repo's `.claude/settings.json` enables the plugin, but that alone does **not**
 
 | The repo… | Do this |
 |---|---|
-| has `.yay/config.json` | Nothing. Start working. If the session starts with "harness is outdated", run `/yay:harness-update`. |
+| has `.yay/config.json` | `/yay:setup` once: it runs `yayh doctor`, installs dependencies, and offers knowledge, tests and e2e when they're missing. Then start working. If the session starts with "harness is outdated", run `/yay:harness-update`. |
 | has no `.yay/config.json` | One person runs `/yay:harness-init`, then `/yay:knowledge-init`, and merges the PR. Don't do it on several machines at once. |
 | has knowledge older than the code | `/yay:knowledge-update`. Other skills suggest it when they notice drift. |
 
@@ -186,11 +186,12 @@ When a hook blocks something, its message says why and what to do instead. Claud
 | knowledge | The `yay:project` block of `CLAUDE.md`, `docs/knowledge/` | `/yay:knowledge-update`, or by hand. Keep the facts verifiable. |
 | workflow | `docs/roadmap.md`, brainstorms, plans, bugs, backlog, releases | Through the skills. |
 
-## 7. All 19 skills
+## 7. All 20 skills
 
 | Skill | Most-used options |
 |---|---|
 | `/yay:go` | nothing (what's next), an id, or what you want in plain words |
+| `/yay:setup` | `--check`, `--with=knowledge,tests,e2e` |
 | `/yay:harness-init` | `--dry-run`, `--keep=<path>`, `--editions=free,pro` |
 | `/yay:harness-update` | `--check`, `--diff`, `--only=rules,settings` |
 | `/yay:knowledge-init` | `--depth=quick\|full`, `--agents=N` |
@@ -216,6 +217,7 @@ Every skill shows its full option list as you type it, and explains each option 
 
 | Symptom | Fix |
 |---|---|
+| Something's missing (a tool, Docker, dependencies) | `yayh doctor` lists every check with its fix; `/yay:setup` does the safe ones. |
 | `/yay:` shows nothing | The plugin isn't installed: `claude plugin install yay@yayharness`, then restart `claude`. |
 | "harness is outdated" at session start | `/yay:harness-update`. It only touches kit-owned files. |
 | A commit is rejected | Read the hook's message. Usually you're on the base branch, the header isn't `type(scope): summary`, or a `yay:debug` marker is left in the code. A long header or an unknown scope only gets a hint. |

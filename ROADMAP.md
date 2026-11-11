@@ -102,6 +102,7 @@ Goal: measure quality, so every later change can show it helped. *(8 / 8)*
 ## Later
 
 ### R-12 `/yay:setup` and `yayh doctor`
+- status: built on `feat/later-items` (not merged)
 - size: M · goal: 1
 - why: ONBOARDING §2 has one person run 2 to 4 init skills in order, and most of the 11 rows in its troubleshooting table are environment problems (plugin not installed, Node, Docker, jq).
 - what: `yayh doctor` checks gh, jq, node, nvm, Docker, wp-env, the plugin install and the config. `/yay:setup` chains the init skills it needs, with one question round.

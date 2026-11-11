@@ -43,6 +43,7 @@ Route by what the user wants, not by keywords. Pass the user's own words on as t
 | what goes in the next release, the changelog | `/yay:changelog --dry-run` |
 | the docs brought up to date with the code | `/yay:knowledge-update` |
 | the harness updated, "harness is outdated" | `/yay:harness-update` |
+| the machine or repo checked, "is everything installed", a tool or Docker missing | `/yay:setup` (`--check` to only look) |
 | a repo set up for the first time | tell the user to run `/yay:harness-init` themselves: it wipes files, so it's never started for them |
 
 - **Words become options:** "dry run", "no PR", "draft", "hotfix", "quick", "status" and the like mean the skill's matching option.
