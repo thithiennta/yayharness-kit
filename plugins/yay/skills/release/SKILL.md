@@ -27,14 +27,14 @@ Git rules are in `${CLAUDE_PLUGIN_ROOT}/reference/git-conventions.md`. Only this
 | `--tag-only` | After the release PR has merged: tag the base branch's released commit and build the final zips from the tag. |
 | `--date=YYYY-MM-DD` | Changelog date (default today). |
 | `--dry-run` | Show the version, changelog, version-file changes and build plan, and change nothing. |
-| `--pr` / `--no-pr`, `--no-push`, `--draft` | As in `/yay:implement`. Pushing and tagging always ask, unless `--pr` was given. |
+| `--pr` / `--no-pr`, `--no-push`, `--draft` | As in `/yay:implement`. Without `--pr`, nothing is pushed: the report ends with the commands. Local tags are made without asking. |
 
 ## Prepare (default)
 
 1. **Preflight.**
    - Be on `git.baseBranch` with a clean tree.
    - Run `git fetch origin` (if it fails, say the remote is unreachable and continue locally) and make sure the base isn't behind `origin/<base>`.
-   - Run `yayh version check`. The version files must agree, and normally equal the last tag's version (`yayh git version-of-tag "$(yayh git last-tag)"`). If they don't, ask before going on.
+   - Run `yayh version check`. The version files must agree, and normally equal the last tag's version (`yayh git version-of-tag "$(yayh git last-tag)"`). If they don't, that's a question in the round below.
    - Run `yayh knowledge stale --since=<last tag>`. If anything is stale, suggest `/yay:knowledge-update` first. Don't block on it.
    - Look for open work: `yayh artifact list plan --status=in-progress`. Mention it, since it isn't in this release.
    - Run the tests: `yayh run test`. A failure stops the release, so report it and suggest `/yay:debug`. If `commands.test` isn't set, say that the kit ran no tests. Also run `yayh run lint` when it's set, and report failures without blocking: lint debt often predates the release.
@@ -47,11 +47,12 @@ Git rules are in `${CLAUDE_PLUGIN_ROOT}/reference/git-conventions.md`. Only this
        - **Yes, at commit…:** back-fill the tag there, as above.
        - **Yes, but I don't know where:** use `--since` to give a date or ref.
 
-       In a non-interactive run, stop here with this question. Don't guess.
+       In a non-interactive run, stop here with this question. Don't guess. This question replaces the version confirmation below.
    - `cur="$(yayh version current)"`
    - `bump` comes from the argument, or from `yayh changelog suggest`.
    - `new="$(yayh git bump "$cur" "$bump")"`
-   - Show the commit summary: `yayh changelog collect`, counted by type, with breaking changes listed. Confirm `new` with the user (with `--pr`, skip the confirmation if it matches the suggestion).
+   - Show the commit summary: `yayh changelog collect`, counted by type, with breaking changes listed.
+   - **Hard questions only** (`${CLAUDE_PLUGIN_ROOT}/reference/asking.md`). Use the suggested version without asking. Ask, in one AskUserQuestion with at most 3 questions, only when there's a hard question: a **major** bump (breaking changes reach customers), a bump argument that disagrees with the commits, or the version-file or baseline doubt from preflight. If you do ask, you may add "push and open the release PR when done?". No hard question means no question.
 3. **Branch.**
    - `branch="$(yayh git branch-name chore "release $new")"`
    - `wt="$(yayh git worktree "$branch")"`, then `cd "$wt"`
@@ -71,7 +72,7 @@ Git rules are in `${CLAUDE_PLUGIN_ROOT}/reference/git-conventions.md`. Only this
    git commit -m "chore(release): $new" -m "<headline from the release notes>"
    ```
    Stage by path. The zips stay untracked (`release/` is a generated path).
-9. **Push and PR.** Ask, unless `--pr` was given.
+9. **Push and PR.** Only with `--pr`, or a yes from step 2. Otherwise don't ask: end the report with the exact commands (`git push -u origin <branch>` and the `gh pr create …` line).
    - `git push -u origin "$branch"`
    - `gh pr create --base <base> --assignee @me --title "chore(release): $new" --body-file <release notes + build table>`
 10. **Report.** Give the version, the changelog entry, the zips with their check results, and the PR URL. The next step is to merge, then run `/yay:release --tag-only`.
@@ -81,7 +82,7 @@ Git rules are in `${CLAUDE_PLUGIN_ROOT}/reference/git-conventions.md`. Only this
 1. Be on the base branch, clean, and run `git pull --ff-only`. HEAD must contain `chore(release): <v>`: find `<v>` from `yayh version current` and check that `yayh changelog entry <v>` isn't empty.
 2. `tag="$(yayh git tag-for <v>)"`. It must not exist yet (`git rev-parse -q --verify "refs/tags/$tag"`).
 3. Find the release commit: `git log --format=%H --grep="^chore(release): <v>$" -1`. Then `YAY_RELEASE=1 git tag -a "$tag" -m "<plugin name> <v>" <commit>`.
-4. Push the tag per `--pr`/`--no-push` (ask by default): `git push origin "$tag"`.
+4. Push the tag only with `--pr`. Otherwise print `git push origin "$tag"` in the report.
 5. Build the final zips **from the tag**: `/yay:build --version=<v>` in a detached worktree of the tag (`git worktree add --detach <tmp> "$tag"`). Report the paths. Remove the temporary worktree when you're done.
 6. Tidy up: `yayh git merged-worktrees` lists the worktrees whose branches are now merged (the release branch, and the features and fixes it shipped). Offer to remove them with `git worktree remove <path>`. Keep the branches, which the remote may still need.
 
@@ -89,7 +90,7 @@ Git rules are in `${CLAUDE_PLUGIN_ROOT}/reference/git-conventions.md`. Only this
 
 1. Be on a `hotfix/*` branch with a clean tree, branched from a release tag (`git describe --tags --abbrev=0` equals `yayh git last-tag`, or the tag given to `/yay:fix`). The bump is always `patch`.
 2. Run the tests (Prepare step 1), then the Prepare steps 2, 4–7 on **this** branch (no new branch): changelog since that tag, version, artifacts and build.
-3. Commit `chore(release): <v>` and tag that commit right away (`YAY_RELEASE=1 git tag -a …`), since it's exactly what ships. A local tag is safe, so don't ask first. Pushing the branch and the tag follows `--pr`/`--no-push` (ask by default).
+3. Commit `chore(release): <v>` and tag that commit right away (`YAY_RELEASE=1 git tag -a …`), since it's exactly what ships. A local tag is safe, so don't ask first. Push the branch and the tag only with `--pr`. Otherwise print the commands.
 4. Open the merge-back PR into the base branch: `gh pr create --base <base> --assignee @me --title "chore(release): <v> (hotfix)"`. In its body, warn that `readme.txt` and the version files will conflict if the base has moved on. Resolve them by keeping the base's newer entries plus this hotfix's entry.
 5. Report the tag, the zips and the merge-back PR.
 

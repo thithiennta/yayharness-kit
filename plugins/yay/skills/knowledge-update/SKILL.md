@@ -46,8 +46,8 @@ When several docs are stale with large diffs, spawn `yay:knowledge-scout` agents
 ### 3. Edit
 - Make the smallest edits that make each doc true. Keep its structure and voice, and don't rewrite sections that are still right.
 - The CLAUDE.md project block: edit only between its markers. If a command, layout dir or hard rule changed, it must change here too. Stay within 90 lines.
-- `uncovered` files: widen a doc's `covers`, add a section, or (rarely) create an area doc. If a whole new area appeared, ask the user before creating a doc.
-- Changes that conflict with what the doc says, where you can't tell which is right: ask with AskUserQuestion. Don't guess.
+- `uncovered` files: widen a doc's `covers`, add a section, or (rarely) create an area doc. If a whole new area appeared, document it in `architecture.md` for now and suggest an area doc in the report.
+- Changes that conflict with what the doc says, where you can't tell which is right: collect them all, then ask about the 1–3 that matter most in **one** AskUserQuestion. Write the rest into `known-issues.md` under **Open questions**, and leave those facts unchanged. Don't guess.
 
 ### 4. Verify and stamp
 - `yayh knowledge check` must pass.

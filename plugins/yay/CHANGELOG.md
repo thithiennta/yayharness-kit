@@ -3,7 +3,12 @@
 `/yay:harness-update` reads this file to tell a repo what changed between its recorded kit version and the installed one. Each entry lists new skills, config keys, template changes and behavior changes.
 
 ## 0.2.0
-Code quality: reuse existing code, and leave comments alone.
+Code quality (reuse existing code, leave comments alone) and less blocking (ask less).
+- **Ask less, block less:**
+  - **At most one question round of 1–3 questions, and only the hardest ones:** decisions that are expensive to undo, or that only the user can make. Claude decides everything else and lists it under **Decided** in the report, PR or artifact, so the user can overrule it. Open, non-blocking points go in the artifact for the next checkpoint.
+  - **No standalone confirmations:** no "mark it ready?" (plan check passing means ready), no version confirmation (only a major bump or a conflict is asked), no "proceed with the draft?", no approval step before writing the roadmap, and no end-of-run "push?". Work is committed locally, and the report ends with the push and PR commands, unless `--pr` was given.
+  - Deletes, overwrites, live-site writes, pushes and tags still need a yes.
+  - The rules are in `reference/asking.md`, which the SessionStart hook loads next to the code rules.
 - **Code rules for every session:** the SessionStart hook loads `reference/code-rules.md` into every yay repo session. It covers searching before creating, calling existing helpers, small diffs, and a WPCS-compatible comment policy: docblocks yes; no new, grown or reworded comments; nothing explaining other files; no change-log comments. The rules ship with the plugin, so `/yay:harness-update` isn't needed.
 - **Plans:** each plan task has a `Reuse:` line (`yayh plan check` warns when it's missing, or when `none` has no reason). `/yay:plan`'s self-review looks for re-implementations.
 - **`yayh code find|similar|index|new`:** a search over PHP and JS/TS classes, functions, methods and consts, matching names and docblock summaries.

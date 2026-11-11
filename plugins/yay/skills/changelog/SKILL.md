@@ -17,7 +17,7 @@ Turn commits into words a merchant understands. Two outputs:
 
 | Option | Effect |
 |---|---|
-| `--version=x.y.z` | Version to write. Default: `yayh git bump "$(yayh version current)" "$(yayh changelog suggest)"`. Confirm it if the user is around. |
+| `--version=x.y.z` | Version to write. Default: `yayh git bump "$(yayh version current)" "$(yayh changelog suggest)"`. Don't ask; say which version you used (`/yay:release` confirms versions). |
 | `--since=<tag\|ref>` | Start point. Default: `yayh changelog baseline`, which is the last release tag, or the commit that introduced the current version when the repo has no tags yet. |
 | `--date=YYYY-MM-DD` | Entry date. Default: today. |
 | `--no-readme` / `--no-notes` | Skip one of the two outputs. |

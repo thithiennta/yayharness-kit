@@ -11,6 +11,7 @@ Behaviour checks for the `/yay:*` skills, run with `claude plugin eval`. Each ca
 | `code-comments-settings-toggle` | Hiding My Account tabs (the real case that motivated 0.2.0): the existing comment block above `my_account` stays as it was, and no comment lines are added to `Settings.php`. |
 | `code-leaves-unrelated-comments` | A threshold change leaves the docblock and inline comment alone, and adds no inline comments. |
 | `code-reuses-existing-helpers` | Showing a fee at checkout calls `Support\\Format::price()` rather than an inline `wc_price()`. |
+| `plan-decides-without-stopping` | A plain "write the plan for R-2" request: at most one question, the plan marked ready by Claude, and its own decisions listed (`reference/asking.md`). |
 | `plan-from-request` | A plan request fires `/yay:plan`, which writes `docs/plans/` with tasks and Verify checks, and no code. |
 
 ## Run

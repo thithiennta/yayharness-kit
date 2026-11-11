@@ -19,7 +19,7 @@ Fix one bug, minimally, on its own branch. **No fix without a cause:** the bug r
 | `<description>` | No report yet. Run a quick inline diagnosis (step 1), which creates `B-<n>` first. |
 | `--hotfix` | Branch `hotfix/<slug>` from the latest release tag (`yayh git last-tag`), so `/yay:release --hotfix` can ship a patch without unreleased work. |
 | `--from=<tag>` | Branch the hotfix from this tag instead. |
-| `--test` / `--no-test` | Write the proposed regression test without asking, or skip it and rely on the manual check. The default is to ask. |
+| `--test` / `--no-test` | Write the proposed regression test without asking, or skip it and rely on the manual check. Default: write it, unless the repo's rules say tests need approval (then it's one question in step 4's round). |
 | `--no-worktree` | Branch in the current checkout instead of a worktree. |
 | `--escalate` | Stop and hand off to `/yay:plan --from=B-<n>`. This also happens automatically when the fix outgrows its scope (step 3). |
 | `--pr` / `--no-pr`, `--draft`, `--no-push` | As in `/yay:implement`. |
@@ -29,7 +29,7 @@ Fix one bug, minimally, on its own branch. **No fix without a cause:** the bug r
 ### 1. The cause
 - Resolve the report with `yayh artifact resolve <arg>`.
   - `root-caused` → go.
-  - `open` with low confidence → ask: investigate more (`/yay:debug B-<n>`) or proceed.
+  - `open` with low confidence → this becomes a question in the single round (step 4): investigate more (`/yay:debug B-<n>`), or proceed.
   - `fixed`, `wontfix` or `duplicate` → stop.
 - **No report, only a description:** do a `/yay:debug --quick` pass inline. Create the report with `yayh artifact new bug …`, find the cause with `file:line` evidence, and fill in Root cause and Fix options. If the cause isn't clear within a reasonable read, stop and suggest `/yay:debug`.
 - Choose the fix option: the report's recommended one, unless the user says otherwise.
@@ -51,7 +51,7 @@ Fix one bug, minimally, on its own branch. **No fix without a cause:** the bug r
 Read the report's Regression test proposal.
 - With `--test`, write it.
 - With `--no-test`, skip it.
-- Otherwise ask once with AskUserQuestion, giving the test's name, file and what it guards. Write it only if accepted. It must fail without the fix and pass with it; check both, for example by `git stash`-ing the fix.
+- Otherwise write it, unless the repo's rules (the project block or `.claude/rules/`) say tests need approval. Only then ask, in **one** AskUserQuestion round, together with the low-confidence question from step 1 if it applies (and, since you're asking anyway, "push and open a PR when done?"). Write the test if accepted. It must fail without the fix and pass with it; check both, for example by `git stash`-ing the fix.
 
 Without a test, do the report's manual check exactly and record the result.
 
@@ -70,7 +70,7 @@ Without a test, do the report's manual check exactly and record the result.
    ```
 
 ### 6. Push and PR
-As in `/yay:implement` step 5, with these differences:
+As in `/yay:implement` step 5: only with `--pr` or a yes from step 4; otherwise print the commands. These things differ:
 - the title is the fix header
 - for a hotfix, the base is `git.baseBranch`, and the body says: "Hotfix from `<tag>`; release with `/yay:release patch --hotfix`"
 - record `pr` in the report

@@ -20,7 +20,7 @@ Implement a plan exactly, in a worktree, with one commit per task. The rules for
 | `--continue` | Resume an `in-progress` plan in its existing worktree, starting at the first unticked task. |
 | `--no-worktree` | Create the branch in the current checkout (`git switch -c`) instead of a worktree. |
 | `--base=<branch>` | Branch from here instead of `git.baseBranch`. |
-| `--pr` / `--no-pr` | Push and open the PR without asking, or stop after the last commit. The default is to ask once, at the end. |
+| `--pr` / `--no-pr` | Push and open the PR without asking, or stop after the last commit. Default: don't ask; finish locally and print the push and PR commands. |
 | `--draft` | Open the PR as a draft. |
 | `--no-push` | Never push (this also means no PR). |
 | `--no-review` | Skip the reuse and comments review (step 4.4). For throwaway branches only. |
@@ -32,10 +32,11 @@ Implement a plan exactly, in a worktree, with one commit per task. The rules for
 - `yayh plan check "$plan"` must have no errors. If it does, stop and suggest `/yay:plan --check`.
 - Check the status:
   - `ready` → go.
-  - `draft` → ask whether to proceed anyway.
+  - `draft` → proceed, and say so in the report (a draft that passes `plan check` is buildable).
   - `in-progress` → behave as `--continue`.
   - `done` or `dropped` → stop.
 - Read the project block, the knowledge docs the plan touches, and every file the tasks name.
+- **Hard questions only, once, now** (`${CLAUDE_PLUGIN_ROOT}/reference/asking.md`). Ask only if the plan leaves a decision that's expensive to undo or that only the user can make (for example, customer-visible behaviour the plan doesn't pin down): at most 3, in one AskUserQuestion. If you do ask, you may add "push and open a PR when done?". Everything else the plan leaves open, decide in its spirit and list under **Decided** in the PR. Usually that means no questions at all. Never stop mid-task to ask, unless the plan turns out to be wrong (step 3.1).
 
 ### 2. Branch and worktree (skip with `--continue`)
 1. Get the branch name: `branch="$(yayh git branch-name <plan type> "<plan title>")"`.
@@ -85,7 +86,7 @@ For each unticked task in order (or only `--task`):
 6. Run `yayh fm set <plan> status done` and commit it as `docs(plan): complete P-<n>`.
 
 ### 5. Push and PR
-Skip this with `--no-pr` or `--no-push`. Without `--pr`, ask once: "Push `<branch>` and open a PR into `<base>`?"
+Do this only with `--pr`, or when step 1's answer said yes. Otherwise don't ask: end the report with the exact commands (`git push -u origin <branch>` and the `gh pr create …` line).
 ```
 git push -u origin "$branch"
 gh pr create --base <base> --head "$branch" --assignee @me [--draft] \
@@ -97,6 +98,7 @@ Fill the PR body from `.github/pull_request_template.md`:
 - give the exact checks run, with their results, and the manual checks that are left
 - name the editions
 - write a customer-facing release note line, or "internal"
+- under "Decided": the choices you made where the plan was silent
 - under "Reuse and comments review": the findings you fixed (one line each), and the ones you answered, with your reason
 
 Then record the PR number with `yayh fm set <plan> pr <number>`, and commit and push that.

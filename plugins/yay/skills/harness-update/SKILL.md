@@ -17,7 +17,7 @@ Bring this repo's **kit-owned** files in line with the installed yay plugin and 
 |---|---|
 | `--check` | Report only. Exits non-zero when something would change. Good for CI. |
 | `--diff` | Show a unified diff of every pending change. |
-| `--force` | Overwrite hand-edited kit files (`skipped-modified`, `conflict`). Ask first, unless the user passed it. |
+| `--force` | Overwrite hand-edited kit files (`skipped-modified`, `conflict`) without asking. Without it, they're kept unless the single question round says to overwrite them. |
 | `--only=<groups>` | Limit to `claude-md`, `rules`, `settings`, `github` or `docs` (comma-separated). |
 | `--no-commit` | Leave the changes uncommitted. |
 
@@ -25,18 +25,18 @@ Bring this repo's **kit-owned** files in line with the installed yay plugin and 
 
 1. **Preflight.**
    - `yayh harness status`. If it says `not-initialized`, stop and suggest `/yay:harness-init`.
-   - `yayh config validate`. Fix config errors first, and ask the user when a fix isn't obvious.
+   - `yayh config validate`. Fix config errors first. When a fix isn't obvious, it goes into the one question round of step 3, together with any overwrite question (at most 3 questions; `${CLAUDE_PLUGIN_ROOT}/reference/asking.md`).
    - `git status --porcelain` must show no changes to kit-owned files. Other changes are fine.
-2. **Config migration.** Compare `.yay/config.json` with `${CLAUDE_PLUGIN_ROOT}/reference/config.schema.json`. If the kit added keys this repo lacks, list them with their defaults and add them only after the user agrees. Never change an existing value.
+2. **Config migration.** Compare `.yay/config.json` with `${CLAUDE_PLUGIN_ROOT}/reference/config.schema.json`. If the kit added keys this repo lacks, add them with their defaults and list them under **Decided** (they're easy to edit later). Never change an existing value.
 3. **Preview.** Run `yayh harness sync --check --diff <--only>` and summarize the actions:
    - `created` / `updated`: will be written
    - `seeded`: a missing skeleton file will be created
    - `up-to-date`: nothing to do
-   - `skipped-modified`: someone hand-edited a kit file. Show the diff and explain that the change belongs in a repo rule (a `.claude/rules/` file without the `yay-` prefix), in `.yay/settings.extra.json`, or upstream in the kit. Ask whether to overwrite it.
-   - `conflict`: a file exists where a kit file goes, and the kit never wrote it. Same question.
+   - `skipped-modified`: someone hand-edited a kit file. Show the diff and explain that the change belongs in a repo rule (a `.claude/rules/` file without the `yay-` prefix), in `.yay/settings.extra.json`, or upstream in the kit.
+   - `conflict`: a file exists where a kit file goes, and the kit never wrote it.
    - `orphaned` / `removed`: the kit no longer ships this file.
 
-   With `--check`, stop here and report.
+   With `--check`, stop here and report. Otherwise, if there are `skipped-modified` or `conflict` lines (and no `--force`), or a config fix from step 1 isn't obvious, ask **one** AskUserQuestion with at most 3 questions: overwrite the hand-edited files (one question for all of them; "Keep them" first), and the config fix. Nothing to ask means no question.
 4. **Apply.** Run `yayh harness sync <--only>`, adding `--force` only if the user approved overwriting. Run `yayh harness sync --check` again to confirm it's clean.
 5. **Commit.** Unless `--no-commit` was passed, and only if kit files changed:
    - Branch: if you're on the base branch, `git switch -c "$(yayh git branch-name chore "yay harness $(yayh version)")"`. Otherwise stay where you are.

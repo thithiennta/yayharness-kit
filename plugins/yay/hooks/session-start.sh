@@ -9,6 +9,9 @@ hook_use_repo "$cwd"
 # follows the installed kit's rules without waiting for /yay:harness-update.
 echo "yay code rules (loaded by the yay plugin for this repo):"
 sed -e '1,/^$/d' "$YAY_KIT_ROOT/reference/code-rules.md"
+echo
+echo "yay asking rules (loaded by the yay plugin for this repo):"
+sed -e '1,/^$/d' "$YAY_KIT_ROOT/reference/asking.md"
 st="$(yay_harness_status)"
 case "$st" in
   outdated*) echo "yay: this repo's harness is ${st#outdated } (kit-owned files are older than the installed yay plugin). Suggest running /yay:harness-update before other work." ;;

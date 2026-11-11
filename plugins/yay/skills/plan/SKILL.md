@@ -20,16 +20,16 @@ A plan is the contract `/yay:implement` follows task by task. The format is in `
 | `--check` | Review an existing plan instead of writing one: run the structural check, then do a critical review (see step 6). Doesn't change the plan unless the user agrees. |
 | `--split` | If the work is bigger than about 8 tasks or touches unrelated areas, split it into several plans that ship on their own, linked through `from:`. |
 | `--type=<t>` | Branch and commit type for `/yay:implement` (default `feat`; `fix` for bugs; `refactor` for no behavior change). |
-| `--tests=ask\|none` | `ask` (default): propose tests and ask. `none`: write `**Tests:** none` and verify by manual checks. |
+| `--tests=ask\|none` | `ask` (default): propose tests, and ask only if the repo's rules require approval for tests. `none`: write `**Tests:** none` and verify by manual checks. |
 | `--edition=<e>` | Which editions the plan touches. Default: inferred from where the code lives. |
 | `--commit` | Commit the plan when you're on a non-base branch. |
 
 ## Steps
 
 1. **Source.** Run `yayh artifact resolve <id>` and read it:
-   - **Brainstorm:** use its decision. If its `status` isn't `decided`, say so and ask which option to plan, or suggest finishing `/yay:brainstorm` first.
+   - **Brainstorm:** use its decision. If its `status` isn't `decided`, plan its recommended option, and make "plan option <X>?" a question in step 7's round.
    - **Bug:** use its root cause. If it isn't `root-caused`, suggest `/yay:debug` first.
-   - **Roadmap item:** if there's no brainstorm and the approach isn't obvious, suggest `/yay:brainstorm --from=R-<n>`. Continue only if the user wants to.
+   - **Roadmap item:** if there's no brainstorm and the approach isn't obvious, plan the most likely approach, and say in the report that `/yay:brainstorm --from=R-<n>` would compare options.
 2. **Ground it.** Read the project block and the relevant `docs/knowledge/` docs. Read **every file the plan will touch**. A plan that names a file you haven't opened is a guess.
 3. **Design.**
    - **Goal:** the user-visible outcome and "done means…".
@@ -45,7 +45,7 @@ A plan is the contract `/yay:implement` follows task by task. The format is in `
 
    Put data and migration first, then server, then UI, then docs. If the work makes a knowledge doc wrong, add a task to update it.
 5. **Tests and Verify.**
-   - **Tests:** with `--tests=ask`, propose each worthwhile test (its name, file, suite, and the risk it guards) in one AskUserQuestion. Write the ones accepted into `**Tests:**`, or `none`. The repo's test policy is in the project block and `.claude/rules/yay-workflow.md`.
+   - **Tests:** with `--tests=ask`, draft the worthwhile tests (each with its name, file, suite, and the risk it guards). They're asked about in step 7's single round. Until then, write them into `**Tests:**` as proposed. The repo's test policy is in the project block and `.claude/rules/yay-workflow.md`.
    - **Verify:** exact checks, each with the command or the UI path, the input, and the result that means it passed. Cover every edition the plan touches.
 6. **Write it.**
    - `yayh artifact new plan "<title>" from=<id> roadmap=<R-n or empty> type=<type>`, then fill in every section.
@@ -58,7 +58,11 @@ A plan is the contract `/yay:implement` follows task by task. The format is in `
      - Is the Verify list enough to catch a regression?
 
    Fix what you find.
-7. **Ready?** If the user is around, show the plan's task list and ask whether it's ready. On yes, `yayh fm set <file> status ready`. Otherwise leave it `draft`.
+7. **Hard questions only** (`${CLAUDE_PLUGIN_ROOT}/reference/asking.md`). If the user is around and something hard is open, show the task list and ask **one** AskUserQuestion with at most 3 questions, from these:
+   - **Tests to include** (multiSelect, with the proposed tests as options), only when the repo's rules say tests need approval (the project block or `.claude/rules/`). Otherwise decide yourself: keep the tests that guard real risk.
+   - **The single biggest open decision**, if one remains (the brainstorm option, or a design choice). Your pick comes first.
+
+   Apply the answers. Then, when `yayh plan check` has no errors and no hard decision is still unanswered, mark it ready yourself: `yayh fm set <file> status ready`. Every other open point goes under the plan's `## Risks` as "Open: …" with the default you chose, for `/yay:implement` or the PR review. Nothing hard open means no question.
 8. **Report.** Give the file, the task count, the Tests line, any open risks, and the next step: `/yay:implement P-<n>`.
 
 ### `--check` mode

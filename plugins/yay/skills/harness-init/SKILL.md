@@ -38,16 +38,16 @@ Run these and stop with a clear message on any problem:
 - `git rev-parse --show-toplevel`. The repo root is where you work from now on.
 - `git status --porcelain`. Tracked changes must be committed or stashed first. Untracked files are fine.
 - `yayh harness status`. If it reports anything other than `not-initialized` and `--reinit` wasn't passed, stop and point the user to `/yay:harness-update`.
-- Check that the repo looks like a WordPress plugin: some root `*.php` file has a `Plugin Name:` header. If not, ask before going on.
+- Check that the repo looks like a WordPress plugin: some root `*.php` file has a `Plugin Name:` header. If not, stop and say so (rerun with `--yes` to go ahead anyway).
 
 ### 2. Detect
-Run `yayh harness detect > "$(mktemp)"` (remember the path) (on `--reinit`, use the existing config instead). Read the draft, then apply the overrides from the options. Then check the guesses that detection can't be sure of, using **one** AskUserQuestion with at most 4 questions. Ask only about these, and only when they're uncertain:
+Run `yayh harness detect > "$(mktemp)"` (remember the path) (on `--reinit`, use the existing config instead). Read the draft, then apply the overrides from the options. Then list the guesses that detection can't be sure of. Don't ask yet: they go into the single question round in step 4. Only these can be worth asking, and only when they're uncertain:
 - **Editions:** whether the repo builds Free and Pro from one branch, what the repo calls them (`free`, `lite`, …, matching its build scripts), and which is the default. If you rename an edition, rename it in `package.forbidden` (and in a per-edition `package.output`) too, because `yayh config validate` rejects keys that aren't editions.
 - **wp.org slug:** whether the Free build ships to WordPress.org.
 - **Base branch:** the detected one, plus any other long-lived branches you see in `git branch -a` (e.g. `dev`, `main`, `main-lite`).
 - **Package command:** how a release zip is built. Look at `scripts/`, `bin/`, `vendor/bin/yaycommerce-*`, the `package.json` and `composer.json` scripts, and `.github/workflows/`. Offer the commands you found, using the `{version}` and `{edition}` placeholders.
 
-Don't ask about values that are clearly right (slug, main file, PHP floor).
+Don't ask about values that are clearly right (slug, main file, PHP floor). The answer to one question often settles another (a Free/Pro split implies the wp.org question and the per-edition package command), so derive those. Anything still uncertain gets the best guess and is listed under **Decided** in the report, to fix later in `.yay/config.json`.
 
 ### 3. Inventory
 Run `yayh harness inventory --keep=<path>` (one `--keep=` per `--keep` option). Group the output for the user:
@@ -58,7 +58,11 @@ Run `yayh harness inventory --keep=<path>` (one `--keep=` per `--keep` option). 
 If anything under `docs/` looks like **user-facing documentation** rather than harness or Claude material (guides, API docs, images used by `readme.txt`), call it out and suggest `--keep`.
 
 ### 4. Confirm
-Show the plan in one short block: the branch, the config summary (name, slug, editions, base, tag format, commands, generated paths), the delete list, and the kit files that will be written. Then ask with AskUserQuestion: "Wipe and install the yay harness on branch <branch>?" The options are **Install**, **Keep more paths** (then ask which ones and go back to step 3) and **Cancel**. With `--yes`, skip the question but still print the plan. With `--dry-run`, stop here.
+Show the plan in one short block: the branch, the config summary (name, slug, editions, base, tag format, commands, generated paths), the delete list, and the kit files that will be written. Then ask **one** AskUserQuestion with at most 3 questions:
+- always first: "Wipe and install the yay harness on branch <branch>?" (**Install**, **Keep more paths**, **Cancel**). On **Keep more paths**, its free-text answer names the paths; add them and re-show the delete list, without asking again unless it changed a lot.
+- then the 1–2 most important detection doubts from step 2, each with your guess first as "(Recommended)".
+
+With `--yes`, ask nothing: use the guesses, still print the plan, and list the guesses under **Decided**. With `--dry-run`, stop here.
 
 ### 5. Branch
 If you're not already on the target branch, create it from the base: `git switch -c <branch> <base>`. If it already exists, `git switch <branch>`.
@@ -70,7 +74,7 @@ Unless `--no-wipe` was passed: `yayh harness wipe --yes --keep=<path> …` (the 
 Write the confirmed config to `.yay/config.json`, pretty-printed with 2-space indents and the `--keep` paths in `keep`. Run `yayh config validate` and fix anything it reports.
 
 ### 8. Install the kit files
-Run `yayh harness sync`. On `--no-wipe`, `conflict` lines mean an old file is in a kit file's place. List them and ask whether to replace them (`yayh harness sync --force`) or keep them.
+Run `yayh harness sync`. On `--no-wipe`, `conflict` lines mean an old file is in a kit file's place. Keep them (no `--force`), list them in the report, and say that `/yay:harness-update --force` replaces them.
 
 ### 9. Commit
 Unless `--no-commit` was passed:
@@ -98,5 +102,5 @@ The team chose to delete the whole old harness, `docs/` included, and rebuild fr
 ## Don'ts
 - Never wipe without showing the inventory first, never wipe on the base branch, and never use `git rm` by hand for paths the inventory didn't list.
 - Never stage with `git add -A` or `git add .`: the user's untracked files must stay untracked.
-- Never invent commands for the config. Leave a command out when it doesn't apply, and ask when you're unsure.
+- Never invent commands for the config. Leave a command out when it doesn't apply or you're unsure, and say so under **Decided**.
 - Don't write project knowledge here. That's `/yay:knowledge-init`'s job.

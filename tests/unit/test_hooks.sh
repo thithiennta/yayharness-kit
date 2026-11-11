@@ -136,6 +136,8 @@ test_session_start_loads_code_rules_only_in_yay_repos() {
   assert_contains "$out" "yay code rules (loaded by the yay plugin for this repo):"
   assert_contains "$out" "Never edit, extend or reword an existing comment"
   assert_contains "$out" "Search before creating"
+  assert_contains "$out" "yay asking rules (loaded by the yay plugin for this repo):"
+  assert_contains "$out" "At most one round of 1–3 questions, and only the hardest ones."
   case "$out" in *"# yay code rules"*) _fail "title line leaked" ;; *) _pass ;; esac
   assert_eq "" "$(_bash session-start.sh "$(mk_repo)" '')"
 }

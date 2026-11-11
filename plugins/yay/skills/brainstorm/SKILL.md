@@ -20,7 +20,7 @@ Turn a topic into a recorded decision: a `BS-<n>` file that `/yay:plan` builds o
 | `--options=N` | How many options to develop (2–4, default 3). |
 | `--quick` | One pass, no subagents: two options and a recommendation. Fine for small, clear choices. |
 | `--research` | Also look outside the repo, for how WooCommerce core or common plugins solve this, or the relevant WP/WC APIs, using WebSearch. Cite the sources. |
-| `--decide` | After recommending, ask the user to pick an option and record it (`status: decided`). Without it, ask only if the user is around to answer. |
+| `--decide` | After recommending, ask the user to pick an option (one round, at most 3 questions) and record it (`status: decided`). Without it, ask only if the user is around to answer. |
 | `--commit` | Commit the file when you're on a non-base branch (`docs(plan): add BS-<n> …`). |
 
 ## Steps
@@ -37,7 +37,7 @@ Turn a topic into a recorded decision: a `BS-<n>` file that `/yay:plan` builds o
 5. **Write it.**
    - `yayh artifact new brainstorm "<title>" from=<id>` prints the path.
    - Fill in every section: Problem, Constraints, Options, Recommendation, and Open questions (what only a human can answer: product intent, pricing tier, support load).
-6. **Decide** (with `--decide`, or when the user is present). Use one AskUserQuestion: the options as choices, with the recommended one first and marked "(Recommended)". Then:
+6. **Decide** (with `--decide`, or when the user is present). Use one AskUserQuestion: the first question is the options, as choices, with the recommended one first and marked "(Recommended)". Add at most 2 more questions, and only for open questions the chosen option depends on. Leave the rest under **Open questions** for `/yay:plan`. Then:
    - set `yayh fm set <file> decision "<option letter and name>"`
    - set `yayh fm set <file> status decided`
    - write any extra conditions the user gave into Recommendation

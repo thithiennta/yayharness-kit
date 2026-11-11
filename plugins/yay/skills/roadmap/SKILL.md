@@ -18,10 +18,10 @@ Always edit through `yayh roadmap` where a command exists (`add`, `set`, `move`)
 | Option | Effect |
 |---|---|
 | `--status` | Read-only report. Writes nothing. See **Status**. |
-| `--horizon=…` | Plan up to a date, `<n>sprints`, `eoq` (end of quarter) or `eoy` (Dec 31). Default: the front-matter `horizon` if it's still ahead, else ask (suggest 4 sprints). |
+| `--horizon=…` | Plan up to a date, `<n>sprints`, `eoq` (end of quarter) or `eoy` (Dec 31). Default: the front-matter `horizon` if it's still ahead, else 4 sprints (shown in the confirm round, where it can be changed). |
 | `--sprint-length=2w` | `1w`, `2w`, `10d`… Default: the front-matter `sprint_length`, else `2w`. |
 | `--start=YYYY-MM-DD` | First new sprint's start. Default: the day after the current sprint ends, or today when there's none. |
-| `--capacity=<n>` | Dev-days per sprint (sizes: S = 1.5, M = 4, L = 8). Default: ask once; suggest 8 for one developer on 2-week sprints. |
+| `--capacity=<n>` | Dev-days per sprint (sizes: S = 1.5, M = 4, L = 8). Default: 8 per 2-week sprint (one developer), scaled to the sprint length; shown in the confirm round. |
 | `--freeze=a..b` | A window with hotfix-class work only (fixes, compat, docs), e.g. around BFCM. Repeatable. |
 | `--focus="…"` | A theme to favour (e.g. "conversion before BFCM"). |
 | `--web` | Also research wordpress.org (reviews, support forum) and 3–5 competitors. |
@@ -29,7 +29,7 @@ Always edit through `yayh roadmap` where a command exists (`add`, `set`, `move`)
 | `--multi-agent` / `--plugins=a,b\|all` / `--rounds=1\|2` | Co-plan several plugins. See **Multi-agent**. |
 | `--publish` | Publish the roadmap as a private page. See **Publish**. |
 | `--dry-run` | Show the proposed roadmap and change nothing. |
-| `--pr` / `--no-pr`, `--draft` | As in `/yay:implement`: push and open the PR without asking, or never; draft PR. Default: ask. |
+| `--pr` / `--no-pr`, `--draft` | As in `/yay:implement`: push and open the PR, or never; draft PR. Default: finish locally and print the commands. |
 
 ## Where the edit happens
 
@@ -37,7 +37,7 @@ Always edit through `yayh roadmap` where a command exists (`add`, `set`, `move`)
 - On a non-base branch already: edit there.
 - On the base: `branch="$(yayh git branch-name docs "roadmap $(date +%Y-%m-%d)")"`, `wt="$(yayh git worktree "$branch")"`, and work in `$wt`. Reuse it if it exists today.
 
-Commit by path with `docs(roadmap): <summary>` (the `roadmap` scope is always allowed): `git add -- docs/roadmap.md <promoted backlog files>`. Then push and `gh pr create --base <base> --assignee @me` per `--pr`/`--no-pr` (ask by default).
+Commit by path with `docs(roadmap): <summary>` (the `roadmap` scope is always allowed): `git add -- docs/roadmap.md <promoted backlog files>`. Then push and `gh pr create --base <base> --assignee @me` only with `--pr`. Otherwise print those commands.
 
 ## Status (`--status`)
 
@@ -54,9 +54,9 @@ Commit by path with `docs(roadmap): <summary>` (the `roadmap` scope is always al
 ## Quick edits
 
 One small change, on a branch as above, then `yayh roadmap check`, commit and the PR question.
-- `--add="<title>"`: `yayh roadmap add "<title>" sprint=<n|later> size=<S|M|L> "why=<one line>"`. Ask for the why and size when missing. Default sprint: `later`. Warn if the sprint is now over capacity.
+- `--add="<title>"`: `yayh roadmap add "<title>" sprint=<n|later> size=<S|M|L> "why=<one line>"`. When the why or size is missing, infer them from the title and the evidence, and say what you used. Default sprint: `later`. Warn if the sprint is now over capacity.
 - `--move=R-<n>:<n|later>`: `yayh roadmap move R-<n> <n|later>`. Warn about capacity, or when moving work into a freeze sprint.
-- `--drop=R-<n>`: `yayh roadmap set R-<n> status dropped`, then ask for a reason and set it with `yayh roadmap set R-<n> note "<reason>"`. Never delete an item: ids aren't reused.
+- `--drop=R-<n>`: `yayh roadmap set R-<n> status dropped`, then record the reason given in the request (or "dropped <date>") with `yayh roadmap set R-<n> note "<reason>"`. Don't ask for one. Never delete an item: ids aren't reused.
 
 Commit: `docs(roadmap): add R-<n> <title>` / `move R-<n> to sprint <n>` / `drop R-<n>`.
 
@@ -67,10 +67,10 @@ Commit: `docs(roadmap): add R-<n> <title>` / `move R-<n> to sprint <n>` / `drop 
    - `yayh roadmap status`, `yayh roadmap check` and `yayh roadmap links`. Keep every existing item and its id.
    - **Legacy roadmap.** If `docs/roadmap.md` has content but no front-matter or no `### R-<n>` items (milestones, checklists, prose from the old harness), this run converts it:
      - Read it as evidence. Unfinished milestones and unticked "done when" boxes become candidates (step 3); finished ones are history and are dropped.
-     - Lasting content that isn't a plan (scope rules, business rules, settled decisions) belongs in knowledge, not the roadmap. List those sections and ask (AskUserQuestion) whether to append them to `docs/knowledge/decisions.md` in the same commit, or leave them for `/yay:knowledge-update`. Non-interactive runs append them under `## From the old roadmap`. Never silently lose them. Old text often links docs the harness wipe removed: run `yayh knowledge check docs/knowledge/decisions.md` and repoint each dead path at its `docs/knowledge/` successor (or drop the link) before committing.
+     - Lasting content that isn't a plan (scope rules, business rules, settled decisions) belongs in knowledge, not the roadmap. List those sections. By default, append them to `docs/knowledge/decisions.md` under `## From the old roadmap` in the same commit; the confirm round can change that. Never silently lose them. Old text often links docs the harness wipe removed: run `yayh knowledge check docs/knowledge/decisions.md` and repoint each dead path at its `docs/knowledge/` successor (or drop the link) before committing.
      - The new file replaces the old one entirely (the old version stays in git history). Say so in the confirm step.
    - **Legacy backlog files** (no `id:` front-matter) are still evidence. Read `docs/backlog/*.md` directly, not only `yayh artifact list backlog`. When one is promoted, give it front-matter first: `yayh fm set <file> id "$(yayh id next BL)"`, then `title`, `status promoted:R-<n>` and `created`.
-   - Settle horizon, sprint length, start, capacity and freezes (from options, front-matter, or one AskUserQuestion with all the missing ones). Then `yayh roadmap sprints start=… length=… until=…|count=… first=<next sprint number>` gives the new sprint dates. Past and current sprints keep their headings and dates.
+   - Settle horizon, sprint length, start, capacity and freezes from the options and the front-matter, and use the defaults for the rest. Don't ask yet: the defaults are shown in step 5's single round. Then `yayh roadmap sprints start=… length=… until=…|count=… first=<next sprint number>` gives the new sprint dates. Past and current sprints keep their headings and dates.
 2. **Evidence.** Read what's there; don't invent demand.
    - Unfinished roadmap items, and `links` drift.
    - `yayh artifact list backlog --status=idea`, open bugs (`yayh roadmap status` lists them by severity), ready and in-progress plans, open and decided brainstorms.
@@ -84,7 +84,7 @@ Commit: `docs(roadmap): add R-<n> <title>` / `move R-<n> to sprint <n>` / `drop 
    - Unfinished items in past sprints have slipped. Each one moves to the current or a new sprint, or to Later. Say which.
    - Fill sprints in priority order (must-haves, high value per day) up to capacity. A sprint that overlaps a `--freeze` window is a freeze sprint: hotfix-class items only, with the spare capacity kept for fixes. Say so in its `Goal:` line. Dependencies go first. Overflow goes to Later.
    - Give each new sprint a one-line `Goal:` under its heading.
-5. **Confirm.** Show a table per sprint (id or "new", title, size, why) with the dev-days used against capacity, plus what goes to Later and what slipped. Ask once (AskUserQuestion: accept / adjust / cancel). With `--dry-run`, stop here. Non-interactive runs go on with the proposal and say so in the report.
+5. **Confirm.** Show a table per sprint (id or "new", title, size, why) with the dev-days used against capacity, plus what goes to Later and what slipped. Don't ask for approval: the roadmap is written on a local branch, so it's cheap to change. With `--dry-run`, stop here. Ask (one AskUserQuestion, at most 3 questions, `${CLAUDE_PLUGIN_ROOT}/reference/asking.md`) only about the hardest calls: work you had to cut or push past the horizon that someone may consider a must, or a priority conflict the evidence can't settle. The calendar defaults and where a legacy roadmap's lasting sections go are decisions you make; list them under **Decided**.
 6. **Write**, on a branch (above):
    - Front-matter: `horizon`, `sprint_length`, `updated` (today). Keep any other keys (`published`, `hub`).
    - Add the new sprint headings from `yayh roadmap sprints … --md`, each followed by its `Goal:` line. Never rewrite past sprints' headings.
@@ -101,7 +101,7 @@ One read-only owner agent per plugin researches its repo; the owners then read e
 
 1. **Plugins.** `yayh roadmap peers` lists the sibling plugin folders (dir, name, slug, harnessed, path). `--plugins=all` means every harnessed peer plus this repo. Otherwise match each name against the dir, slug or name, case-insensitively, and stop on anything unmatched. Plugins without a harness can join the research, but get no roadmap file written (say so).
 2. **Calendar.** Settle the horizon, sprint length, start, capacity and freezes once, for everyone (Plan step 1), then build the sprint list with `yayh roadmap sprints`.
-3. **Cost.** The run uses 2N + 1 agents (N + 1 with `--rounds=1`). Say the count and confirm before starting when N > 3.
+3. **Cost.** The run uses 2N + 1 agents (N + 1 with `--rounds=1`). Only when N > 3, ask one question: start with this many agents? (Calendar defaults are decisions, listed under **Decided**, not questions.)
 4. **Run** the Workflow tool with `scriptPath: ${CLAUDE_PLUGIN_ROOT}/workflows/roadmap-portfolio.js` and `args`:
    ```json
    { "today": "YYYY-MM-DD", "horizon": "YYYY-MM-DD", "sprintLength": "2w", "capacity": 8,
@@ -110,7 +110,7 @@ One read-only owner agent per plugin researches its repo; the owners then read e
      "plugins": [{ "name": "YayReturns", "slug": "yayreturns", "path": "/abs/path", "repo": "owner/name or empty", "version": "1.1.0", "harnessed": true }] }
    ```
    Get `repo` from `gh repo view --json nameWithOwner -q .nameWithOwner` in each repo (empty if gh fails), and `version` from `YAY_REPO=<path> yayh version current`.
-5. **Confirm.** Show the portfolio summary, the shared initiatives (owner, sprint, per-plugin work), the conventions, and a sprint table per plugin. Ask once.
+5. **Show, don't ask again.** Show the portfolio summary, the shared initiatives (owner, sprint, per-plugin work), the conventions, and a sprint table per plugin. Then go on to write: every repo's change is a local branch, easy to change or drop, and push only with `--pr`; otherwise print the commands.
 6. **Write each harnessed plugin's roadmap**, in its own repo (`YAY_REPO=<path>` for every `yayh` call, `git -C <path>`), following Plan steps 6–7: on its own branch, `existing_id` items moved, new items added. A shared initiative's part gets `- shared: <initiative title> (owner <plugin>)` and `- depends: <plugin>:R-<n>` where the dependency is known. Skip `cut` items.
 7. **Report** one line per plugin (items per sprint, PR link) and the shared initiatives. With `--publish`, publish a hub (below).
 

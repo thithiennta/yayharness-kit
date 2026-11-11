@@ -19,7 +19,7 @@ Write this repo's project knowledge. Follow `${CLAUDE_PLUGIN_ROOT}/reference/kno
 | `--depth=full` (default) | Run scouts in parallel per area, then write the full doc set. |
 | `--agents=N` | Maximum number of parallel scouts (default 4, maximum 6). |
 | `--area=<path>` | Only (re)write the knowledge for this subtree: an area doc and its "read when" link. The rest stays as it is. |
-| `--run-commands` | Actually run the configured `lint`, `typecheck`, `test` and `build` commands to verify them. Without it, read their definitions only. Some need a database or rewrite files, so ask before running `test` or `build`. |
+| `--run-commands` | Actually run the configured `lint`, `typecheck`, `test` and `build` commands to verify them. Without it, read their definitions only. Passing it is the consent: no further question. Afterwards, restore any tracked files a command rewrote (`git checkout -- <files>`), and report tests that need a database you don't have as not run. |
 | `--mine-history` | Also read the old harness docs from git history (the commit before `chore(harness): install yay harness`) as **leads only**. Re-verify every lead against the current code before using it, and never copy text over. Off by default, because the harness install wiped them on purpose. |
 | `--force` | Overwrite knowledge that already exists. Otherwise, if the project block or `docs/knowledge/` already has content, stop and suggest `/yay:knowledge-update`. |
 | `--no-commit` | Leave the changes uncommitted. |
@@ -51,8 +51,8 @@ Spawn one `yay:knowledge-scout` agent per area, **all in a single message** so t
 
 Wait for every report. Treat scout output as **claims to check**: spot-check every `[known-issue]` and `[decision]` yourself, and any finding that surprises you, before writing it down.
 
-### 4. Ask what code can't tell (at most one AskUserQuestion, up to 4 questions)
-Ask only what the scouts listed under Open questions and what really matters for the docs. For example: which odd behavior is intentional, which compatibility targets are supported, or whether a failing check is known. Skip this step if nothing important is open.
+### 4. Ask what code can't tell (at most one AskUserQuestion, up to 3 questions)
+Pick the 1–3 open questions whose answers matter most for the docs, or settle the others. Write every other open question into `known-issues.md` under **Open questions**, to answer later. For example: which odd behavior is intentional, which compatibility targets are supported, or whether a failing check is known. Skip this step if nothing important is open.
 
 ### 5. Write the docs
 - **`docs/knowledge/helpers.md`:** always, unless the plugin has almost no PHP or JS. Start from `yayh code index` (every class, function and method, with its docblock summary), then keep only what's meant to be reused: shared helpers, services, settings getters, and the hooks the plugin exposes. Group them by job, one line each with when to use it. This is the first place Claude looks before writing new code.

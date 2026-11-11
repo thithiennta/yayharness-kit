@@ -87,6 +87,10 @@ Three things check this, and none of them block:
 
 Findings are fixed, or answered in the PR's "Reuse and comments review" section.
 
+### Asking less, blocking less
+
+Skills ask at most **one round of 1–3 questions**, and only the hardest ones: decisions that are expensive to undo, or that only you can make. Claude decides the rest and lists it under **Decided** in the report or PR, so you can overrule anything afterwards. Skills never stop to confirm a default, a version, a draft or the next step. Work is committed locally, and the report ends with the push and PR commands (pass `--pr` to push straight away). Deleting, overwriting and pushing are the only things that always wait for a yes. The rules are in [`plugins/yay/reference/asking.md`](plugins/yay/reference/asking.md).
+
 ## 5. Git rules (hooks enforce these)
 
 - **Branches:** `<type>/<slug>`, e.g. `feat/express-checkout` or `fix/coupon-field-vanishes`. There's no owner prefix; the PR is assigned to you instead (`gh pr create --assignee @me`). Release branches are `chore/release-1-4-0`.
