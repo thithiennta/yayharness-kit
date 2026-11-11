@@ -25,6 +25,7 @@ YAY_LIB_DIR="$YAY_KIT_ROOT/lib"
 . "$YAY_LIB_DIR/model.sh"
 . "$YAY_LIB_DIR/status.sh"
 . "$YAY_LIB_DIR/doctor.sh"
+. "$YAY_LIB_DIR/verify.sh"
 
 usage() {
   cat <<'EOF'
@@ -89,6 +90,8 @@ Artifacts (brainstorms, plans, bugs, backlog)
   plan tasks <plan>                T<n>, done|open, text (TSV)
   plan tick <plan> <T<n>> [--undo] tick a task's checkbox
   plan check <plan>                structure errors and warnings (exit 1 on errors)
+  verify <plan> [--run]            the plan's Verify items: n, cmd|manual, command, expected (TSV);
+                                   --run runs the `cmd` → expected ones: pass|fail|manual (exit 1 on a fail)
   id conflicts [base]              ids this branch adds that the base branch already uses
   design check <design>            structure errors and warnings for a UX-<n> (exit 1 on errors)
   backlog open [--for=<ID>] [--kind=decision|deferred]
@@ -319,6 +322,7 @@ case "$cmd" in
   design)
     case "${1:-}" in check) [ $# -eq 2 ] || yay_die "usage: yayh design check <design>"; yay_design_check "$2" ;; *) yay_die "usage: yayh design check <design>" ;; esac ;;
   doctor) yay_doctor ;;
+  verify) yay_verify "$@" ;;
   status) yay_status "$@" ;;
   next) [ $# -le 2 ] || yay_die "usage: yayh next [ID] [--today=YYYY-MM-DD]"; yay_next "$@" ;;
   roadmap)

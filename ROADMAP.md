@@ -108,6 +108,7 @@ Goal: measure quality, so every later change can show it helped. *(8 / 8)*
 - what: `yayh doctor` checks gh, jq, node, nvm, Docker, wp-env, the plugin install and the config. `/yay:setup` chains the init skills it needs, with one question round.
 
 ### R-13 Proof of done: executable Verify
+- status: built on `feat/later-items` (not merged): command checks run; the outside-agent check of Goal against the diff is the bug reviewer's goal check (R-9)
 - size: M · goal: 4
 - why: Verify items are prose (`templates/artifacts/plan.md`), and the implementer grades its own work (implement 4.3).
 - what: write Verify as `command → expected`, run them with `yayh verify P-<n>`, and have an agent outside the build check the Goal against the diff.

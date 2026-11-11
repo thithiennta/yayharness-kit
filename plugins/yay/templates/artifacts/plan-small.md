@@ -23,5 +23,5 @@ created: {{today}}
 <!-- Optional for a small plan: [unit] test_name (file) — risk. -->
 
 ## Verify
-<!-- Exact checks: the command or UI path, and the result that means it passed. -->
+<!-- Exact checks. A command check: - `<command>` → exit 0 | <text the output contains> (yayh verify runs it). Otherwise the UI path and the result that means it passed. -->
 -

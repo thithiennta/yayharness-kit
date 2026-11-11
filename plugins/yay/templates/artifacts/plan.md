@@ -33,7 +33,7 @@ created: {{today}}
 <!-- Browser-only acceptance criteria that get a Playwright spec tagged with this plan's id (reference/e2e.md). Usually none, at most 2. -->
 
 ## Verify
-<!-- Exact checks: the command or UI path, and the result that means it passed. -->
+<!-- Exact checks. A command check: - `<command>` → exit 0 | <text the output contains> (yayh verify runs it). Otherwise the UI path and the result that means it passed. -->
 -
 
 ## Risks
