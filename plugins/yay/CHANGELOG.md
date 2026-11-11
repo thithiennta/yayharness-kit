@@ -24,6 +24,13 @@
   - In a non-interactive run (`claude -p`), `/yay:autopilot` ended its turn while the build workflow was still running, so the workflow was killed halfway through. Autopilot (and `/yay:roadmap --multi-agent`) now wait for every workflow's completion notification.
   - `yayh plan check` warned that a note "follows the default" even when the plan answers it with a `Settles: BL-<n> …` line. It no longer warns about those notes.
   - `/yay:roadmap` scheduled around dependencies but didn't record them. It now writes `depends=` on items, which autopilot and `yayh status` order by.
+- **Task-quality evals, a score log and a release rule.** Four new cases on the Giftly fixture check what the build skills produce, not just which skill fires:
+  - `implement-tiny-lane`: a label rename with no plan file
+  - `implement-roadmap-item`: plan, build, tests and both reviewers, with the unrelated planted bug left alone
+  - `fix-regression-test-first`: a regression test that fails first, then a minimal fix
+  - `test-finds-product-bug`: the unit layer, boundary cases, and the planted off-by-one reported rather than asserted
+
+  `evals/README.md` gains a score log and a rule: a kit version whose eval mean drops, or whose case drops by more than 0.25, doesn't ship until the drop is fixed or explained. First smoke runs: 5 cases at 1.00, and `implement-roadmap-item` at 0.86.
 - **Words work as options.** A new asking rule: plain words in a `/yay:*` argument that name an option mean that option (`/yay:roadmap status`, `/yay:release dry run`).
 
 ## Unreleased (0.4.0)

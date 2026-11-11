@@ -14,6 +14,10 @@ Behaviour checks for the `/yay:*` skills, run with `claude plugin eval`. Each ca
 | `plan-decides-without-stopping` | A plain "write the plan for R-2" request: at most one question, the plan marked ready by Claude, and its own decisions listed (`reference/asking.md`). |
 | `go-routes-symptom-to-debug` | `/yay:go` with a plain-words symptom routes to `/yay:debug` (cause unknown, so not `/yay:fix`), and no product code is edited. |
 | `review-catches-missing-capability` | `yay:bug-reviewer` on a branch whose settings handler has no nonce and no capability check: it flags a security blocker with the fix, and edits nothing. |
+| `implement-tiny-lane` | "Change the checkout label": built in the tiny lane, with no plan file, on its own branch, touching only the label. |
+| `implement-roadmap-item` | "Build R-2": plans, then builds on a branch, a commit per task with `Plan:` trailers, tests run, **both** reviewers (`bug-reviewer`, `code-reviewer`), nothing pushed, the unrelated planted bug left alone. The most expensive case (about $3–5 a run). |
+| `fix-regression-test-first` | "Fix B-2" (the planted 200-character off-by-one): a regression test that fails first, a minimal fix, the bug marked fixed. |
+| `test-finds-product-bug` | "Add tests for trimming and capping": unit layer, boundary cases 199/200/201, and the off-by-one reported as a product bug rather than asserted. No product code edited. |
 | `plan-from-request` | A plan request fires `/yay:plan`, which writes `docs/plans/` with tasks and Verify checks, and no code. |
 
 ## Run
@@ -34,6 +38,15 @@ claude plugin eval plugins/yay --runs 3 -j 3 --judge-model sonnet \
 - Use `--judge-model sonnet`. The default Haiku judge failed correct answers in the first run (2026-11-11). With Sonnet, the plugin scored 1.00 on every case, a mean +0.22 over the baseline.
 - Kit 0.2.0 (3 runs per case): the settings comments case went from 0.22 to 0.94 with the plugin; the no-plugin baseline scored 0.28. The two other code cases stayed at 1.00 in both arms; they're regression guards.
 - In a two-arm run, the `fires-skill` graders are reported as indicators, not as part of the score.
+
+## Score log and the release rule
+
+Every kit release runs the whole suite (`--runs 2`, Sonnet judge, plugin arm) and adds one line here: the version, the mean score, and every case below 1.00. **A version whose mean drops, or whose case drops by more than 0.25 against the last line, doesn't ship** until the drop is fixed or explained in its CHANGELOG entry. A new case starts its own baseline.
+
+| Kit | Runs | Mean | Below 1.00 | Notes |
+|---|---|---|---|---|
+| 0.2.0 | 3 | 1.00 (9 cases) | none | before the task-quality cases |
+| 0.5.0 (unreleased) | 1 | smoke only, not a baseline | `implement-roadmap-item` 0.86 | First runs of the new cases, after their graders were fixed: `go-routes-symptom-to-debug` 1.00, `review-catches-missing-capability` 1.00, `implement-tiny-lane` 1.00, `fix-regression-test-first` 1.00, `test-finds-product-bug` 1.00. `implement-roadmap-item` 0.86 failed one grader on wording, since loosened. The first full run (2 runs per case) sets the baseline. |
 
 ## Adding a case
 

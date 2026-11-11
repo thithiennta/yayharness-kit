@@ -79,11 +79,13 @@ Goal: one front door, and shorter skills. *(8 / 8)*
 Goal: work proven correct, not only tidy. Expect a holiday slowdown. *(8 / 8)* → **ship 0.5.0**
 
 ### R-9 Correctness review before every PR
+- status: built on `feat/correctness-review` (not merged). The eval scores 1.00, and in the yaycheckout pilot it caught a real bug (Opera Mini, TVs and VR headsets were detected as tablets)
 - size: M · goal: 4
 - why: `yay:code-reviewer` reviews only reuse and comments (CHANGELOG 0.2.0). Nothing independent checks the diff for logic bugs, WordPress security (nonces, capabilities, escaping, sanitizing), HPOS or block-checkout compatibility, or Pro code leaking into Free.
 - what: add a correctness pass to the reviewer, or a second `yay:bug-reviewer`, briefed only with the diff and the plan's Goal. Findings are fixed or answered in the PR, as reuse findings are today. Blocking findings only for security.
 
 ### R-10 Live pilot sweep of features never run for real
+- status: mostly done on `feat/correctness-review` (not merged). The yaycheckout pilot (about $17) ran harness-init, knowledge-init, roadmap, design, and an autopilot plan, build and resume. It found 4 kit bugs, all fixed. Not run: e2e worktree ports side by side, the multi-plugin roadmap, and a full `/yay:design` file (the gate correctly said none was needed)
 - size: M · goal: 4
 - why: PLAN.md lists five "not yet run live" gaps: autopilot with model routing and a tagged task (P12), a sheet answer settling a note (P10), `/yay:design` on a real screen (P11), e2e worktree ports, adopting YayWholesale's setup and CI (P8), and a multi-plugin roadmap (P5).
 - what: run each one on one real plugin, and fix what breaks (the P3 and P4 runs found 3 to 5 bugs each).
@@ -92,6 +94,7 @@ Goal: work proven correct, not only tidy. Expect a holiday slowdown. *(8 / 8)* �
 Goal: measure quality, so every later change can show it helped. *(8 / 8)*
 
 ### R-11 Task-quality evals for the build skills
+- status: built on `feat/task-evals` (not merged): 4 task-quality cases, a score log and the release rule
 - size: L · goal: 4
 - why: the 9 eval cases cover roadmap, debug, changelog, harness-init, plan and code style. None covers implement, fix, autopilot, design, test or e2e, and P11 says "no eval yet".
 - what: Giftly cases for implement (tests pass, plan followed, reuse), fix (regression test fails first), the lane choice from R-4, and test-layer choice. Run them per kit version, record the scores in CHANGELOG, and don't release a version that scores lower.
@@ -127,6 +130,18 @@ Goal: measure quality, so every later change can show it helped. *(8 / 8)*
 - size: M · goal: 3
 - why: some repos want stricter rules than R-4, R-5 and R-6 leave (for example, client work with required approvals).
 - what: `workflow.strictness: relaxed | standard | strict`, read by the hooks, by `plan check` and by the lane choice.
+
+### R-18 Reviews survive an interrupted autopilot run
+- status: planned
+- size: S
+- why: in the yaycheckout pilot, the build was killed after P-1's implement step marked the plan `done`. On resume, the queue showed P-1 as `done`, so its two reviews never ran.
+- what: record the review on the plan (`reviewed:` front-matter, set by autopilot's resolve step), and give a `done` plan without it the stage `review`, so autopilot runs the reviewers.
+
+### R-19 Finish the R-10 pilot gaps
+- status: planned
+- size: M
+- why: R-10 didn't run the e2e worktree ports side by side or the multi-plugin roadmap. In the yaycheckout build, the tests and the admin build couldn't run (no test database; Node 20 where 22 is needed). The note "the commit hook blocked the agent" is still unexplained.
+- what: run them on a machine with the plugin's toolchain. Have `yayh doctor` (R-12) report a missing test database and a wrong Node version up front.
 
 ## Decided
 - Order: smooth handoffs first. R-1 underpins R-2, R-3 and R-7, and it's cheap.

@@ -230,4 +230,4 @@ Every skill shows its full option list as you type it, and explains each option 
 
 ## 9. Updating the kit
 
-Kit changes go through a PR on this repo, with tests (`./tests/run.sh`) and `claude plugin validate plugins/yay`. Bump the version in `plugins/yay/.claude-plugin/plugin.json` and add a `plugins/yay/CHANGELOG.md` entry. After that, `/yay:harness-update` in each repo shows what changed. Teammates update with `claude plugin marketplace update yayharness && claude plugin update yay@yayharness`.
+Kit changes go through a PR on this repo, with tests (`./tests/run.sh`) and `claude plugin validate plugins/yay`. Before a version ships, run the eval suite and add its line to the score log in [`plugins/yay/evals/README.md`](plugins/yay/evals/README.md): a version that scores lower than the last one doesn't ship until the drop is fixed or explained. Bump the version in `plugins/yay/.claude-plugin/plugin.json` and add a `plugins/yay/CHANGELOG.md` entry. After that, `/yay:harness-update` in each repo shows what changed. Teammates update with `claude plugin marketplace update yayharness && claude plugin update yay@yayharness`.
