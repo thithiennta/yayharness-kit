@@ -1,7 +1,7 @@
 ---
 name: implement
-description: Build a ready Yay plugin plan task by task in its own worktree and branch. Use when the user says "implement P-4", "build this plan", "start on the plan", "continue the implementation". Implements, verifies and ticks each task, commits with a Plan trailer, runs the full checks, refreshes knowledge it made stale, and opens a PR assigned to its owner.
-argument-hint: "<P-<n>|plan-slug> [--task=T<n>] [--continue] [--no-worktree] [--base=<branch>] [--pr|--no-pr] [--draft] [--no-push] [--no-review]"
+description: Build a Yay plugin plan task by task in its own worktree and branch, or plan a requirement first and then build it. Use when the user says "implement P-4", "build this plan", "start on the plan", "continue the implementation", or "implement <a requirement>" / "implement R-12" when no plan exists yet. Implements, verifies and ticks each task, commits with a Plan trailer, runs the full checks, refreshes knowledge it made stale, and opens a PR assigned to its owner.
+argument-hint: "<P-<n>|plan-slug|\"<requirement>\"|R-<n>|BS-<n>|B-<n>> [--type=feat|fix|chore|refactor|perf] [--task=T<n>] [--continue] [--no-worktree] [--base=<branch>] [--pr|--no-pr] [--draft] [--no-push] [--no-review]"
 allowed-tools: Bash, Read, Grep, Glob, Write, Edit, Agent, AskUserQuestion
 ---
 
@@ -9,13 +9,16 @@ allowed-tools: Bash, Read, Grep, Glob, Write, Edit, Agent, AskUserQuestion
 
 Arguments: `$ARGUMENTS`
 
-Implement a plan exactly, in a worktree, with one commit per task. The rules for branches, commits and PRs are in `${CLAUDE_PLUGIN_ROOT}/reference/git-conventions.md`.
+Implement a plan exactly, in a worktree, with one commit per task. Given a requirement instead of a plan, write the plan first (step 0), then build it. The rules for branches, commits and PRs are in `${CLAUDE_PLUGIN_ROOT}/reference/git-conventions.md`.
 
 ## Options
 
 | Option | Effect |
 |---|---|
 | `<P-n\|slug>` | The plan to build. |
+| `"<requirement>"` | No plan yet: plan this text first (step 0), then build it. |
+| `R-<n>` / `BS-<n>` / `B-<n>` | Build the plan made from this source, or plan it first when there is none (step 0). |
+| `--type=<t>` | Branch and commit type for a plan written in step 0 (default `feat`; `fix` for a bug). |
 | `--task=T<n>` | Do only this task, then stop (still verify, tick and commit it). |
 | `--continue` | Resume an `in-progress` plan in its existing worktree, starting at the first unticked task. |
 | `--no-worktree` | Create the branch in the current checkout (`git switch -c`) instead of a worktree. |
@@ -27,8 +30,18 @@ Implement a plan exactly, in a worktree, with one commit per task. The rules for
 
 ## Steps
 
+### 0. No plan yet: plan it first
+Skip this when the argument is a plan: a `P-<n>`, or text that `yayh artifact resolve` finds under `docs/plans/`.
+1. **Find an existing plan.** For `R-<n>`, `BS-<n>` or `B-<n>`, look for a plan made from it: `yayh roadmap queue R-<n>` (its artifact column is a `P-<n>` once one exists), or `yayh artifact list plan` and match the plan's `from:`. For text, check `yayh artifact list plan` for a plan on the same topic. Ignore `done` and `dropped` plans. Found one: use it and go to step 1.
+2. **Write the plan.** Follow `/yay:plan` (`${CLAUDE_PLUGIN_ROOT}/skills/plan/SKILL.md`): steps 1–6 with the requirement as the topic (or `--from=<id>`), the `--type` given (`fix` for a `B-<n>`), and `roadmap=` when the source is a roadmap item. Ground it in the code as usual: open every file the tasks name, give each task its `Reuse:` line, and get `yayh plan check` to no errors.
+   - Don't run `/yay:plan`'s question round. Carry its hard questions (tests when the repo's rules need approval, the one biggest open design decision) into step 1's round, so the whole run still asks **at most one round**.
+   - A requirement too vague to plan responsibly (no clear user-visible outcome) is itself the hard question. With nobody to ask, plan the most likely reading and record it under **Decided**.
+   - More than about 8 tasks, or unrelated areas: plan with `--split`. Build the first slice now, and list the others in the report with `/yay:autopilot P-<a> P-<b>…` to build them.
+   - When step 1's round leaves nothing open, mark it ready: `yayh fm set <plan> status ready`.
+3. The plan is a new, untracked file in the main checkout, like any plan. It's carried into the branch in step 2, so it's committed with the code. Report it as "planned by /yay:implement".
+
 ### 1. Load and gate
-- `plan="$(yayh artifact resolve <arg>)"` and read it in full.
+- `plan="$(yayh artifact resolve <arg>)"` (or the plan step 0 found or wrote) and read it in full.
 - `yayh plan check "$plan"` must have no errors. If it does, stop and suggest `/yay:plan --check`.
 - Check the status:
   - `ready` → go.
@@ -36,7 +49,7 @@ Implement a plan exactly, in a worktree, with one commit per task. The rules for
   - `in-progress` → behave as `--continue`.
   - `done` or `dropped` → stop.
 - Read the project block, the knowledge docs the plan touches, and every file the tasks name.
-- **Hard questions only, once, now** (`${CLAUDE_PLUGIN_ROOT}/reference/asking.md`). Ask only if the plan leaves a decision that's expensive to undo or that only the user can make (for example, customer-visible behaviour the plan doesn't pin down): at most 3, in one AskUserQuestion. If you do ask, you may add "push and open a PR when done?". Everything else the plan leaves open, decide in its spirit and list under **Decided** in the PR. Usually that means no questions at all. Never stop mid-task to ask, unless the plan turns out to be wrong (step 3.1).
+- **Hard questions only, once, now** (`${CLAUDE_PLUGIN_ROOT}/reference/asking.md`). Include any carried over from step 0. Ask only if the plan leaves a decision that's expensive to undo or that only the user can make (for example, customer-visible behaviour the plan doesn't pin down): at most 3, in one AskUserQuestion. If you do ask, you may add "push and open a PR when done?". Everything else the plan leaves open, decide in its spirit and list under **Decided** in the PR. Usually that means no questions at all. Never stop mid-task to ask, unless the plan turns out to be wrong (step 3.1).
 
 ### 2. Branch and worktree (skip with `--continue`)
 1. Get the branch name: `branch="$(yayh git branch-name <plan type> "<plan title>")"`.
@@ -105,7 +118,7 @@ Fill the PR body from `.github/pull_request_template.md`:
 Then record the PR number with `yayh fm set <plan> pr <number>`, and commit and push that.
 
 ### 6. Report
-Give the branch, the worktree path, the commits (one line each), the checks and their results, the review findings (fixed and answered), the pre-existing failures, the knowledge updated, the PR URL, and the manual checks left for the reviewer.
+Give the plan (and, when step 0 wrote it, that it did, with its task count and any **Decided** planning choices), the branch, the worktree path, the commits (one line each), the checks and their results, the review findings (fixed and answered), the pre-existing failures, the knowledge updated, the PR URL, and the manual checks left for the reviewer.
 
 ## Don'ts
 - Don't implement anything the plan doesn't list. Note follow-ups in the report, or as a backlog idea (`yayh artifact new backlog …`).

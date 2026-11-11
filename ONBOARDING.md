@@ -137,7 +137,7 @@ When a hook blocks something, its message says why and what to do instead. Claud
 | `/yay:roadmap` | `--status`, `--horizon=eoy`, `--capacity=8`, `--freeze=a..b`, `--add="…"`, `--multi-agent --plugins=a,b`, `--publish` |
 | `/yay:brainstorm` | `--from=R-<n>\|BL-<n>\|B-<n>`, `--quick`, `--research` |
 | `/yay:plan` | `--from=BS-<n>`, `--check`, `--tests=ask\|none` |
-| `/yay:implement` | `P-<n>`, `--task=T3`, `--continue`, `--pr`, `--draft` |
+| `/yay:implement` | `P-<n>`, `"<requirement>"` or `R-<n>` (plans it first), `--task=T3`, `--continue`, `--pr`, `--draft` |
 | `/yay:autopilot` | `--sprint=current`, `R-<n>…`, `--ready`, `--parallel=N`, `--plan-only`, `--no-ask`, `--pr` |
 | `/yay:debug` | `--area=<path>`, `--bisect=<good-ref>`, `--repro`, `--report-only` |
 | `/yay:fix` | `B-<n>`, `--hotfix`, `--test`, `--pr` |
