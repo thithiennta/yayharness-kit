@@ -16,6 +16,8 @@ YAY_LIB_DIR="$YAY_KIT_ROOT/lib"
 . "$YAY_LIB_DIR/artifact.sh"
 . "$YAY_LIB_DIR/release.sh"
 . "$YAY_LIB_DIR/roadmap.sh"
+. "$YAY_LIB_DIR/code.sh"
+. "$YAY_LIB_DIR/review.sh"
 
 usage() {
   cat <<'EOF'
@@ -83,6 +85,16 @@ Roadmap (docs/roadmap.md)
   roadmap status [--today=]        sprint counts, slipped items, open bugs, active plans
   roadmap links                    items that brainstorms/plans point at: id, current, suggested status, via
   roadmap peers                    sibling plugin folders (dir, name, slug, harnessed, path)
+
+Code (reuse before you write)
+  code find <words...> [--limit=N] [--kind=function|method|class|const]
+                                   existing symbols whose names match, best first: score, file:line, kind, name, signature
+  code similar <identifier>        code find for the words of one name (formatFeeLabel -> format fee label)
+  code index [file...]             every class/function/method/const: file, line, kind, name, signature
+  code new [base]                  symbols defined in lines this branch adds
+  review diff [base] [--plan=P-n]  flag-only findings on this branch's changes: look-alike new functions,
+                                   edited/grown/heavy/cross-file/change-log comments, docblock prose,
+                                   files outside the plan (kind, where, message; always exits 0)
 
 Commands and debugging
   run <name> [version=x] [edition=y]
@@ -246,6 +258,17 @@ case "$cmd" in
       links) yay_roadmap_links ;;
       *) yay_die "usage: yayh roadmap list|get|set|add|move|sprints|current|check|status|links|peers" ;;
     esac ;;
+  code)
+    sub="${1:-}"; shift || true
+    case "$sub" in
+      find) yay_code_find "$@" ;;
+      similar) [ $# -ge 1 ] || yay_die "usage: yayh code similar <identifier>"; yay_code_similar "$@" ;;
+      index) yay_code_index "$@" ;;
+      new) yay_code_new "$@" ;;
+      *) yay_die "usage: yayh code find|similar|index|new" ;;
+    esac ;;
+  review)
+    case "${1:-}" in diff) shift; yay_review_diff "$@" ;; *) yay_die "usage: yayh review diff [base] [--plan=P-n]" ;; esac ;;
   run) [ $# -ge 1 ] || yay_die "usage: yayh run <command-name> [k=v...]"; yay_run "$@" ;;
   debug)
     case "${1:-}" in markers) yay_debug_markers ;; *) yay_die "usage: yayh debug markers" ;; esac ;;

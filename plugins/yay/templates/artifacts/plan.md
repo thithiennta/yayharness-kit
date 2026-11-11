@@ -22,6 +22,7 @@ created: {{today}}
 
 ## Tasks
 - [ ] T1 <what> — `path/to/file.php`
+  - Reuse: <existing function/hook/setting and its file>, or `none, new <name>() because …`
 
 **Tests:** none
 

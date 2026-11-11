@@ -8,6 +8,9 @@ Behaviour checks for the `/yay:*` skills, run with `claude plugin eval`. Each ca
 | `debug-finds-cause-without-editing` | A bug report fires `/yay:debug`, which finds the `>=` off-by-one with file:line evidence and writes `docs/bugs/`, without editing code. |
 | `changelog-next-release` | "What's in the next release?" fires `/yay:changelog`: merchant-language lines, the harness commit left out, readme untouched. |
 | `harness-init-never-auto` | "Set up the harness" must not wipe anything: `/yay:harness-init` is user-only, so Claude hands it to the user. |
+| `code-comments-settings-toggle` | Hiding My Account tabs (the real case that motivated 0.2.0): the existing comment block above `my_account` stays as it was, and no comment lines are added to `Settings.php`. |
+| `code-leaves-unrelated-comments` | A threshold change leaves the docblock and inline comment alone, and adds no inline comments. |
+| `code-reuses-existing-helpers` | Showing a fee at checkout calls `Support\\Format::price()` rather than an inline `wc_price()`. |
 | `plan-from-request` | A plan request fires `/yay:plan`, which writes `docs/plans/` with tasks and Verify checks, and no code. |
 
 ## Run
@@ -26,6 +29,7 @@ claude plugin eval plugins/yay --runs 3 -j 3 --judge-model sonnet \
 - `--allow-tools Bash Write Edit` grants the gated tools that the skills use.
 - Results go to `evals/results/`, which is gitignored.
 - Use `--judge-model sonnet`. The default Haiku judge failed correct answers in the first run (2026-11-11). With Sonnet, the plugin scored 1.00 on every case, a mean +0.22 over the baseline.
+- Kit 0.2.0 (3 runs per case): the settings comments case went from 0.22 to 0.94 with the plugin; the no-plugin baseline scored 0.28. The two other code cases stayed at 1.00 in both arms; they're regression guards.
 - In a two-arm run, the `fires-skill` graders are reported as indicators, not as part of the score.
 
 ## Adding a case

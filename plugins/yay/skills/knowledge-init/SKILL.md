@@ -15,7 +15,7 @@ Write this repo's project knowledge. Follow `${CLAUDE_PLUGIN_ROOT}/reference/kno
 
 | Option | Effect |
 |---|---|
-| `--depth=quick` | No scouts. Write the CLAUDE.md block, `architecture.md` and `known-issues.md` from your own exploration. Good for small plugins. |
+| `--depth=quick` | No scouts. Write the CLAUDE.md block, `architecture.md`, `helpers.md` and `known-issues.md` from your own exploration. Good for small plugins. |
 | `--depth=full` (default) | Run scouts in parallel per area, then write the full doc set. |
 | `--agents=N` | Maximum number of parallel scouts (default 4, maximum 6). |
 | `--area=<path>` | Only (re)write the knowledge for this subtree: an area doc and its "read when" link. The rest stays as it is. |
@@ -55,6 +55,7 @@ Wait for every report. Treat scout output as **claims to check**: spot-check eve
 Ask only what the scouts listed under Open questions and what really matters for the docs. For example: which odd behavior is intentional, which compatibility targets are supported, or whether a failing check is known. Skip this step if nothing important is open.
 
 ### 5. Write the docs
+- **`docs/knowledge/helpers.md`:** always, unless the plugin has almost no PHP or JS. Start from `yayh code index` (every class, function and method, with its docblock summary), then keep only what's meant to be reused: shared helpers, services, settings getters, and the hooks the plugin exposes. Group them by job, one line each with when to use it. This is the first place Claude looks before writing new code.
 - **`docs/knowledge/*.md`:** one per core doc that has real content (see knowledge.md), plus area docs only where `architecture.md` would bloat. Each gets accurate `covers` and `> Update when: …`. Use `Write` for new files.
 - **`CLAUDE.md`:** replace only the content between `<!-- yay:project:start … -->` and `<!-- yay:project:end -->` (use `Edit` on that range). Never touch the managed block or text outside the blocks; a hook blocks edits to the managed block. Follow the block's section order, and give each knowledge doc or section a "Read when…" line.
 

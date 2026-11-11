@@ -39,6 +39,8 @@ For each stale doc, read what actually changed: `git log --oneline <ref>..HEAD -
 - **Changes a stated fact** (a renamed class, a moved file, a new option key, a changed command, a removed hook): edit that fact.
 - **Adds something the doc should know** (a new subsystem, integration, gotcha or decision): add it, keeping to the doc's budget.
 
+For **`helpers.md`**, compare the code against it: `yayh code new <ref>` lists the symbols added since the doc was verified. Add the ones meant for reuse, and drop or repoint entries whose symbol no longer exists (`yayh code find <name>`). If the repo has no `helpers.md` yet, create it as `/yay:knowledge-init` would.
+
 When several docs are stale with large diffs, spawn `yay:knowledge-scout` agents in parallel, one per doc. Brief each with the doc's current text, the commit range, the changed files, and the instruction to report only facts that are now wrong, missing or new. Spot-check what they bring back.
 
 ### 3. Edit

@@ -125,9 +125,19 @@ test_post_commit_checks_message_and_branch() {
 
 test_session_start_reports_outdated() {
   local r; r="$(_repo)"
-  assert_eq "" "$(_bash session-start.sh "$r" '')"
+  case "$(_bash session-start.sh "$r" '')" in *harness-update*) _fail "current harness reported outdated" ;; *) _pass ;; esac
   sed -i.bak 's/"kitVersion": *"[^"]*"/"kitVersion": "0.0.1"/' "$r/.yay/manifest.json"
   assert_contains "$(_bash session-start.sh "$r" '')" "/yay:harness-update"
+}
+
+test_session_start_loads_code_rules_only_in_yay_repos() {
+  local r out; r="$(_repo)"
+  out="$(_bash session-start.sh "$r" '')"
+  assert_contains "$out" "yay code rules (loaded by the yay plugin for this repo):"
+  assert_contains "$out" "Never edit, extend or reword an existing comment"
+  assert_contains "$out" "Search before creating"
+  case "$out" in *"# yay code rules"*) _fail "title line leaked" ;; *) _pass ;; esac
+  assert_eq "" "$(_bash session-start.sh "$(mk_repo)" '')"
 }
 
 test_debug_check_ignores_mentions_and_markdown() {
@@ -147,4 +157,37 @@ test_kit_install_is_committable_through_hooks() {
   echo "tweak" > "$r/new.txt"; git -C "$r" add -A
   YAY_REPO="$r" "$YAYH" harness sync --force >/dev/null; git -C "$r" add -A
   assert_exit 0 _bash guard-bash.sh "$r" 'git commit -m "chore(harness): update"'
+}
+
+_hint() { # repo file old new  (Edit; empty old = Write)
+  local p
+  if [ -n "$3" ]; then p="$(jq -nc --arg f "$1/$2" --arg o "$3" --arg n "$4" '{tool_name:"Edit",tool_input:{file_path:$f,old_string:$o,new_string:$n}}')"
+  else p="$(jq -nc --arg f "$1/$2" --arg n "$4" '{tool_name:"Write",tool_input:{file_path:$f,content:$n}}')"; fi
+  printf '%s' "$p" | CLAUDE_PLUGIN_ROOT="$KIT" "$H/hint-edit.sh"
+}
+
+test_hint_edit_reuse_and_comments() {
+  local r; r="$(_repo)"
+  mkdir -p "$r/includes"
+  printf '<?php\nfinal class Format {\n\t/** A fee as a store price. */\n\tpublic static function price( float $a ): string { return wc_price( $a ); }\n}\n' > "$r/includes/Format.php"
+  git -C "$r" add -A; git -C "$r" commit -qm "feat: format" --no-verify
+  # new look-alike function (file already written, as PostToolUse sees it)
+  printf '<?php\nfunction giftly_format_price( $a ) { return wc_price( $a ); }\n' > "$r/includes/fee.php"
+  local out; out="$(_hint "$r" includes/fee.php "" "$(cat "$r/includes/fee.php")")"
+  assert_contains "$out" '"additionalContext":"yay code hints (not blocking): You just added giftly_format_price(). Similar code already exists: Format::price (includes/Format.php:4)'
+  assert_ok jq -e . <<<"$out"
+  # comment-only edit
+  out="$(_hint "$r" includes/Format.php $'\t// Old wording.\n\t$x = 1;' $'\t// New, better wording.\n\t$x = 1;')"
+  assert_contains "$out" "changes only comments"
+  # code change that also rewrites an existing comment
+  out="$(_hint "$r" includes/Format.php $'\t// Keep me.\n\t$x = 1;' $'\t// Keep me, and more.\n\t$x = 2;')"
+  assert_contains "$out" "rewrote or removed 1 existing comment line(s)"
+  # several new inline comments for little code
+  out="$(_hint "$r" includes/Format.php $'\t$x = 1;' $'\t// This sets x.\n\t// It is one.\n\t$x = 1;\n\t$y = 2;')"
+  assert_contains "$out" "adds 2 inline comment line(s)"
+  # clean edits and exemptions say nothing
+  assert_eq "" "$(_hint "$r" includes/Format.php $'\t$x = 1;' $'\t$x = 2;')"
+  assert_eq "" "$(_hint "$r" includes/Format.php $'\t$x = 1;' $'\t/* translators: %s: name */\n\t// phpcs:ignore WordPress.Security -- escaped above\n\t$x = 1;')"
+  assert_eq "" "$(_hint "$r" readme.txt 'a' 'b // c // d')"
+  assert_eq "" "$(_hint "$(mk_repo)" x.php $'$x;' $'// a\n// b\n$x;')"
 }

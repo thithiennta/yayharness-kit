@@ -151,8 +151,21 @@ yay_plan_check() {
 $tasks
 EOF
   # Every task names files (backticked) unless it says (no files).
-  awk '/^## /{intasks=($0 ~ /^## Tasks/)} intasks && /^- \[[ xX]\] T[0-9]+/ { if ($0 !~ /`/ && $0 !~ /\(no files\)/) { split($0,a," "); print a[3] } }' "$f" \
+  awk '/^## /{intasks=($0 ~ /^## Tasks/)} intasks && /^- \[[ xX]\] T[0-9]+/ { if ($0 !~ /`/ && $0 !~ /\(no files\)/) { match($0, /T[0-9]+/); print substr($0, RSTART, RLENGTH) } }' "$f" \
     | while read -r t; do [ -n "$t" ] && echo "warn: task $t names no files (backtick the paths, or write '(no files)')"; done
+  # Every task says what existing code it reuses (or why it adds new code).
+  awk '
+    function done_task() { if (t != "") { if (!reuse) print t "\tmissing"; else if (none && !why) print t "\tnowhy" } }
+    /^## / { if (intasks) done_task(); intasks = ($0 ~ /^## Tasks/); t = ""; next }
+    intasks && /^- \[[ xX]\] T[0-9]+/ { done_task(); match($0, /T[0-9]+/); t = substr($0, RSTART, RLENGTH); reuse = 0; none = 0; why = 0; next }
+    intasks && t != "" && /^[[:space:]]+[-*]?[[:space:]]*Reuse:/ { reuse = 1; if ($0 ~ /Reuse:[[:space:]]*none/) { none = 1; why = ($0 ~ /because/) } }
+    END { if (intasks) done_task() }' "$f" \
+    | while IFS="$(printf '\t')" read -r t why; do
+        case "$why" in
+          missing) echo "warn: task $t has no 'Reuse:' line (the existing code it calls, 'none, new X() because …', or 'n/a')" ;;
+          nowhy) echo "warn: task $t adds new code ('Reuse: none') without saying why the existing code doesn't fit ('because …')" ;;
+        esac
+      done
   grep -Eq '^\*\*Tests:\*\*[[:space:]]*[^[:space:]]' "$f" || _pe "no '**Tests:** <tests or none>' line"
   if ! awk '/^## Verify/{on=1; next} /^## /{on=0} on && /[^[:space:]]/ && !/^<!--/ && !/^[[:space:]]*([-*]|[0-9]+\.)[[:space:]]*$/{found=1} END{exit !found}' "$f"; then
     _pe "'## Verify' is missing or empty: write exact manual checks"

@@ -43,7 +43,7 @@ Fix one bug, minimally, on its own branch. **No fix without a cause:** the bug r
 - For a hotfix, check that the bug exists at the tag: are the root-cause lines present there? If they aren't, it's not a hotfix; say so.
 
 ### 3. Fix, minimally
-- Change only what the root cause needs. No refactors and no drive-by fixes; note those in the report under a `## Follow-ups` heading, or as backlog ideas.
+- Change only what the root cause needs, calling the existing helpers the code already has (`yayh code find <verb> <noun>`) rather than writing new ones. Don't touch comments the fix doesn't make wrong. No refactors and no drive-by fixes; note those in the report under a `## Follow-ups` heading, or as backlog ideas.
 - **Escalate** if the fix needs a schema or data migration, touches more than about 3 modules, changes a public API or hook, or needs a design decision. Stop, commit nothing to product code, and run `/yay:plan --from=B-<n> --type=fix`. A planned fix is then built by `/yay:implement`.
 - Follow the hard rules: PHP floor, editions boundary, escaping and nonces, HPOS.
 
@@ -58,11 +58,12 @@ Without a test, do the report's manual check exactly and record the result.
 ### 5. Verify and commit
 1. Run the configured checks for what changed (`yayh run lint`, `typecheck`, the relevant `test`). Report pre-existing failures as in `/yay:implement`.
 2. Run `yayh debug markers`. It must print nothing.
-3. Update the report:
+3. **Review for reuse and comments**: run `yayh review diff <base>`. When it reports findings, or the fix is more than about 20 changed lines, also spawn one `yay:code-reviewer` (brief: worktree path, base, "review this branch"). Fix each finding, or answer it with a reason for the PR's "Reuse and comments review" section. It flags, never blocks.
+4. Update the report:
    - append `## Fix` with what changed, why it's enough, and how it was verified
    - `yayh fm set <report> status fixed` (`fixed_in` is set by `/yay:release`)
-4. If the bug is a trap others could hit, add an entry to `docs/knowledge/known-issues.md` (with the evidence). `yayh knowledge check` must pass; then stamp it with `yayh knowledge stamp`.
-5. Commit, staging by path:
+5. If the bug is a trap others could hit, add an entry to `docs/knowledge/known-issues.md` (with the evidence). `yayh knowledge check` must pass; then stamp it with `yayh knowledge stamp`.
+6. Commit, staging by path:
    ```
    git add -- <changed files> <report> [docs/knowledge/known-issues.md]
    git commit -m "fix(<scope>): <what is fixed, user-facing wording>" -m "<root cause in one or two lines>" -m "Fixes: B-<n>"

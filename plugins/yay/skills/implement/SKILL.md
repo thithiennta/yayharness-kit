@@ -1,7 +1,7 @@
 ---
 name: implement
 description: Build a ready Yay plugin plan task by task in its own worktree and branch. Use when the user says "implement P-4", "build this plan", "start on the plan", "continue the implementation". Implements, verifies and ticks each task, commits with a Plan trailer, runs the full checks, refreshes knowledge it made stale, and opens a PR assigned to its owner.
-argument-hint: "<P-<n>|plan-slug> [--task=T<n>] [--continue] [--no-worktree] [--base=<branch>] [--pr|--no-pr] [--draft] [--no-push]"
+argument-hint: "<P-<n>|plan-slug> [--task=T<n>] [--continue] [--no-worktree] [--base=<branch>] [--pr|--no-pr] [--draft] [--no-push] [--no-review]"
 allowed-tools: Bash, Read, Grep, Glob, Write, Edit, Agent, AskUserQuestion
 ---
 
@@ -23,6 +23,7 @@ Implement a plan exactly, in a worktree, with one commit per task. The rules for
 | `--pr` / `--no-pr` | Push and open the PR without asking, or stop after the last commit. The default is to ask once, at the end. |
 | `--draft` | Open the PR as a draft. |
 | `--no-push` | Never push (this also means no PR). |
+| `--no-review` | Skip the reuse and comments review (step 4.4). For throwaway branches only. |
 
 ## Steps
 
@@ -53,7 +54,7 @@ Install dependencies if the worktree needs them: `yayh run install`, once.
 
 ### 3. Task loop
 For each unticked task in order (or only `--task`):
-1. **Do exactly the task.** If the plan turns out to be wrong (a file moved, an approach fails), stop and tell the user. With their agreement, edit the plan's task text first, then continue. Never drift silently.
+1. **Do exactly the task, reusing what exists.** Call what the task's `Reuse:` line names. Before adding any function the plan didn't name, run `yayh code find <verb> <noun>` and check `docs/knowledge/helpers.md`. Follow the code rules loaded at session start (`${CLAUDE_PLUGIN_ROOT}/reference/code-rules.md`): small diffs, and no new, grown or reworded comments beyond what WPCS needs. If the plan turns out to be wrong (a file moved, an approach fails), stop and tell the user. With their agreement, edit the plan's task text first, then continue. Never drift silently.
 2. **Verify the task:** run the configured checks that apply to what changed:
    - `yayh run lint`, or the linter on the changed files if the project block says how
    - `yayh run typecheck` for TS changes
@@ -72,8 +73,16 @@ For each unticked task in order (or only `--task`):
 1. Run all of `lint`, `typecheck`, `test` and `build` that exist in the config (`yayh run <name>`). For `build` with editions, build each edition the plan touches (`edition=<e>`). Report pre-existing failures separately (compare with the base, as in step 3.2).
 2. Walk through the plan's **Verify** list. Do each check you can (CLI, WP-CLI against `yayh config get site.wpPath`, reading the output). List the checks only a human can do (browser flows) for the PR.
 3. Run `yayh debug markers`. It must be empty.
-4. Run `yayh knowledge stale --since=<base>`. For each doc this branch made wrong, update it now on this branch, following `/yay:knowledge-update`'s rules. Then `yayh knowledge check` must pass, and you run `yayh knowledge stamp <doc>`. Commit it as `docs(knowledge): …`.
-5. Run `yayh fm set <plan> status done` and commit it as `docs(plan): complete P-<n>`.
+4. **Review for reuse and comments** (skip with `--no-review`):
+   - Run `yayh review diff <base> --plan=P-<n>`.
+   - Spawn one `yay:code-reviewer` agent. Its brief: the worktree path, the base branch, `P-<n>`, and "review this branch". Don't pass your own reasoning, so its read stays independent.
+   - For each finding, either fix it or answer it:
+     - **Fix:** call the existing helper, delete or restore the comment. Commit `refactor(<scope>): reuse <helper>` or `style(<scope>): restore comments` with the `Plan:` trailer, then re-run the checks the change touches.
+     - **Answer:** you disagree, with a reason. It goes in the PR under "Reuse and comments review".
+
+   The review flags, it never blocks.
+5. Run `yayh knowledge stale --since=<base>`. For each doc this branch made wrong, update it now on this branch, following `/yay:knowledge-update`'s rules. Then `yayh knowledge check` must pass, and you run `yayh knowledge stamp <doc>`. Commit it as `docs(knowledge): …`.
+6. Run `yayh fm set <plan> status done` and commit it as `docs(plan): complete P-<n>`.
 
 ### 5. Push and PR
 Skip this with `--no-pr` or `--no-push`. Without `--pr`, ask once: "Push `<branch>` and open a PR into `<base>`?"
@@ -88,11 +97,12 @@ Fill the PR body from `.github/pull_request_template.md`:
 - give the exact checks run, with their results, and the manual checks that are left
 - name the editions
 - write a customer-facing release note line, or "internal"
+- under "Reuse and comments review": the findings you fixed (one line each), and the ones you answered, with your reason
 
 Then record the PR number with `yayh fm set <plan> pr <number>`, and commit and push that.
 
 ### 6. Report
-Give the branch, the worktree path, the commits (one line each), the checks and their results, the pre-existing failures, the knowledge updated, the PR URL, and the manual checks left for the reviewer.
+Give the branch, the worktree path, the commits (one line each), the checks and their results, the review findings (fixed and answered), the pre-existing failures, the knowledge updated, the PR URL, and the manual checks left for the reviewer.
 
 ## Don'ts
 - Don't implement anything the plan doesn't list. Note follow-ups in the report, or as a backlog idea (`yayh artifact new backlog …`).

@@ -1,0 +1,1 @@
+Let merchants hide the Reviews and Rewards tabs from the My Account menu, with a separate setting for each and both shown by default. The endpoints themselves must keep working, so emails and in-page links still open the tabs. It's a small change, so make it directly. No plan is needed.

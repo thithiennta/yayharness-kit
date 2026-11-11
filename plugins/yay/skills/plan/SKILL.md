@@ -41,6 +41,7 @@ A plan is the contract `/yay:implement` follows task by task. The format is in `
    - is one commit's worth of change that leaves the tree working
    - names its files in backticks (new files marked `(new)`)
    - says what changes, not how to type it
+   - has an indented `Reuse:` line naming the existing functions, hooks or settings it will call, with their file (`Reuse: Format::price() in includes/Support/Format.php`). Find them before writing the task: `yayh code find <verb> <noun>`, `docs/knowledge/helpers.md`, and how neighbouring code does the same job. If the task really needs a new function, write `Reuse: none, new <name>() because <why the existing ones don't fit>`. For tasks with no code, write `Reuse: n/a`.
 
    Put data and migration first, then server, then UI, then docs. If the work makes a knowledge doc wrong, add a task to update it.
 5. **Tests and Verify.**
@@ -53,6 +54,7 @@ A plan is the contract `/yay:implement` follows task by task. The format is in `
    - Then **self-review** as a skeptical senior reviewer:
      - Is anything missing: uninstall, i18n, capability checks, nonce/escaping, HPOS, block checkout, Free with Pro absent, upgrades from the last release?
      - Is any task too big?
+     - Does any task re-implement something that already exists (price or date formatting, settings reads, capability checks, a near-copy of a helper)? Search once more for each new function a task adds.
      - Is the Verify list enough to catch a regression?
 
    Fix what you find.

@@ -202,3 +202,32 @@ test_help_flag_never_creates_an_artifact() {
   assert_exit 1 "$YAYH" artifact new bug -x
   assert_eq "" "$(cd "$YAY_REPO" && git status --porcelain -- docs/)"
 }
+
+test_plan_check_reuse_lines() {
+  export YAY_REPO; YAY_REPO="$(_arepo)"
+  local q; q="$("$YAYH" artifact new plan "Reuse plan")"
+  python3 -I - "$YAY_REPO/$q" <<'PY'
+import sys,re
+p=sys.argv[1]; s=open(p).read()
+tasks="""## Tasks
+- [ ] T1 Show the fee — `includes/Checkout.php`
+  - Reuse: Format::price() in includes/Support/Format.php
+- [ ] T2 Add a setting — `includes/Settings.php`
+- [ ] T3 New helper — `includes/Fee.php` (new)
+  - Reuse: none, new Fee::total()
+- [ ] T4 Another helper — `includes/Wrap.php` (new)
+  - Reuse: none, new Wrap::cost() because Format only formats
+- [ ] T5 Docs (no files)
+  - Reuse: n/a
+- [ ] T6 Forgot the paths
+  - Reuse: n/a
+"""
+s=re.sub(r"## Tasks\n.*?\n\n", tasks+"\n", s, flags=re.S)
+open(p,"w").write(s)
+PY
+  local out; out="$("$YAYH" plan check P-1 2>&1 || true)"
+  assert_contains "$out" "warn: task T2 has no 'Reuse:' line"
+  assert_contains "$out" "warn: task T3 adds new code ('Reuse: none') without saying why"
+  assert_contains "$out" "warn: task T6 names no files"
+  case "$out" in *"task T1 has no"*|*"task T4 "*|*"task T5 has no"*) _fail "false reuse warning: $out" ;; *) _pass ;; esac
+}

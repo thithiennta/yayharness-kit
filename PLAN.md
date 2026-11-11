@@ -70,3 +70,14 @@
 - [x] T6.2 `claude plugin eval` suites
 - [x] T6.3 End-to-end fixture run, including debug → fix → hotfix release
 - [x] T6.4 Team onboarding README
+
+## P7 Code quality ✅ ⟵ P6
+Goal: generated code reuses existing functions instead of re-implementing them, and doesn't add, grow or reword comments needlessly (WPCS docblocks are still required). Findings are flagged, never blocking.
+- [x] T7.1 Baseline evals: reuse, comment discipline (the "show in menu" settings case), unrelated comments untouched
+- [x] T7.2 Code rule delivered by the SessionStart hook (current in every yay repo, no sync needed) ⟵ T7.1
+- [x] T7.3 `Reuse:` line per plan task, `yayh plan check` warns ⟵ T7.2
+- [x] T7.4 `yayh code find` symbol search + `docs/knowledge/helpers.md` index ⟵ T7.2
+- [x] T7.5 `yayh review diff`: new functions vs similar existing, comment churn, out-of-plan files ⟵ T7.4
+- [x] T7.6 `yay:code-reviewer` agent before the PR in implement and fix ⟵ T7.5
+- [x] T7.7 Edit-time hook hints (similar function exists, comment-only edit) ⟵ T7.5
+- [x] T7.8 Re-run evals vs baseline, kit 0.2.0 ⟵ all

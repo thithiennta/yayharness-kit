@@ -73,7 +73,21 @@ Brainstorms, plans and bug reports start as untracked files in your checkout. `/
 
 The gates are soft. You can skip a brainstorm for an obvious change, or fix a tiny bug without `/yay:debug`, and the skills say so when they think you shouldn't.
 
-## 4. Git rules (hooks enforce these)
+## 4. Code rules (loaded into every session)
+
+The plugin loads [`plugins/yay/reference/code-rules.md`](plugins/yay/reference/code-rules.md) into every session in a yay repo:
+- **Reuse before you write.** `yayh code find <verb> <noun>` and `docs/knowledge/helpers.md` show what already exists.
+- **Keep diffs small.**
+- **Comments:** WPCS docblocks yes. No new, grown or reworded comments unless the code they describe changed, and nothing explaining other files.
+
+Three things check this, and none of them block:
+- after each edit, a hint when a new function looks like an existing one, or an edit only touches comments
+- `yayh review diff`, at any time
+- the `yay:code-reviewer` agent, before every PR from `/yay:implement` and `/yay:fix`
+
+Findings are fixed, or answered in the PR's "Reuse and comments review" section.
+
+## 5. Git rules (hooks enforce these)
 
 - **Branches:** `<type>/<slug>`, e.g. `feat/express-checkout` or `fix/coupon-field-vanishes`. There's no owner prefix; the PR is assigned to you instead (`gh pr create --assignee @me`). Release branches are `chore/release-1-4-0`.
 - **Commits:** [Conventional Commits](https://www.conventionalcommits.org), `type(scope): summary`, at most 72 characters, no final period. Trailers link the work: `Plan: P-4`, `Fixes: B-7`, `Roadmap: R-12`.
@@ -83,7 +97,7 @@ The gates are soft. You can skip a brainstorm for an obvious change, or fix a ti
 
 When a hook blocks something, its message says why and what to do instead. Claude reads it and corrects course. Don't work around it.
 
-## 5. What you can and can't edit
+## 6. What you can and can't edit
 
 | Owner | Files | How to change them |
 |---|---|---|
@@ -92,7 +106,7 @@ When a hook blocks something, its message says why and what to do instead. Claud
 | knowledge | The `yay:project` block of `CLAUDE.md`, `docs/knowledge/` | `/yay:knowledge-update`, or by hand. Keep the facts verifiable. |
 | workflow | `docs/roadmap.md`, brainstorms, plans, bugs, backlog, releases | Through the skills. |
 
-## 6. All 13 skills
+## 7. All 13 skills
 
 | Skill | Most-used options |
 |---|---|
@@ -112,7 +126,7 @@ When a hook blocks something, its message says why and what to do instead. Claud
 
 Every skill shows its full option list as you type it, and explains each option at the top of its `SKILL.md`.
 
-## 7. Troubleshooting
+## 8. Troubleshooting
 
 | Symptom | Fix |
 |---|---|
@@ -125,6 +139,6 @@ Every skill shows its full option list as you type it, and explains each option 
 | Wrong Node version for builds | Add `.nvmrc`. `yayh run` uses it through nvm. |
 | JSON errors from `yayh` | Install `jq`, or force an engine with `YAY_JSON_ENGINE=php`. |
 
-## 8. Updating the kit
+## 9. Updating the kit
 
 Kit changes go through a PR on this repo, with tests (`./tests/run.sh`) and `claude plugin validate plugins/yay`. Bump the version in `plugins/yay/.claude-plugin/plugin.json` and add a `plugins/yay/CHANGELOG.md` entry. After that, `/yay:harness-update` in each repo shows what changed. Teammates update with `claude plugin marketplace update yayharness && claude plugin update yay@yayharness`.

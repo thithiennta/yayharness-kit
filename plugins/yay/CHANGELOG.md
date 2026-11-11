@@ -2,7 +2,18 @@
 
 `/yay:harness-update` reads this file to tell a repo what changed between its recorded kit version and the installed one. Each entry lists new skills, config keys, template changes and behavior changes.
 
-## 0.1.0 (unreleased)
+## 0.2.0
+Code quality: reuse existing code, and leave comments alone.
+- **Code rules for every session:** the SessionStart hook loads `reference/code-rules.md` into every yay repo session. It covers searching before creating, calling existing helpers, small diffs, and a WPCS-compatible comment policy: docblocks yes; no new, grown or reworded comments; nothing explaining other files; no change-log comments. The rules ship with the plugin, so `/yay:harness-update` isn't needed.
+- **Plans:** each plan task has a `Reuse:` line (`yayh plan check` warns when it's missing, or when `none` has no reason). `/yay:plan`'s self-review looks for re-implementations.
+- **`yayh code find|similar|index|new`:** a search over PHP and JS/TS classes, functions, methods and consts, matching names and docblock summaries.
+- **Knowledge:** a new core doc, `docs/knowledge/helpers.md` (the reuse map), written by `/yay:knowledge-init` and kept current by `/yay:knowledge-update`. The project block's "Read when" points at it before adding any function.
+- **`yayh review diff [base] [--plan=P-n]`:** flag-only findings. Kinds: `similar-exists`, `comment-edited`, `comment-grown`, `comment-heavy`, `comment-elsewhere`, `comment-changelog`, `docblock-prose`, `outside-plan`.
+- **`yay:code-reviewer` agent:** a read-only reviewer for reuse and comments. `/yay:implement` (step 4.4, `--no-review` to skip) and `/yay:fix` run it before the PR. Each finding is fixed, or answered in the PR's new "Reuse and comments review" section.
+- **PostToolUse hint hook (`hint-edit.sh`):** after an edit, a non-blocking note when a new function looks like an existing one, an edit only changes comments, existing comment lines were rewritten, or several inline comments were added.
+- **Fix:** `yayh plan check` read an unticked task's ID as `]`.
+
+## 0.1.0
 - First version: `/yay:harness-init` and `/yay:harness-update`.
 - `yayh` helper CLI: config, IDs, slugs, front-matter, manifest, git, harness.
 - Kit files: the managed CLAUDE.md block, `.claude/rules/yay-{workflow,git,wordpress}.md`, `.claude/settings.json` (merged with `.yay/settings.extra.json`), the PR template, the docs skeleton, and `.gitignore` entries.

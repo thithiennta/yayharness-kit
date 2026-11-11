@@ -14,12 +14,12 @@ A Claude Code plugin that gives every Yay WordPress plugin the same harness and 
 |---|---|
 | `skills/` | The `/yay:*` skills (built phase by phase, see `PLAN.md` at the repo root) |
 | `workflows/` | `roadmap-portfolio.js`: the multi-agent roadmap run by `/yay:roadmap --multi-agent` |
-| `agents/` | `yay:knowledge-scout`: a read-only area explorer the knowledge skills run in parallel |
+| `agents/` | `yay:knowledge-scout` (area explorer for the knowledge skills), `yay:hypothesis-checker` (bug hypotheses for `/yay:debug`), `yay:code-reviewer` (reuse and comments review before PRs). All read-only. |
 | `bin/yayh` | Helper CLI the skills call: config, IDs, slugs, front-matter, manifest, git. On PATH while the plugin is enabled. |
 | `lib/` | Bash 3.2-compatible library behind `yayh` |
 | `reference/` | Contracts the skills follow: `config.md`, `artifacts.md`, `ownership.md`, `git-conventions.md` |
 | `templates/` | Files `harness-init` writes into a repo |
-| `hooks/` | Guard hooks: generated paths, commit and branch conventions, debug markers |
+| `hooks/` | Guards (generated paths, commit and branch conventions, debug markers, tags), the code rules at session start, and non-blocking reuse and comment hints after edits |
 
 ## Install (local, for now)
 

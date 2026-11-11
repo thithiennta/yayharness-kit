@@ -39,6 +39,7 @@ where it hooks into WordPress/WooCommerce.
 When a test is warranted here, where tests live, how to run one. The default policy is in .claude/rules/yay-workflow.md.
 
 ## Read when…
+- adding any function, hook or setting → [docs/knowledge/helpers.md](docs/knowledge/helpers.md) (reuse first)
 - changing <area> → [docs/knowledge/architecture.md § <section>](docs/knowledge/architecture.md#section)
 - …one line per knowledge doc or section
 <!-- yay:project:end -->
@@ -67,6 +68,7 @@ The core set: write each one that has content. If the repo is small, fewer docs 
 | `conventions.md` | House style beyond the linters; naming and prefixes; i18n; JS/React patterns; recipes like "how to add a setting / block / REST route / migration", each with a real example to copy |
 | `integrations.md` | WooCommerce surfaces (HPOS, block vs classic checkout, emails…), themes, page builders, and other plugins it has compatibility code for, each with the file that handles it |
 | `known-issues.md` | Gotchas with evidence: checks that fail on the base branch, environment traps, flaky areas, "looks wrong but is intentional" |
+| `helpers.md` | The reuse map: helpers, services, settings getters and hooks that new code should call instead of re-implementing, grouped by job (Formatting, Settings, Eligibility, Escaping and capabilities, REST, Assets…). One line each: `Class::method()`, its file, and when to use it. Built from `yayh code index` plus reading the code, listing only what's meant to be reused, not every method. `covers` lists the helper directories |
 | `decisions.md` | Decision log: `### <date> <decision>`, with why, what was rejected, and evidence (commit, PR or file). Built from git history and code comments |
 
 Add an area doc (`admin.md`, `blocks.md`, `storefront.md`, …) only when an area is big enough that `architecture.md` would bloat. Each area doc gets its own narrow `covers`.

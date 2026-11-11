@@ -11,6 +11,9 @@
 - [ ] lint / typecheck / tests that apply
 - [ ] manual check:
 
+## Reuse and comments review
+<!-- From `yayh review diff` and the yay:code-reviewer agent: findings fixed (one line each), and findings answered, with the reason. "clean" if none. -->
+
 ## Editions
 <!-- {{editions}}: which ones does this touch? -->
 
