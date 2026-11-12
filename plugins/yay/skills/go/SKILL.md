@@ -28,12 +28,13 @@ Route by what the user wants, not by keywords. Pass the user's own words on as t
 | The user wants… | Run |
 |---|---|
 | to know where things stand, the sprint's progress | `/yay:roadmap --status` |
-| to plan or re-plan sprints, add, move or drop roadmap items | `/yay:roadmap` (`--add="…"`, `--move=R-<n>:<n>`, `--drop=R-<n>`) |
+| to plan or re-plan sprints, add (one or several), move or drop roadmap items | `/yay:roadmap` (`--add="…; …"`, `--move=R-<n>:<n>`, `--drop=R-<n>`) |
+| what goes in a version, "plan 1.5.0", "add X and Y for the next release" | `/yay:roadmap --target=<x.y.z\|minor\|patch>` (with `--add="…; …"` when they name items) |
 | options for an idea, "how should we…" | `/yay:brainstorm "<topic>"` (`--from=R-<n>` when it names an item) |
 | a design for a screen, modal or email | `/yay:design "<topic>"` |
 | a plan, "break this down" | `/yay:plan "<topic>"` or `--from=<id>` |
 | something built or changed: "add…", "make…", "rename…", "build R-12" | `/yay:implement "<requirement>"` or `<id>` (it picks the lane: tiny, small or standard). Add `--explore` when they say "from scratch", "explore first" or "end to end", or ask to compare approaches. |
-| a whole sprint or many items done | `/yay:autopilot` (`--sprint=current`, or the ids) |
+| a whole sprint, a version or many items done | `/yay:autopilot` (`--sprint=current`, `--target=<x.y.z>`, or the ids) |
 | to know why something breaks: a symptom, an error, a log | `/yay:debug "<symptom>"` |
 | a bug fixed: a `B-<n>`, or a bug whose cause is already clear | `/yay:fix B-<n>`; an unexplained bug goes to `/yay:debug` first |
 | tests for a behaviour, or failing tests explained | `/yay:test "<behaviour>"` / `--triage` |

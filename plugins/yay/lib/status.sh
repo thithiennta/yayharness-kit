@@ -93,7 +93,7 @@ yay_status() {
 
   # 1. The work this checkout's branch belongs to.
   branch="$(git -C "$root" symbolic-ref --short -q HEAD 2>/dev/null || true)"
-  base="$(yay_base_branch 2>/dev/null || echo main)"
+  base="$( (yay_base_branch) 2>/dev/null || echo main)"
   if [ -n "$branch" ] && [ "$branch" != "$base" ]; then
     local hrow k id st pr ti nx
     hrow="$(printf '%s\n' "$arts" | awk -F '\t' -v b="$branch" '$6 == b && $1 == "plan" { print; exit }')"
@@ -154,7 +154,7 @@ yay_status() {
       _row "$pri" "$scope" "$qid" "$stage" "$(_yay_st_stage_next "$stage" "$art" "$qid")" "$qti$extra"
       _cover "$qid" "$art"
     done <<EOT
-$(yay_roadmap_queue $ids --today="$today" 2>/dev/null || true)
+$( (yay_roadmap_queue $ids --today="$today") 2>/dev/null || true)
 EOT
   fi
 

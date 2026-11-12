@@ -301,3 +301,46 @@ test_queue_reviews_a_plan_an_interrupted_run_built() {
   "$YAYH" fm set "$p" reviewed yes >/dev/null
   assert_eq "R-5	done	P-1	-	-	Gift wrap" "$("$YAYH" roadmap queue R-5)"
 }
+
+test_target_add_list_set_and_queue() {
+  export YAY_REPO; YAY_REPO="$(_rrepo)"
+  assert_eq "R-5" "$("$YAYH" roadmap add "Gift messages" sprint=2 size=S target=1.5.0 "why=merchants asked")"
+  assert_eq "R-6" "$("$YAYH" roadmap add "Dark mode" target=1.6.0)"
+  "$YAYH" roadmap set R-3 target 1.5.0 >/dev/null
+  assert_eq "1.5.0" "$("$YAYH" roadmap get R-5 target)"
+  assert_eq "R-3 R-5" "$("$YAYH" roadmap list --target=1.5.0 | cut -f1 | tr '\n' ' ' | sed 's/ $//')"
+  assert_eq "R-6" "$("$YAYH" roadmap list --target=1.6.0 --sprint=later | cut -f1)"
+  assert_eq "" "$("$YAYH" roadmap list --target=9.9.9)"
+  # queue builds what a version needs
+  assert_eq "R-3 R-5" "$("$YAYH" roadmap queue --target=1.5.0 | cut -f1 | tr '\n' ' ' | sed 's/ $//')"
+  # bad targets are refused; none clears
+  assert_exit 1 "$YAYH" roadmap add "Bad" target=soon
+  assert_exit 1 "$YAYH" roadmap set R-3 target v1.5
+  assert_eq "R-3	target	none" "$("$YAYH" roadmap set R-3 target none)"
+  assert_exit 3 "$YAYH" roadmap get R-3 target
+  assert_not_contains "$(cat "$YAY_REPO/docs/roadmap.md")" "- target: 
+"
+  assert_ok "$YAYH" roadmap check --today=2026-11-12
+}
+
+test_target_status_counts_and_check_warns_on_released() {
+  export YAY_REPO; YAY_REPO="$(_rrepo)"
+  mkdir -p "$YAY_REPO/.yay" "$YAY_REPO/docs/plans"
+  printf -- '---\nid: P-2\n---\n' > "$YAY_REPO/docs/plans/import.md"
+  printf '{ "schemaVersion": 1, "versionFiles": [ { "file": "p.php", "pattern": "Version: *(.+)" } ] }\n' > "$YAY_REPO/.yay/config.json"
+  printf '<?php\n/*\n * Version: 1.5.0\n */\n' > "$YAY_REPO/p.php"
+  "$YAYH" roadmap set R-1 target 1.10.0 >/dev/null
+  "$YAYH" roadmap set R-2 target 1.5.0 >/dev/null
+  "$YAYH" roadmap set R-3 target 1.5.0 >/dev/null
+  local out; out="$("$YAYH" roadmap status --today=2026-11-12)"
+  # versions sort numerically: 1.5.0 before 1.10.0
+  assert_contains "$out" "target	open	in-progress	shipped	dropped
+1.5.0	1	0	1	0
+1.10.0	0	1	0	0"
+  out="$("$YAYH" roadmap check --today=2026-11-12)"
+  assert_contains "$out" "warn: R-3 targets 1.5.0, but 1.5.0 is already out and it is still 'planned'"
+  assert_not_contains "$out" "R-2 targets"
+  assert_not_contains "$out" "R-1 targets"
+  printf '\n### R-9 Broken\n- status: planned\n- size: S\n- target: next\n' >> "$YAY_REPO/docs/roadmap.md"
+  assert_contains "$("$YAYH" roadmap check --today=2026-11-12 || true)" "error: R-9 target 'next' must be a version"
+}

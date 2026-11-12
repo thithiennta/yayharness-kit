@@ -6,7 +6,7 @@ A worked example: shipping **v1.0.0** of this plugin with three features, from t
 The skill table and the git rules are in the "How we work here" block of [`CLAUDE.md`](../CLAUDE.md) and in `.claude/rules/yay-git.md`. Every skill shows its options as you type it.
 
 ```
-/yay:roadmap --add=… (×N)  →  /yay:roadmap  →  /yay:autopilot --sprint=1
+/yay:roadmap --add="X; Y; Z" --target=1.0.0  →  /yay:roadmap --target=1.0.0  →  /yay:autopilot --target=1.0.0
 → merge the PRs  →  /yay:release --bundle  →  /yay:release 1.0.0  →  merge  →  /yay:release --tag-only
 ```
 
@@ -21,16 +21,15 @@ Don't remember a command? Type `/yay:go` followed by what you want in plain word
 ## 1. Put the release's features on the roadmap
 
 ```
-/yay:roadmap --add="Feature X" --sprint=1 --size=M
-/yay:roadmap --add="Feature Y" --sprint=1 --size=S
-/yay:roadmap --add="Feature Z" --sprint=2 --size=L
-/yay:roadmap --horizon=2sprints --focus="v1.0.0 scope"    # schedules everything against capacity → R-1, R-2, R-3
+/yay:roadmap --add="Feature X [M]; Feature Y [S]; Feature Z [L]" --target=1.0.0   # → R-1, R-2, R-3, one PR
+/yay:roadmap --target=1.0.0          # fits 1.0.0 into the sprints against capacity; says the earliest release sprint
 ```
 
+- Plain words work too: `/yay:roadmap add X, Y and Z for 1.0.0`. `--target=minor` (or `patch`, `major`) means the next such version.
 - Sizes: S = 1.5 dev-days, M = 4, L = 8. Capacity defaults to 8 dev-days per 2-week sprint.
-- Each command opens a `docs(roadmap): …` PR. Merge them.
-- `/yay:roadmap "v1.0.0 needs X, Y, Z"` (plain text) runs too, but the skill has no rule for a feature list, so the features may not become items. Add them with `--add` as shown.
-- `/yay:roadmap --status` shows the current sprint, what slipped and what to do next, and changes nothing.
+- Each command opens one `docs(roadmap): …` PR. Merge it.
+- `/yay:roadmap --status --target=1.0.0` shows what's left for the version, and `/yay:roadmap --status` the current sprint; neither changes anything.
+- Moved a feature to the next version? `/yay:roadmap --retarget=R-3:1.1.0`.
 
 ## 2. Build each item
 
@@ -50,7 +49,7 @@ Do the same for R-2 and R-3. A small item can go straight to `/yay:implement R-2
 **B. The whole sprint in one run**
 
 ```
-/yay:autopilot --sprint=1        # brainstorms and plans every item, asks ONE decision sheet, then builds each on its own branch with a PR
+/yay:autopilot --target=1.0.0    # (or --sprint=1) brainstorms and plans every item, asks ONE decision sheet, then builds each on its own branch with a PR
 ```
 
 If it stops, run the same command again: it resumes from each item's brainstorm and plan. Variants:

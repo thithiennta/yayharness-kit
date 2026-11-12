@@ -131,3 +131,18 @@ test_status_without_roadmap_and_nothing_to_do() {
   printf -- '---\nid: B-1\ntitle: Crash\nstatus: open\n---\n' > "$YAY_REPO/docs/bugs/b1.md"
   assert_eq "bug	B-1	debug	/yay:debug B-1	Crash" "$("$YAYH" status)"
 }
+
+# bash 3.2 exits the caller when a function exits inside $(f || true): a lookup that
+# dies must not take `yayh status` down with it.
+test_status_survives_a_dependency_cycle_and_no_base_branch() {
+  export YAY_REPO; YAY_REPO="$(_srepo)"
+  "$YAYH" roadmap set R-2 depends R-4 >/dev/null
+  local out; out="$("$YAYH" status --today=2026-11-12)"
+  assert_contains "$out" "bug	B-1	debug	/yay:debug B-1	Crash (high)"
+  local r; r="$(mktemp -d "${T_TMP:?}/repo.XXXXXX")"
+  git -C "$r" init -q -b trunk; git -C "$r" config user.email t@example.invalid; git -C "$r" config user.name t
+  git -C "$r" config commit.gpgsign false; git -C "$r" commit -q --allow-empty -m init
+  mkdir -p "$r/docs/bugs"; printf -- '---\nid: B-1\ntitle: Crash\nstatus: open\n---\n' > "$r/docs/bugs/b1.md"
+  YAY_REPO="$r"
+  assert_eq "bug	B-1	debug	/yay:debug B-1	Crash" "$("$YAYH" status)"
+}

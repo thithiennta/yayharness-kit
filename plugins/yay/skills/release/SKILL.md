@@ -101,6 +101,7 @@ Every mode uses this. It needs a version `v` (the version the zips carry) and a 
 6. **Close the loop on artifacts.** These are the commits since `$last` (from the collect output):
    - **`Fixes: B-<n>`:** `yayh fm set <bug> fixed_in "$new"`, and `status fixed` if not already.
    - **`Roadmap: R-<n>`:** `yayh roadmap set R-<n> status "shipped:$new"`. Also do this for the `roadmap:` item of every plan shipped in this release.
+   - **Items targeting `$new`** (`yayh roadmap list --target=$new`) that didn't ship: name them in the release notes' manual-check list and in step 9's question as "R-<n> targets $new but isn't in it". Retarget each to the next version (`yayh roadmap set R-<n> target <next>`) only when the developer says so; otherwise `roadmap check` keeps warning.
    - **Plans whose commits are all in:** make sure their `status` is `done`.
 7. **Release gate.** `yayh release check "$new"` must have no FAIL. It checks:
    - every version file says `$new`, and `$new` is newer than the last release tag

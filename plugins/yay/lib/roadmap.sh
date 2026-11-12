@@ -41,6 +41,7 @@ _yay_length_days() {
 #   F key value                        front-matter
 #   S n start end line                 sprint heading
 #   I id status size section line title
+#   T id target                        the item's `- target:` version, right after its I record
 # Empty fields print as "-" (read with IFS=tab merges empty fields).
 # section is the sprint number, or the lowercased first word of another ## heading
 # (later, shipped, dropped…), or "unscheduled" before any ## heading.
@@ -48,7 +49,13 @@ yay_roadmap_parse() {
   local f="${1:-}"; [ -n "$f" ] || f="$(_yay_roadmap_need)"
   awk '
     function nz(v) { return v == "" ? "-" : v }
-    function flush() { if (id != "") printf "I\t%s\t%s\t%s\t%s\t%d\t%s\n", id, nz(st), nz(sz), sec, iline, nz(title); id="" }
+    function flush() {
+      if (id != "") {
+        printf "I\t%s\t%s\t%s\t%s\t%d\t%s\n", id, nz(st), nz(sz), sec, iline, nz(title)
+        if (tg != "") printf "T\t%s\t%s\n", id, tg
+      }
+      id = ""
+    }
     NR == 1 && /^---[[:space:]]*$/ { fm = 1; next }
     fm && /^---[[:space:]]*$/ { fm = 0; next }
     fm { k = $0; sub(/:.*/, "", k); v = $0; sub(/^[^:]*:[[:space:]]*/, "", v); printf "F\t%s\t%s\n", k, v; next }
@@ -67,12 +74,12 @@ yay_roadmap_parse() {
     }
     /^### R-[0-9]+([[:space:]]|$)/ {
       flush(); id = $2; title = $0; sub(/^### R-[0-9]+[[:space:]]*/, "", title)
-      st = ""; sz = ""; iline = NR; if (sec == "") sec = "unscheduled"; next
+      st = ""; sz = ""; tg = ""; iline = NR; if (sec == "") sec = "unscheduled"; next
     }
     /^#/ { flush(); next }
     id != "" && /^- [a-z_]+:/ {
       k = $2; sub(/:$/, "", k); v = $0; sub(/^- [a-z_]+:[[:space:]]*/, "", v); sub(/[[:space:]]+$/, "", v)
-      if (k == "status") st = v; else if (k == "size") sz = v
+      if (k == "status") st = v; else if (k == "size") sz = v; else if (k == "target") tg = v
     }
     END { flush() }
   ' "$f"
@@ -82,22 +89,32 @@ _yay_status_matches() { # <status> <wanted>
   [ -z "$2" ] || [ "$1" = "$2" ] || [ "${1%%:*}" = "$2" ]
 }
 
-# yay_roadmap_list [--status=s] [--sprint=n|later|...] -> TSV: id status size section title
+# _yay_target_ok <version>: a release version, x.y or x.y.z.
+_yay_target_ok() { printf '%s' "$1" | grep -Eq '^[0-9]+\.[0-9]+(\.[0-9]+)?$'; }
+
+# yay_roadmap_list [--status=s] [--sprint=n|later|...] [--target=x.y.z]
+# -> TSV: id status size section title
 yay_roadmap_list() {
-  local want_st="" want_sec="" a rec id st sz sec ln ti
+  local want_st="" want_sec="" want_tg="" a rec id st sz sec ln ti parsed hits=""
   for a in "$@"; do
     case "$a" in
       --status=*) want_st="${a#--status=}" ;; --sprint=*) want_sec="${a#--sprint=}" ;;
-      *) yay_die "usage: yayh roadmap list [--status=s] [--sprint=n|later]" ;;
+      --target=*) want_tg="${a#--target=}" ;;
+      *) yay_die "usage: yayh roadmap list [--status=s] [--sprint=n|later] [--target=x.y.z]" ;;
     esac
   done
+  parsed="$(yay_roadmap_parse)"
+  if [ -n "$want_tg" ]; then
+    hits=" $(printf '%s\n' "$parsed" | awk -F '\t' -v t="$want_tg" '$1 == "T" && $3 == t { print $2 }' | tr '\n' ' ')"
+  fi
   while IFS="$YAY_TAB" read -r rec id st sz sec ln ti; do
     [ "$rec" = I ] || continue
     _yay_status_matches "$st" "$want_st" || continue
     [ -z "$want_sec" ] || [ "$sec" = "$want_sec" ] || continue
+    if [ -n "$want_tg" ]; then case "$hits " in *" $id "*) ;; *) continue ;; esac; fi
     printf '%s\t%s\t%s\t%s\t%s\n' "$id" "$st" "$sz" "$sec" "$ti"
   done <<EOF
-$(yay_roadmap_parse)
+$parsed
 EOF
 }
 
@@ -134,8 +151,15 @@ yay_roadmap_set() {
   r="$(_yay_item_range "$f" "$id")"; [ -n "$r" ] || yay_die "no roadmap item $id"
   s="${r% *}"; e="${r#* }"
   if [ "$key" = status ]; then _yay_roadmap_status_ok "$val" || yay_die "status '$val' is not one of: planned, brainstorming[:BS-n], planned-in:P-n, in-progress, shipped:x.y.z, dropped"; fi
+  local drop=0
+  if [ "$key" = target ]; then
+    case "$val" in
+      ''|none) drop=1 ;;
+      *) _yay_target_ok "$val" || yay_die "target '$val' must be a version like 1.4.0 (or none to clear it)" ;;
+    esac
+  fi
   tmp="$(mktemp)"
-  awk -v s="$s" -v e="$e" -v k="$key" -v v="$val" '
+  awk -v s="$s" -v e="$e" -v k="$key" -v v="$val" -v drop="$drop" '
     { line[NR] = $0 }
     END {
       last = s
@@ -145,13 +169,14 @@ yay_roadmap_set() {
         if (line[i] ~ /^- [a-z_]+:/) last = i
       }
       for (i = 1; i <= NR; i++) {
-        if (i == hit) { print "- " k ": " v; continue }
+        if (i == hit) { if (!drop) print "- " k ": " v; continue }
         print line[i]
-        if (!hit && i == last) print "- " k ": " v
+        if (!hit && !drop && i == last) print "- " k ": " v
       }
     }' "$f" > "$tmp"
   cat "$tmp" > "$f"; rm -f "$tmp"
   _yay_roadmap_touch "$f"
+  [ "$drop" = 0 ] || val=none
   printf '%s\t%s\t%s\n' "$id" "$key" "$val"
 }
 
@@ -219,6 +244,7 @@ yay_roadmap_add() {
       sprint) to="$v"; continue ;;
       status) _yay_roadmap_status_ok "$v" || yay_die "bad status '$v'"; have_status=1 ;;
       size) case "$v" in S|M|L) ;; *) yay_die "size must be S, M or L" ;; esac ;;
+      target) _yay_target_ok "$v" || yay_die "target '$v' must be a version like 1.4.0" ;;
     esac
     printf '%s' "$k" | grep -Eq '^[a-z_]+$' || yay_die "bad key '$k'"
     bullets="$bullets- $k: $v
@@ -280,7 +306,9 @@ yay_roadmap_check() {
   f="$(_yay_roadmap_need)"
   _re() { echo "error: $*"; errs=$((errs + 1)); }
   _rw() { echo "warn: $*"; }
-  local horizon="" have_len=0
+  local horizon="" have_len=0 last_st="" released
+  # The version on the version files is the last one released (or being released).
+  released="$( (yay_version_current) 2>/dev/null || true)"
   while IFS="$YAY_TAB" read -r rec x1 x2 x3 x4 x5 x6; do
     case "$rec" in
       F)
@@ -298,6 +326,7 @@ yay_roadmap_check() {
 " ;;
       I)
         [ "$x2" != - ] || x2=""; [ "$x3" != - ] || x3=""
+        last_st="$x2"
         if yay_in_list "$x1" "$ids"; then _re "$x1 appears twice"; fi
         ids="$ids$x1
 "
@@ -316,6 +345,15 @@ yay_roadmap_check() {
               if [ -n "$end" ] && [ "$end" \< "$today" ]; then _rw "$x1 slipped: Sprint $x4 ended $end and it is still '${x2:-no status}'"; fi ;;
             esac ;;
         esac ;;
+      T)
+        if ! _yay_target_ok "$x2"; then _re "$x1 target '$x2' must be a version like 1.4.0"
+        else
+          case "$last_st" in shipped*|dropped) ;; *)
+            if [ -n "$released" ] && ! _yay_semver_gt "$x2" "$released"; then
+              _rw "$x1 targets $x2, but $released is already out and it is still '${last_st:-no status}': retarget it"
+            fi ;;
+          esac
+        fi ;;
     esac
   done <<EOF
 $(yay_roadmap_parse "$f")
@@ -343,6 +381,14 @@ yay_roadmap_status() {
         st = $3; sub(/:.*/, "", st)
         if (st == "in-progress") ip[sec]++; else if (st == "shipped") sh[sec]++; else if (st == "dropped") dr[sec]++; else op[sec]++ }
       END { for (i = 1; i <= k; i++) { s = order[i]; printf "%s\t%d\t%d\t%d\t%d\n", (s ~ /^[0-9]+$/ ? "Sprint " s : s), op[s], ip[s], sh[s], dr[s] } }'
+    # Items per target version, oldest version first.
+    yay_roadmap_parse "$f" | awk -F '\t' '
+      $1 == "I" { st = $3; sub(/:.*/, "", st) }
+      $1 == "T" { v = $3; if (!(v in seen)) { seen[v] = 1; vs[++k] = v }
+        if (st == "in-progress") ip[v]++; else if (st == "shipped") sh[v]++; else if (st == "dropped") dr[v]++; else op[v]++ }
+      END { if (k) { print "target\topen\tin-progress\tshipped\tdropped"
+        for (i = 1; i <= k; i++) printf "%s\t%d\t%d\t%d\t%d\n", vs[i], op[vs[i]], ip[vs[i]], sh[vs[i]], dr[vs[i]] } }' \
+      | { IFS= read -r h || exit 0; printf '%s\n' "$h"; sort -t . -k1,1n -k2,2n -k3,3n; }
     yay_roadmap_check --today="$today" 2>/dev/null | sed -n 's/^warn: \(R-[0-9]* slipped.*\)/slipped\t\1/p' || true
   else
     printf 'roadmap\tnone\n'
@@ -447,15 +493,19 @@ EOT
 # after: dependencies inside this run (comma-separated, or -), built first.
 # waits: unmet dependencies outside this run (other plugins, items not in scope), or -.
 yay_roadmap_queue() {
-  local a ids="" today sprint="" ready="" cur arts f
+  local a ids="" today sprint="" ready="" target="" cur arts f
   today="$(yay_today)"
   for a in "$@"; do
     case "$a" in
       --sprint=*) sprint="${a#--sprint=}" ;; --ready) ready=1 ;; --today=*) today="${a#--today=}" ;;
+      --target=*) target="${a#--target=}" ;;
       R-[0-9]*|P-[0-9]*) ids="$ids $a" ;;
-      *) yay_die "usage: yayh roadmap queue [R-n|P-n...] [--sprint=n|current|later] [--ready]" ;;
+      *) yay_die "usage: yayh roadmap queue [R-n|P-n...] [--sprint=n|current|later] [--target=x.y.z] [--ready]" ;;
     esac
   done
+  if [ -n "$target" ]; then
+    ids="$ids $(yay_roadmap_list --target="$target" | cut -f1 | tr '\n' ' ')"
+  fi
   arts="$(_yay_queue_artifacts)"
   if [ "$sprint" = current ]; then
     cur="$(yay_roadmap_current "$today" 2>/dev/null)" || yay_die "no sprint contains $today"
@@ -477,7 +527,7 @@ yay_roadmap_queue() {
     esac
     case " $norm " in *" $id "*) ;; *) norm="$norm $id" ;; esac
   done
-  [ -n "$norm" ] || yay_die "nothing to queue: name R-<n>/P-<n> items, --sprint or --ready"
+  [ -n "$norm" ] || yay_die "nothing to queue: name R-<n>/P-<n> items, --sprint, --target or --ready"
   f="$(yay_roadmap_file)"
   local rows="" st ti deps stage art pst
   for id in $norm; do

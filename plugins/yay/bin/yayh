@@ -107,21 +107,22 @@ Artifacts (brainstorms, plans, bugs, backlog)
                                    close a decision or deferred note (this checkout)
 
 Roadmap (docs/roadmap.md)
-  roadmap list [--status=s] [--sprint=n|later]
+  roadmap list [--status=s] [--sprint=n|later] [--target=x.y.z]
                                    id, status, size, section, title (TSV)
   roadmap get <R-n> <key>          one bullet's value
-  roadmap set <R-n> <key> <value>  replace or add a bullet (status is validated)
-  roadmap add "<title>" [sprint=n|later] [size=S|M|L] [why=…] [key=value…]
+  roadmap set <R-n> <key> <value>  replace or add a bullet (status and target are validated;
+                                   target none removes it)
+  roadmap add "<title>" [sprint=n|later] [size=S|M|L] [target=x.y.z] [why=…] [key=value…]
                                    append an item with the next R id; prints it
   roadmap move <R-n> <n|later>     move an item to another sprint or section
   roadmap sprints start=YYYY-MM-DD length=2w until=YYYY-MM-DD|count=N [first=n] [--md]
                                    sprint calendar (TSV, or ## headings)
   roadmap current [YYYY-MM-DD]     the sprint containing the date
-  roadmap check [--today=]         structure, statuses, overlaps, slipped items
-  roadmap status [--today=]        sprint counts, slipped items, open bugs, active plans
+  roadmap check [--today=]         structure, statuses, overlaps, slipped items, past targets
+  roadmap status [--today=]        sprint and target-version counts, slipped items, open bugs, active plans
   roadmap links                    items that brainstorms/plans point at: id, current, suggested status, via
   roadmap peers                    sibling plugin folders (dir, name, slug, harnessed, path)
-  roadmap queue [R-n|P-n...] [--sprint=n|current|later] [--ready]
+  roadmap queue [R-n|P-n...] [--sprint=n|current|later] [--target=x.y.z] [--ready]
                                    build order for /yay:autopilot: id, stage, artifact, after, waits, title
 
 Code (reuse before you write)

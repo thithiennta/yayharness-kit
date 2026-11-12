@@ -52,6 +52,7 @@ Goal: checkout speed before BFCM.
 - size: M
 - why: one line on the customer value, with its evidence (B-3, #241, a review URL)
 - editions: free, pro
+- target: 1.5.0
 - from: BL-9
 
 ## Later
@@ -61,7 +62,7 @@ Goal: checkout speed before BFCM.
 - size: L
 ```
 - Sections are `## Sprint <n> (<start> → <end>)` (dates are `YYYY-MM-DD`, sprints in order and not overlapping), then `## Later`.
-- Items are `### R-<n> Title` with `- key: value` bullets (no front-matter, because many items share one file). `status` and `size` are required. Optional: `why`, `editions`, `from`, `note` (e.g. why it was dropped), `shared` and `depends` (cross-plugin work), and `trello` (its card URL, set by `/yay:roadmap --trello`).
+- Items are `### R-<n> Title` with `- key: value` bullets (no front-matter, because many items share one file). `status` and `size` are required. Optional: `why`, `editions`, `target` (the plugin version it should ship in, `x.y.z`; `yayh roadmap list --target=`, `/yay:autopilot --target=`), `from`, `note` (e.g. why it was dropped), `shared` and `depends` (cross-plugin work), and `trello` (its card URL, set by `/yay:roadmap --trello`).
 - `status` is one of `planned`, `brainstorming[:BS-<n>]`, `planned-in:P-<n>`, `in-progress`, `shipped:<version>`, `dropped`. `/yay:roadmap` syncs it from brainstorms and plans (`yayh roadmap links`), `/yay:implement` sets `in-progress`, and `/yay:release` sets `shipped:<version>`.
 - `size`: S (≤ 2 days), M (≤ 1 week), L (more).
 - Edit with `yayh roadmap add|set|move`, and validate with `yayh roadmap check`.

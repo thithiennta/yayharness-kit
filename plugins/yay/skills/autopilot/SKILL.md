@@ -1,7 +1,7 @@
 ---
 name: autopilot
-description: Take many Yay roadmap items from idea to built branch in one run - brainstorm, plan and implement each - with a single decision sheet up front instead of a question round per item. Use when the user says "autopilot", "do the whole sprint", "process all of them", "build everything on the roadmap", "run the long-term plan", "plan and implement R-3, R-5 and R-7", or wants to stop giving decisions task by task.
-argument-hint: "[R-<n>... | P-<n>...] [--sprint=<n|current|later>] [--ready] [--parallel=N] [--plan-only] [--no-ask] [--no-pr] [--draft] [--dry-run]"
+description: Take many Yay roadmap items from idea to built branch in one run - brainstorm, plan and implement each - with a single decision sheet up front instead of a question round per item. Use when the user says "autopilot", "do the whole sprint", "process all of them", "build everything on the roadmap", "run the long-term plan", "plan and implement R-3, R-5 and R-7", "build everything for 1.5.0", or wants to stop giving decisions task by task.
+argument-hint: "[R-<n>... | P-<n>...] [--sprint=<n|current|later>] [--target=<x.y.z>] [--ready] [--parallel=N] [--plan-only] [--no-ask] [--no-pr] [--draft] [--dry-run]"
 allowed-tools: Bash(yayh *), Bash(git *), Bash(gh *), Read, Grep, Glob, Write, Edit, AskUserQuestion, Workflow
 ---
 
@@ -17,6 +17,7 @@ The normal flow is **roadmap item → `/yay:brainstorm` → `/yay:plan` → `/ya
 |---|---|
 | `R-<n>… \| P-<n>…` | The items to run. A plan stands for its roadmap item. |
 | `--sprint=<n\|current\|later>` | Every item in that section. |
+| `--target=<x.y.z>` | Every item targeting that plugin version (`- target:` on the roadmap). |
 | `--ready` | Every `ready` plan. |
 | `--parallel=N` | Build up to N independent items at once (each in its own worktree). Default 1: one at a time, in dependency order. |
 | `--plan-only` | Stop after the decision sheet: plans written and marked ready, nothing built. |
@@ -30,7 +31,7 @@ With no scope at all, use `--sprint=current`.
 
 **Wait for every workflow.** The Workflow tool returns at once and runs in the background. Don't end your turn while a prepare or build workflow is running: wait for its completion notification, then go on to the next step. In a non-interactive run (`claude -p`, CI), ending the turn ends the session, and that kills the workflow half-built.
 
-1. **Queue.** `yayh roadmap queue <ids> [--sprint=…] [--ready]` prints the build order as TSV: `id stage artifact after waits title`.
+1. **Queue.** `yayh roadmap queue <ids> [--sprint=…] [--target=…] [--ready]` prints the build order as TSV: `id stage artifact after waits title`.
    - `stage` is where each item is: `brainstorm`, `decide` (open brainstorm), `plan` (decided brainstorm), `implement` (draft or ready plan), `continue` (in progress), `review` (built by an earlier run that stopped before its reviews: the plan is `done` with `reviewed: pending`), `done`, `dropped`. Re-running autopilot on the same scope therefore resumes where the last run stopped.
    - `after` are dependencies inside the run (built first; the dependent's branch stacks on theirs). `waits` are unmet dependencies outside it (another plugin, an item not in scope): those items are planned but not built. Say which.
    - A dependency cycle is an error: report it and stop.
