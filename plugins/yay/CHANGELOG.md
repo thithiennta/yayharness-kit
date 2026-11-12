@@ -2,7 +2,7 @@
 
 `/yay:harness-update` reads this file to tell a repo what changed between its recorded kit version and the installed one. Each entry lists new skills, config keys, template changes and behavior changes.
 
-## Unreleased (0.12.0)
+## 0.12.0 (2026-11-12)
 - **Breaking: the roadmap status `planned` is now `todo`.** `planned` read as "the planning is done", and it sat next to `planned-in:P-<n>`, which really does mean a plan exists. `todo` means the item is on the roadmap and nothing has started. `yayh roadmap add` writes `todo`, and `yayh roadmap check` and `yayh roadmap set … status` reject `planned`, with no alias. **In each repo:** change every `- status: planned` in `docs/roadmap/` (or `docs/roadmap.md`) to `- status: todo`, then run `yayh roadmap render` and `yayh roadmap check`. `planned-in:P-<n>` and the backlog's `yayh backlog settle BL-<n> planned P-<n>` are unchanged.
 
 ## 0.11.0 (2026-11-12)
