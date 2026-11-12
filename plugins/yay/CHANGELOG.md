@@ -14,6 +14,8 @@
   - The skill writes a `#### Sprint review` block (Done, Slipped, Keep, Change) and moves each unfinished item to the next sprint or Later, or drops it.
   - New `yayh roadmap velocity` averages the last 3 closed sprints. With 2 or more, `/yay:roadmap` plans with it instead of pace. `roadmap status` shows it.
   - `roadmap check` warns when the last sprint that ended more than 3 days ago isn't closed.
+- **`/yay:implement`'s report has a Reviews section, one line per reviewer.** Correctness (`yay:bug-reviewer`, with the risk-3 task reviews) and reuse and comments (`yay:code-reviewer`) each list their findings as fixed, answered or parked, or say "clean". The two used to end up in one list, so you couldn't tell which review had looked at what.
+- **`/yay:test` covers both sides of a limit.** A cap, minimum or threshold gets a case below it, exactly at it and just above it (199, 200 and 201 for a 200 cap). A case far past the limit no longer stands in for the one just above it.
 
 ## 0.6.0 (2026-11-12)
 - Released without the eval suite or a test run (the maintainer's call); the score log records it as not run.

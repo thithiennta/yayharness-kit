@@ -23,14 +23,16 @@ Behaviour checks for the `/yay:*` skills, run with `claude plugin eval`. Each ca
 ## Run
 
 ```bash
-cd ~/yayharness
+cd ~/yayharness   # or a worktree of it
 # one case, once, plugin arm only (cheap smoke test, about $0.25)
-claude plugin eval plugins/yay --case roadmap-status-readonly --runs 1 --ablation none \
+PATH="$PWD/plugins/yay/bin:$PATH" claude plugin eval plugins/yay --case roadmap-status-readonly --runs 1 --ablation none \
   --scaffold --allow-tools Bash Write Edit --trust-plugin --no-publish
 # the whole suite against a no-plugin baseline
-claude plugin eval plugins/yay --runs 3 -j 3 --judge-model sonnet \
+PATH="$PWD/plugins/yay/bin:$PATH" claude plugin eval plugins/yay --runs 3 -j 3 --judge-model sonnet \
   --scaffold --allow-tools Bash Write Edit --trust-plugin --no-publish --max-cost-usd 15
 ```
+
+- Put the plugin under test's `bin/` first on `PATH`. Run from a Claude Code session, the eval inherits that session's `PATH`, so skills would call the installed plugin's `yayh` instead. The sandbox only lets them read the plugin under test, so every `yayh` call fails with "Operation not permitted" (`lib/common.sh`), and the scores drop for a reason that isn't the skills. The 0.7.0 run from a worktree hit this.
 
 - `--scaffold` is needed because each case's `scaffold.sh` builds its repo.
 - `--allow-tools Bash Write Edit` grants the gated tools that the skills use.
