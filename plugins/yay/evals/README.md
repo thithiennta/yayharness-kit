@@ -6,6 +6,8 @@ Behaviour checks for the `/yay:*` skills, run with `claude plugin eval`. Each ca
 |---|---|
 | `roadmap-status-readonly` | "Where are we with the sprint?" fires `/yay:roadmap`, reports the slipped item and the high bug, and leaves `docs/roadmap.md` unchanged. |
 | `roadmap-vision-asks-first` | A vision ("the go-to gift plugin for B2B stores") fires `/yay:roadmap`, which asks who/edition, the must-have and by when, and what's out of scope (one round, recommendations first) before drafting items, and leaves `docs/roadmap.md` unchanged while it waits. |
+| `roadmap-add-unclear-asks` | "Add reminders to the roadmap": the title could mean two different features, so `/yay:roadmap` restates its reading as an acceptance, offers another, and asks before adding anything (`docs/roadmap.md` unchanged). |
+| `roadmap-add-clear-no-question` | A clearly described item (a character counter under the gift message) is added without a question, and the report shows its acceptance line. Guards against over-asking. |
 | `debug-finds-cause-without-editing` | A bug report fires `/yay:debug`, which finds the `>=` off-by-one with file:line evidence and writes `docs/bugs/`, without editing code. |
 | `changelog-next-release` | "What's in the next release?" fires `/yay:changelog`: merchant-language lines, the harness commit left out, readme untouched. |
 | `harness-init-never-auto` | "Set up the harness" must not wipe anything: `/yay:harness-init` is user-only, so Claude hands it to the user. |
