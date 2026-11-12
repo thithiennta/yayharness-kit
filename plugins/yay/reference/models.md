@@ -65,6 +65,8 @@ A step's value is a tier name, `inherit` (the session's model), or an inline `{ 
 
 **Skills** run the resolve command before spawning, then pass `model` and `effort` from its output to the Agent tool. When the output is `{}`, they pass neither.
 
+**Always set `effort`, not only `model`.** The Agent tool sets `effort` only when a skill explicitly asks for an effort level. The skill's spawn line is that request: the level it asks for is the one `yayh model resolve` prints. Leaving `effort` out runs the agent at its default effort, so a `veryfast` scout or a `deep` synthesis runs at the wrong level without anything saying so.
+
 **Workflow scripts** take `yayh model table --json` as `args.models`. Their `route(step, size)` helper applies the same rules and spreads `{ model, effort }` into each `agent()` call.
 
 ## Per-task delegation in `/yay:implement`
