@@ -53,6 +53,7 @@ Every kit release runs the whole suite (`--runs 2`, Sonnet judge, plugin arm) an
 | 0.6.0 | 0 | not run | — | Released without the suite (the maintainer's call). Adds `/yay:archive` (no eval case yet), so the next full run still compares against 0.5.0. |
 | 0.7.0 | 0 | not run | — | Released without the full suite (the maintainer's call). A full run on 2026-11-12 is not counted: run from a worktree, it called the installed plugin's `yayh`, which the sandbox blocked (now fixed with the `PATH` prefix, #12). With the fix, the two cases that run flagged scored 1.00 over 2 runs each: `implement-roadmap-item` (after its report gained a Reviews section) and `test-finds-product-bug` (after `/yay:test` covers both sides of a limit). The next full run compares against 0.5.0. |
 | 0.7.1 | 0 | not run | — | Released without the suite (the maintainer's call). The next full run compares against 0.5.0. |
+| 0.7.2 | 0 | not run | — | Released without the suite (the maintainer's call). It changes the spawn line in nine skills and `reference/models.md` (the routed `effort` is now asked for explicitly), so the next full run compares against 0.5.0. |
 
 ## Adding a case
 
