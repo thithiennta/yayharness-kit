@@ -6,6 +6,7 @@
 # yay_review_diff [base] [--plan=P-n] -> TSV: kind<TAB>where<TAB>message, then a summary line.
 # Kinds:
 #   similar-exists   a new function/method whose name matches existing ones
+#   no-caller        a new symbol no other code names, or only tests do (yayh code unused)
 #   comment-edited   an existing comment line was reworded or removed in a hunk that changes it
 #   comment-grown    comment lines added directly next to an existing comment block
 #   comment-heavy    a hunk adds as many inline comment lines as code lines
@@ -35,6 +36,19 @@ yay_review_diff() {
     [ -z "$hits" ] || printf 'similar-exists\t%s:%s\t%s() is new; existing look-alikes: %s. Reuse or extend one, or say why not.\n' "$f" "$ln" "$name" "$hits" >> "$out"
   done <<EOF
 $news
+EOF
+
+  # 1b. New symbols nothing calls.
+  local st where note
+  while IFS="$YAY_TAB" read -r st where kind name note; do
+    [ -n "$name" ] || continue
+    if [ "$st" = test-only ]; then
+      printf 'no-caller\t%s\t%s is new and only tests call it. A test alone is not a caller: delete it, or call it where the plan needs it.\n' "$where" "$name" >> "$out"
+    else
+      printf 'no-caller\t%s\t%s is new and no other code names it. Delete it, or call it where the plan needs it.%s\n' "$where" "$name" "${note:+ (Check first: it $note.)}" >> "$out"
+    fi
+  done <<EOF
+$(yay_code_unused "$base")
 EOF
 
   # 2. Comment checks, per changed source file (committed, staged, unstaged, untracked).

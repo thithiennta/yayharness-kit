@@ -99,3 +99,29 @@ PY
   assert_contains "$out" "includes/wrap.php	function	giftly_wrap_cost"
   case "$out" in *"Format::price"*|*"Format::date"*) _fail "unchanged symbols listed: $out" ;; *) _pass ;; esac
 }
+
+test_unused_flags_new_symbols_nothing_calls() {
+  export YAY_REPO; YAY_REPO="$(_crepo)"
+  git -C "$YAY_REPO" switch -q -c feat/x
+  mkdir -p "$YAY_REPO/tests/php/unit" "$YAY_REPO/includes/Admin"
+  cat > "$YAY_REPO/includes/wrap.php" <<'PHP'
+<?php
+function giftly_wrap_cost() { return giftly_wrap_rate() * 2; }
+function giftly_wrap_rate() { return 1; }
+function giftly_wrap_label() { return 'Wrap'; }
+function giftly_wrap_later() { return 0; }
+add_action( 'init', 'giftly_wrap_cost' );
+PHP
+  printf '<?php\nclass WrapTest { function test_label() { giftly_wrap_label(); } }\n' > "$YAY_REPO/tests/php/unit/WrapTest.php"
+  cat > "$YAY_REPO/includes/Admin/Screen.php" <<'PHP'
+<?php
+class Giftly_Screen extends WP_List_Table {
+	public function column_default( $item, $col ) { return ''; }
+}
+PHP
+  local out; out="$("$YAYH" code unused | cut -f1,2,4,5)"
+  assert_contains "$out" "unused	includes/wrap.php:5	giftly_wrap_later	"
+  assert_contains "$out" "test-only	includes/wrap.php:4	giftly_wrap_label	"
+  assert_contains "$out" "unused	includes/Admin/Screen.php:3	Giftly_Screen::column_default	may be called by name from its parent: Giftly_Screen extends WP_List_Table"
+  case "$out" in *giftly_wrap_cost*|*giftly_wrap_rate*|*test_label*|*WrapTest*) _fail "called or test symbols listed: $out" ;; *) _pass ;; esac
+}

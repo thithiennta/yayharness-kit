@@ -149,6 +149,52 @@ $files
 EOF
 }
 
+_yay_code_is_test() { # <path>
+  case "$1" in tests/*|*/tests/*|*.test.*|*.spec.*|*/__tests__/*) return 0 ;; esac
+  return 1
+}
+
+# yay_code_unused [base] -> TSV: status file:line kind name note, for each symbol this branch
+# adds that no other source line names. status: unused (nothing names it) or test-only (only
+# tests do: a test alone isn't a caller). The search is by whole word, so a mention in a string
+# or a comment counts as a caller: lines here are leads to confirm, and a clean run proves little
+# for a common name. note: for a method of a class that extends or implements something, a hint
+# that the parent may call it by name (a WordPress or WooCommerce override).
+yay_code_unused() {
+  local base="${1:-}" root gen news f ln kind name sig doc short hits h src tst note csig
+  root="$(yay_repo_root)"
+  gen="$(yay_config_get generatedPaths 2>/dev/null || true)"
+  news="$(yay_code_new "$base")" || return 1
+  while IFS="$YAY_TAB" read -r f ln kind name sig doc; do
+    [ -n "$name" ] || continue
+    _yay_code_is_test "$f" && continue
+    short="${name##*::}"; short="${short##*.}"
+    hits="$(git -C "$root" grep -n -w -I -F --untracked -e "$short" -- \
+        '*.php' '*.js' '*.jsx' '*.ts' '*.tsx' '*.mjs' \
+        ':!*vendor/*' ':!*node_modules/*' ':!*.min.js' ':!dist/*' ':!*/dist/*' ':!build/*' ':!*/build/*' ':!release/*' 2>/dev/null \
+      | awk -F ':' -v self="$f:$ln" '$1 ":" $2 != self { print $1 }')"
+    src=0; tst=0
+    while IFS= read -r h; do
+      [ -n "$h" ] || continue
+      if [ -n "$gen" ] && _yay_code_generated "$h" "$gen"; then continue; fi
+      if _yay_code_is_test "$h"; then tst=$((tst + 1)); else src=$((src + 1)); fi
+    done <<EOF
+$hits
+EOF
+    [ "$src" -eq 0 ] || continue
+    note=""
+    if [ "$kind" = method ]; then
+      csig="$(yay_code_index "$f" | awk -F '\t' -v ln="$ln" '$3 == "class" && $2 + 0 < ln + 0 { s = $5 } END { print s }')"
+      case "$csig" in *" extends "*|*" implements "*)
+        note="may be called by name from its parent: ${csig#*class }" ;;
+      esac
+    fi
+    printf '%s\t%s:%s\t%s\t%s\t%s\n' "$( [ "$tst" -gt 0 ] && echo test-only || echo unused )" "$f" "$ln" "$kind" "$name" "$note"
+  done <<EOF
+$news
+EOF
+}
+
 # yay_code_similar <name> [--exclude=file:line] -> like code find, for an identifier.
 yay_code_similar() {
   local name="$1"; shift

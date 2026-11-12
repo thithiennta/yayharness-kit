@@ -120,6 +120,13 @@ test_similar_function_flagged() {
   assert_contains "$out" "similar-exists	includes/fees.php:3	giftly_format_fee_price() is new; existing look-alikes: Settings::format_fee (includes/Settings.php:23)"
 }
 
+test_no_caller_flagged() {
+  export YAY_REPO; YAY_REPO="$(_rvrepo)"
+  printf '<?php\nfunction giftly_unwired_helper() { return 1; }\n' > "$YAY_REPO/includes/unwired.php"
+  local out; out="$("$YAYH" review diff main)"
+  assert_contains "$out" "no-caller	includes/unwired.php:2	giftly_unwired_helper is new and no other code names it."
+}
+
 test_outside_plan() {
   export YAY_REPO; YAY_REPO="$(_rvrepo)"
   printf -- '---\nid: P-1\ntitle: t\nstatus: ready\n---\n## Tasks\n- [ ] T1 x — `includes/Settings.php`\n\n## Verify\n- y\n' > "$YAY_REPO/docs/plans/t.md"

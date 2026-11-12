@@ -141,6 +141,8 @@ Code (reuse before you write)
   code similar <identifier>        code find for the words of one name (formatFeeLabel -> format fee label)
   code index [file...]             every class/function/method/const: file, line, kind, name, signature
   code new [base]                  symbols defined in lines this branch adds
+  code unused [base]               symbols this branch adds that no other code names: status (unused |
+                                   test-only), file:line, kind, name, note. Leads: delete them or call them
   review diff [base] [--plan=P-n]  flag-only findings on this branch's changes: look-alike new functions,
                                    edited/grown/heavy/cross-file/change-log comments, docblock prose,
                                    files outside the plan (kind, where, message; always exits 0)
@@ -383,7 +385,8 @@ case "$cmd" in
       similar) [ $# -ge 1 ] || yay_die "usage: yayh code similar <identifier>"; yay_code_similar "$@" ;;
       index) yay_code_index "$@" ;;
       new) yay_code_new "$@" ;;
-      *) yay_die "usage: yayh code find|similar|index|new" ;;
+      unused) yay_code_unused "$@" ;;
+      *) yay_die "usage: yayh code find|similar|index|new|unused" ;;
     esac ;;
   review)
     case "${1:-}" in diff) shift; yay_review_diff "$@" ;; *) yay_die "usage: yayh review diff [base] [--plan=P-n]" ;; esac ;;

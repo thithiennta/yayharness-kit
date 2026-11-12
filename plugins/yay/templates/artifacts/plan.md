@@ -28,6 +28,7 @@ created: {{today}}
 ## Tasks
 - [ ] T1 <what> — `path/to/file.php`
   - Reuse: <existing function/hook/setting and its file>, or `none, new <name>() because …`
+  - Callers: <each new symbol → what calls it (T<n> when a later task wires it)>. Leave this line out when the task adds no symbols.
 
 **Tests:** none
 <!-- One per risk, at the cheapest layer that proves it (reference/testing.md), separated by ";": [unit] test_name (tests/php/unit/X/YTest.php) — the risk; [integration] …; [js] …. Or none. -->
