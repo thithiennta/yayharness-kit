@@ -26,6 +26,19 @@ test_branch_name_and_check() {
   assert_fails "$YAYH" git branch-check wip/x
 }
 
+test_branch_name_with_id() {
+  export YAY_REPO; YAY_REPO="$(_git_repo)"
+  assert_eq "feat/p-4-refund-window" "$("$YAYH" git branch-name feat "Refund window" --id=P-4)"
+  assert_eq "fix/b-7-coupon-field-vanishes" "$("$YAYH" git branch-name fix --id=B-7 "Coupon field vanishes")"
+  assert_eq "feat/r-12-express-buttons" "$("$YAYH" git branch-name feat "R-12 express buttons" --id=R-12)"
+  assert_fails "$YAYH" git branch-name feat "x" --id=BS-1
+  assert_ok "$YAYH" git branch-check feat/p-4-refund-window
+  assert_eq "P-4" "$("$YAYH" git branch-id feat/p-4-refund-window)"
+  assert_eq "B-17" "$("$YAYH" git branch-id hotfix/b-17)"
+  assert_fails "$YAYH" git branch-id feat/express-checkout
+  assert_fails "$YAYH" git branch-id chore/release-1-2-0
+}
+
 test_commit_check() {
   export YAY_REPO; YAY_REPO="$(_git_repo)"
   assert_ok "$YAYH" git commit-check "feat(core): add express buttons"

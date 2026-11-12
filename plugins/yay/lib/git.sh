@@ -13,12 +13,40 @@ yay_base_branch() {
   yay_die "cannot tell the base branch; set git.baseBranch in .yay/config.json"
 }
 
-# yay_branch_name <type> <text>  -> type/slug, after checking type is allowed.
+# yay_branch_name <type> <text> [--id=P-4]  -> type/slug, after checking type is
+# allowed. With an id, the slug leads with it: feat/p-4-refund-window.
 yay_branch_name() {
-  local type="$1"; shift
+  local type="$1" id="" a text=""; shift
+  for a in "$@"; do case "$a" in --id=*) id="${a#--id=}";; *) text="${text:+$text }$a";; esac; done
   yay_in_list "$type" "$(yay_config_get git.branchTypes)" \
     || yay_die "branch type '$type' is not in git.branchTypes ($(yay_config_get git.branchTypes | tr '\n' ' '))"
-  printf '%s/%s\n' "$type" "$(yay_slugify "$*")"
+  if [ -n "$id" ]; then
+    printf '%s' "$id" | grep -Eq '^(P|B|R)-[0-9]+$' || yay_die "branch id must be P-<n>, B-<n> or R-<n> (got '$id')"
+    # Don't double it when the title already starts with the id.
+    case "$text" in "$id"|"$id "*|"$id:"*) ;; *) text="$id $text";; esac
+  fi
+  printf '%s/%s\n' "$type" "$(yay_slugify "$text")"
+}
+
+# yay_branch_id <branch>  -> the artifact id a branch leads with (feat/p-4-x -> P-4), or exit 1.
+yay_branch_id() {
+  local slug="${1#*/}" id
+  case "$1" in */*) ;; *) return 1;; esac
+  id="$(printf '%s' "$slug" | sed -nE 's/^(p|b|r)-([0-9]+)(-.*)?$/\1-\2/p')"
+  [ -n "$id" ] || return 1
+  printf '%s\n' "$id" | tr '[:lower:]' '[:upper:]'
+}
+
+# yay_commit_id_check <message> <branch>: on a branch that leads with an id, the
+# summary leads with it too (`feat(scope): P-4 add …`). A hint, never a block.
+yay_commit_id_check() {
+  local header id summary; header="$(_yay_commit_header "$1")"
+  id="$(yay_branch_id "$2")" || return 0
+  case "$header" in Merge\ *|Revert\ \"*|fixup!\ *|squash!\ *) return 0;; esac
+  summary="${header#*: }"
+  case "$summary" in "$id"|"$id "*) return 0;; esac
+  echo "branch '$2' is for $id; lead the summary with it: <type>(<scope>): $id <summary>" >&2
+  return 1
 }
 
 # yay_branch_check <branch>  -> exit 0 if it follows <type>/<slug>.

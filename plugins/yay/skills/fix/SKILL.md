@@ -36,7 +36,7 @@ Fix one bug, minimally, on its own branch. **No fix without a cause:** the bug r
 - Run `yayh backlog open --for=B-<n>`. Settle the notes the fix answers (in the branch, step 2), and keep the others open.
 
 ### 2. Branch
-- `branch="$(yayh git branch-name <fix|hotfix> "<bug title>")"`
+- `branch="$(yayh git branch-name <fix|hotfix> "<bug title>" --id=B-<n>)"`, which gives `fix/b-<n>-<slug>`
 - Hotfix: `from="${from_tag:-$(yayh git last-tag)}"`. Otherwise use `git.baseBranch`.
 - `wt="$(yayh git worktree "$branch" "$from")"`, then `cd "$wt"`. With `--no-worktree`, `git switch -c "$branch" "$from"` instead.
 - Carry the report if it's untracked: `yayh artifact carry "$wt" <report>`.
@@ -69,12 +69,12 @@ Without a test, do the report's manual check exactly and record the result.
 6. Commit, staging by path:
    ```
    git add -- <changed files> <report> [<e2e spec>] [docs/knowledge/known-issues.md]
-   git commit -m "fix(<scope>): <what is fixed, user-facing wording>" -m "<root cause in one or two lines>" -m "Fixes: B-<n>"
+   git commit -m "fix(<scope>): B-<n> <what is fixed, user-facing wording>" -m "<root cause in one or two lines>" -m "Fixes: B-<n>"
    ```
 
 ### 6. Push and PR
 As in `/yay:implement` step 5: by default, unless `--no-pr`; then print the commands. These things differ:
-- the title is the fix header
+- the title is the fix header, `fix(<scope>): B-<n> <what is fixed>`
 - for a hotfix, the base is `git.baseBranch`, and the body says: "Hotfix from `<tag>`; release with `/yay:release patch --hotfix`"
 - record `pr` in the report
 

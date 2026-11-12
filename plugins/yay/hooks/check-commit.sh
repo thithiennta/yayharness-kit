@@ -22,6 +22,10 @@ if ! err="$(yay_commit_shape "$msg" 2>&1)"; then
 fi
 hints="$(yay_commit_style "$msg" 2>&1 || true)"
 br="$(git -C "$root" branch --show-current 2>/dev/null)"
+if [ -n "$br" ] && ! idh="$(yay_commit_id_check "$msg" "$br" 2>&1)"; then
+  hints="${hints:+$hints
+}$idh"
+fi
 if [ -n "$br" ] && ! yay_branch_check "$br"; then
   hints="${hints:+$hints
 }branch '$br' doesn't follow <type>/<slug> (types: $(yay_config_get git.branchTypes | tr '\n' ' ')). Rename it with 'git branch -m <type>/<slug>' if it's yours and not pushed yet."

@@ -48,7 +48,7 @@ When the argument isn't a plan (a requirement, or an `R-`/`BS-`/`B-<n>` with no 
 - **Hard questions only, once, now** (`${CLAUDE_PLUGIN_ROOT}/reference/asking.md`). Include any carried over from step 0. Ask only if the plan leaves a decision that's expensive to undo or that only the user can make (for example, customer-visible behaviour the plan doesn't pin down): at most 3, in one AskUserQuestion. Everything else the plan leaves open, decide in its spirit and list under **Decided** in the PR. Usually that means no questions at all. Never stop mid-task to ask, unless the plan turns out wrong in a way that changes scope or what customers see (step 3.1).
 
 ### 2. Branch and worktree (skip with `--continue`)
-1. Get the branch name: `branch="$(yayh git branch-name <plan type> "<plan title>")"`.
+1. Get the branch name: `branch="$(yayh git branch-name <plan type> "<plan title>" --id=P-<n>)"`, which gives `<type>/p-<n>-<slug>`.
 2. Create the branch in one of two ways:
    - **Worktree (default):** `wt="$(yayh git worktree "$branch" <base>)"`, then `cd "$wt"`. From here on you work **only** in the worktree.
    - **`--no-worktree`:** `git switch -c "$branch" <base>`.
@@ -58,8 +58,8 @@ When the argument isn't a plan (a requirement, or an `R-`/`BS-`/`B-<n>` with no 
    - `yayh fm set <plan> branch "$branch"`
    - if the plan has `roadmap: R-<n>`, run `yayh roadmap set R-<n> status in-progress`
    - settle the notes step 1 decided (`yayh backlog settle …`) and apply the plan edits they need
-5. Run `yayh id conflicts`. If an ID clashes with the base branch, renumber this branch's artifact with `yayh id next`, then update its `id:` and every reference to it.
-6. Commit: `docs(plan): start P-<n> <title>` with the trailer `Plan: P-<n>`. Include the settled notes, the carried notes and the roadmap files the status change touched (`git status -- docs/roadmap docs/roadmap.md`).
+5. Run `yayh id conflicts`. If an ID clashes with the base branch, renumber this branch's artifact with `yayh id next`, then update its `id:` and every reference to it, and rename the branch to match (`git branch -m <type>/p-<new>-<slug>`; nothing is pushed yet).
+6. Commit: `docs(plan): P-<n> start <title>` with the trailer `Plan: P-<n>`. Include the settled notes, the carried notes and the roadmap files the status change touched (`git status -- docs/roadmap docs/roadmap.md`).
 
 Install dependencies if the worktree needs them: `yayh run install`, once.
 
@@ -87,13 +87,13 @@ For each unticked task in order (or only `--task`):
 5. **Commit** the code and the ticked plan together:
    ```
    git add -- <files you changed> <plan file>
-   git commit -m "<type>(<scope>): <task summary>" -m "<why, if not obvious>" -m "Plan: P-<n>"
+   git commit -m "<type>(<scope>): P-<n> <task summary>" -m "<why, if not obvious>" -m "Plan: P-<n>"
    ```
    Commit the backlog notes the task wrote along with it. Add `Roadmap: R-<n>` on the commit that completes the item. Stage by path. Never use `git add -A` (other people's untracked files, and the generated paths the hooks guard). If a hook rejects the commit, fix the cause; never use `--no-verify`.
 
 ### 4. Finish
 1. Run all of `lint`, `typecheck` and `build` that exist in the config (`yayh run <name>`), and the tests with `yayh test run all` (every configured layer: unit, integration when the tests site is up, and js; it falls back to `commands.test`). For `build` with editions, build each edition the plan touches (`edition=<e>`). Report pre-existing failures separately (compare with the base, as in step 3.2).
-2. **E2E** (when the plan's `**E2E:**` line isn't `none` and `commands.e2e` is set): follow `/yay:e2e P-<n>` steps 1–5 in this worktree. Write the specs, tagged `@P-<n>`. Run `yayh e2e run --grep "@P-<n>|@smoke"` against this worktree's own site (`yayh e2e env start` gives it its own port). Classify any failure: a product bug is yours to fix now, since it's this branch's code. Commit as `test(e2e): <flow>` with the `Plan:` trailer. Without Docker, write and commit the specs anyway, and list them as **not run** in the PR. When you're done, stop the site with `yayh e2e env stop`.
+2. **E2E** (when the plan's `**E2E:**` line isn't `none` and `commands.e2e` is set): follow `/yay:e2e P-<n>` steps 1–5 in this worktree. Write the specs, tagged `@P-<n>`. Run `yayh e2e run --grep "@P-<n>|@smoke"` against this worktree's own site (`yayh e2e env start` gives it its own port). Classify any failure: a product bug is yours to fix now, since it's this branch's code. Commit as `test(e2e): P-<n> <flow>` with the `Plan:` trailer. Without Docker, write and commit the specs anyway, and list them as **not run** in the PR. When you're done, stop the site with `yayh e2e env stop`.
 3. Walk through the plan's **Verify** list (it includes the design's Acceptance checks). Run `yayh verify P-<n> --run`: every ``- `command` → expected`` check runs, and a `fail` is a bug in this branch to fix now (or a wrong check, which you correct in the plan, saying so under **Decided**). Do the other checks you can by hand (WP-CLI against `yayh config get site.wpPath`, reading the output). List the checks only a human can do (browser flows) for the PR, and paste the `verify` result into its Verified section.
 4. Run `yayh debug markers`. It must be empty. Then run `yayh code unused <base>` and deal with each symbol it lists: delete it, or call it where the plan needs it. Keep one only when WordPress or WooCommerce calls it by name (an override, a callback named in a string), and say so under **Decided** in the PR.
 5. **Review: correctness, then reuse and comments** (skip with `--no-review`):
@@ -102,21 +102,21 @@ For each unticked task in order (or only `--task`):
      - `yay:bug-reviewer`. Its brief: the worktree path, the base branch, and the plan's **Goal** paragraph copied as it is, the tasks `yayh plan risk P-<n>` rates 3 (their text, as "the hard-to-undo parts"), and "review this branch for correctness".
      - `yay:code-reviewer`. Its brief: the worktree path, the base branch, `P-<n>`, and "review this branch".
    - For each finding, either fix it or answer it:
-     - **Fix:** the change the finding names. Commit `fix(<scope>): <what>` for a correctness finding, or `refactor(<scope>): reuse <helper>` / `refactor(<scope>): restore comments`, with the `Plan:` trailer, then re-run the checks the change touches. A bug fix gets a test at the cheapest layer that proves it, when it's a real risk.
+     - **Fix:** the change the finding names. Commit `fix(<scope>): P-<n> <what>` for a correctness finding, or `refactor(<scope>): P-<n> reuse <helper>` / `refactor(<scope>): P-<n> restore comments`, with the `Plan:` trailer, then re-run the checks the change touches. A bug fix gets a test at the cheapest layer that proves it, when it's a real risk.
      - **Answer:** you disagree, with a reason. It goes in the PR under "Review".
    - **A `blocker`** (a security hole, or data lost or corrupted) is fixed before the PR, never answered away. If you can't fix it, open the PR as a draft and put the blocker first in its body.
    - Each reviewer's **Questions**: check the ones you can, and list the rest for the human reviewer.
 
    Apart from blockers, the reviews flag and never block.
-6. Run `yayh knowledge stale --since=<base>`. For each doc this branch made wrong, update it now on this branch, following `/yay:knowledge-update`'s rules. Then `yayh knowledge check` must pass, and you run `yayh knowledge stamp <doc>`. Commit it as `docs(knowledge): …`.
-7. Run `yayh fm set <plan> status done`. If the plan has `roadmap: R-<n>` and it's the item's last open plan, also run `yayh roadmap set R-<n> built "$(date +%Y-%m-%d)"` (with `started`, set when the item went in-progress, it's the item's pace record for `yayh roadmap pace`). Commit both as `docs(plan): complete P-<n>`, with the roadmap files (`git status -- docs/roadmap docs/roadmap.md`).
+6. Run `yayh knowledge stale --since=<base>`. For each doc this branch made wrong, update it now on this branch, following `/yay:knowledge-update`'s rules. Then `yayh knowledge check` must pass, and you run `yayh knowledge stamp <doc>`. Commit it as `docs(knowledge): P-<n> …`.
+7. Run `yayh fm set <plan> status done`. If the plan has `roadmap: R-<n>` and it's the item's last open plan, also run `yayh roadmap set R-<n> built "$(date +%Y-%m-%d)"` (with `started`, set when the item went in-progress, it's the item's pace record for `yayh roadmap pace`). Commit both as `docs(plan): P-<n> complete`, with the roadmap files (`git status -- docs/roadmap docs/roadmap.md`).
 
 ### 5. Push and PR
 Do this by default, without asking. With `--no-pr` or `--no-push`, skip it and end the report with the exact commands (`git push -u origin <branch>` and the `gh pr create …` line). If there's no `origin` remote, or `gh` isn't installed or logged in, skip it the same way, and say why (`${CLAUDE_PLUGIN_ROOT}/reference/asking.md`).
 ```
 git push -u origin "$branch"
 gh pr create --base <base> --head "$branch" --assignee @me [--draft] \
-  --title "<type>(<scope>): <plan title, lowercase summary>" --body-file <tmp>
+  --title "<type>(<scope>): P-<n> <plan title, lowercase summary>" --body-file <tmp>
 ```
 Fill the PR body from `.github/pull_request_template.md`:
 - link `P-<n>` (and `R-<n>`, `BS-<n>`, `UX-<n>`; with a design, mention its mockup path when one exists, which reviewers can regenerate with `/yay:design UX-<n> --mockup`)

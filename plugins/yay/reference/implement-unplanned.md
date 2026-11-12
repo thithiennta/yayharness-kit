@@ -28,8 +28,8 @@ An obvious approach (one sensible way to do it) skips this, even with a roadmap 
 
 ## Tiny lane (no plan)
 1. Find the code and the existing helpers it should call, as for any task (the skill's step 3.1 reuse rules).
-2. Branch as in the skill's step 2.1–2.2, with a branch type that fits the change (`fix`, `chore`, `feat`). There's nothing to carry or set.
+2. Branch as in the skill's step 2.1–2.2, with a branch type that fits the change (`fix`, `chore`, `feat`). With no plan, pass `--id=R-<n>` or `--id=B-<n>` when the change came from one, and no `--id` for a bare requirement. There's nothing to carry or set.
 3. Make the change. Verify as in the skill's step 3.2: lint, plus the existing tests that cover those files. Add a test only for a real risk, at the cheapest layer.
-4. Commit: `<type>(<scope>): <summary>`, with `Roadmap: R-<n>` or `Fixes: B-<n>` when the change came from one.
+4. Commit: `<type>(<scope>): <summary>`, with `Roadmap: R-<n>` or `Fixes: B-<n>` when the change came from one. Then the summary leads with that id too (`feat(admin): R-12 <summary>`), and so does the PR title.
 5. Finish with the skill's step 4.1 (the checks), 4.4 (debug markers) and 4.5 (review), then step 5. The PR body says "tiny lane, no plan", and puts the **Goal** (one line) and the exact **Verify** checks in place of the plan link.
 6. If the change grows past the tiny limits while you work, stop and write a small plan whose ticked T1 is what's done. Then continue from the skill's step 1.
