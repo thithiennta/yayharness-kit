@@ -18,4 +18,5 @@
   - the body follows `.github/pull_request_template.md`
   - target `{{git.baseBranch}}`, except hotfixes, which come from the release tag
   - assigned to their owner, the developer who asked for the work: `gh pr create --assignee @me`. Ownership lives on the PR, not in the branch name.
+  - merged with `gh pr merge <n> --{{git.mergeMethod}}`. The default is a merge commit, which keeps each task's commit and its trailers on `{{git.baseBranch}}`. Squash or rebase only when `git.mergeMethod` says so.
 - **Small commits:** one logical change each. Never use `--no-verify`, never force-push a shared branch, and never rewrite `{{git.baseBranch}}`.

@@ -139,6 +139,7 @@ test_sync_installs_everything_then_is_idempotent() {
   assert_contains "$(cat "$YAY_REPO/CLAUDE.md")" "<!-- yay:managed:start v="
   assert_contains "$(cat "$YAY_REPO/CLAUDE.md")" "<!-- yay:project:start -->"
   assert_contains "$(cat "$YAY_REPO/.claude/rules/yay-git.md")" "Never commit to \`dev\` directly"
+  assert_contains "$(cat "$YAY_REPO/.claude/rules/yay-git.md")" "merged with \`gh pr merge <n> --merge\`"
   assert_contains "$(cat "$YAY_REPO/.claude/rules/yay-wordpress.md")" "fixture-plugin"
   assert_ok "$YAYH" harness sync --check
   assert_eq "" "$("$YAYH" harness sync | grep -v up-to-date)"
