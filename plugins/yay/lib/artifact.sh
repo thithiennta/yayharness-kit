@@ -306,24 +306,51 @@ yay_design_check() {
 # ---------- carrying artifacts into a worktree ----------
 
 # yay_artifact_carry <worktree> <path>... : move untracked artifact files from
-# the main checkout into the same path in the worktree.
+# the main checkout into the same path in the worktree. A path may be a folder
+# (docs/assets/R-5). An artifact's untracked screenshots (docs/assets/<its id>/)
+# go with it.
 yay_artifact_carry() {
   local wt="$1"; shift
-  local root p
+  local root p id a
   root="$(yay_repo_root)"
   [ -d "$wt" ] || yay_die "no worktree at $wt"
   for p in "$@"; do
-    p="${p#"$root"/}"
-    [ -f "$root/$p" ] || yay_die "no such file: $p"
-    if git -C "$root" ls-files --error-unmatch -- "$p" >/dev/null 2>&1; then
-      if git -C "$root" diff --quiet -- "$p"; then printf 'tracked\t%s\n' "$p"; continue; fi
-      yay_die "$p is tracked and modified in the main checkout; commit it on its own branch or move the change by hand"
+    p="${p#"$root"/}"; p="${p%/}"
+    if [ -d "$root/$p" ]; then
+      while IFS= read -r a; do [ -n "$a" ] && _yay_carry_one "$root" "$wt" "$a"; done <<EOF
+$(cd "$root" && find "$p" -type f | sort)
+EOF
+      rmdir "$root/$p" 2>/dev/null || true
+      continue
     fi
-    if [ -e "$wt/$p" ] && ! cmp -s "$root/$p" "$wt/$p"; then yay_die "$wt/$p already exists and differs"; fi
-    mkdir -p "$(dirname "$wt/$p")"
-    cp "$root/$p" "$wt/$p" && rm -f "$root/$p"
-    printf 'carried\t%s\n' "$p"
+    _yay_carry_one "$root" "$wt" "$p"
+    case "$p" in *.md) ;; *) continue ;; esac
+    id="$(yay_fm_get "$wt/$p" id 2>/dev/null || yay_fm_get "$root/$p" id 2>/dev/null || true)"
+    [ -n "$id" ] || continue
+    a="$(yay_asset_dir "$id")"
+    [ -d "$root/$a" ] || continue
+    while IFS= read -r a; do
+      [ -n "$a" ] || continue
+      git -C "$root" ls-files --error-unmatch -- "$a" >/dev/null 2>&1 && continue
+      _yay_carry_one "$root" "$wt" "$a"
+    done <<EOF
+$(cd "$root" && find "$(yay_asset_dir "$id")" -type f | sort)
+EOF
+    rmdir "$root/$(yay_asset_dir "$id")" 2>/dev/null || true
   done
+}
+
+_yay_carry_one() { # <root> <worktree> <rel path>
+  local root="$1" wt="$2" p="$3"
+  [ -f "$root/$p" ] || yay_die "no such file: $p"
+  if git -C "$root" ls-files --error-unmatch -- "$p" >/dev/null 2>&1; then
+    if git -C "$root" diff --quiet -- "$p"; then printf 'tracked\t%s\n' "$p"; return 0; fi
+    yay_die "$p is tracked and modified in the main checkout; commit it on its own branch or move the change by hand"
+  fi
+  if [ -e "$wt/$p" ] && ! cmp -s "$root/$p" "$wt/$p"; then yay_die "$wt/$p already exists and differs"; fi
+  mkdir -p "$(dirname "$wt/$p")"
+  cp "$root/$p" "$wt/$p" && rm -f "$root/$p"
+  printf 'carried\t%s\n' "$p"
 }
 
 # ---------- id conflicts with the base branch ----------

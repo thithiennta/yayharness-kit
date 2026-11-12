@@ -22,12 +22,12 @@ Turn a change that has a UI into a small, buildable design: a `UX-<n>` file that
 | `--quick` | One pass for a small change (one screen, a field, a notice): Job, Where, one wireframe, States, Copy, Acceptance. No mockup. `/yay:plan` uses this inline. |
 | `--mockup` | Also write a self-contained HTML preview (`.yay/designs/<slug>.html`, gitignored) and open it. |
 | `--check` | Review an existing design: `yayh design check`, then the simplicity and conventions review (step 5). Changes nothing unless the user agrees. |
-| `--commit` | Commit the file when you're on a non-base branch (`docs(plan): add UX-<n> …`). |
+| `--commit` | Commit the file when you're on a non-base branch (`docs(plan): add UX-<n> …`), with its `docs/assets/UX-<n>` screenshots, if any. |
 
 ## Steps
 
 1. **Does it need a design?** Read the source (`yayh artifact resolve <id>`). A change needs one only when people will see something new or different. Backend-only work, a copy tweak to one string, or a screen that only gets an extra option in an existing, obvious place needs no design file: say so, give the one-line UI note for the plan (where it goes, the label, the default), and stop. Look for an existing design on the same topic (`yayh artifact list design`) and continue it rather than writing a second one. Also run `yayh backlog open --for=<source id>`: an open decision about this UI is yours to settle now if you can (`/yay:plan`'s "Picking up notes").
-2. **Ground it in what exists.** Read the project block and `docs/knowledge/` (architecture's frontend/admin surfaces, conventions' JS/React patterns, and `e2e.md`'s Flows table when it exists). Then find:
+2. **Ground it in what exists.** A screenshot the user attached (the current screen, a layout that's wrong, a UI to match) is the strongest evidence: say which it is, and record and keep it as in `${CLAUDE_PLUGIN_ROOT}/reference/artifacts.md` (Screenshots). Then read the project block and `docs/knowledge/` (architecture's frontend/admin surfaces, conventions' JS/React patterns, and `e2e.md`'s Flows table when it exists). Then find:
    - **Where users already reach the plugin:** `yayh e2e surfaces` lists admin pages, settings tabs, shortcodes, blocks, My Account endpoints, cart and checkout hooks and emails, with `file:line`.
    - **The UI stack:** `package.json` (React with `@wordpress/components`, `@woocommerce/components`, Vue, a CSS framework), the admin page markup (WP `form-table`, the WooCommerce settings API, a React app root), and the plugin's own CSS classes or variables.
    - **The nearest existing screen** that does a similar job. Open it and its components. The new UI copies its layout, components, spacing, notices and save pattern. `yayh code find <noun> <component>` finds reusable components.

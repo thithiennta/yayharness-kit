@@ -48,7 +48,7 @@ The roadmap is tracked, so every write happens on a branch, never on the base:
 
 **One file per sprint.** When `yayh roadmap layout` says `single`, run `yayh roadmap split` in the branch before the first edit. It writes `docs/roadmap/` and removes `docs/roadmap.md`, keeping every item and id. Say so in the report; the conversion rides in the same commit.
 
-Commit by path with `docs(roadmap): <summary>` (the `roadmap` scope is always allowed): `git add -- docs/roadmap docs/roadmap.md <promoted backlog files>` (naming `docs/roadmap.md` also stages its removal after a split; drop it when it never existed). Then push and `gh pr create --base <base> --assignee @me`, unless `--no-pr` (then print those commands). `--status` and `--dry-run` never push.
+Commit by path with `docs(roadmap): <summary>` (the `roadmap` scope is always allowed): `git add -- docs/roadmap docs/roadmap.md <promoted backlog files> <docs/assets/R-<n> of items given a screenshot>` (naming `docs/roadmap.md` also stages its removal after a split; drop it when it never existed). Then push and `gh pr create --base <base> --assignee @me`, unless `--no-pr` (then print those commands). `--status` and `--dry-run` never push.
 
 ## Status (`--status`)
 
@@ -91,6 +91,7 @@ An item's `- target: x.y.z` is the plugin version it's meant to ship in. It's in
 Small changes, on a branch as above, then `yayh roadmap check`, **one** commit and the PR question, however many items the request names.
 - `--add="<title>"`: `yayh roadmap add "<title>" sprint=<n|later> size=<S|M|L> [target=<x.y.z>] "why=<one line>" "acceptance=<one line>"`. When the why, size or acceptance is missing, infer them from the title and the evidence, and say what you used. The acceptance is what a user can see or do when it's done ("a coupon applies in one click on cart and checkout"), not how it's built; `/yay:plan` turns it into its Goal and Verify. Default sprint: `later`. Warn if the sprint is now over capacity.
   - **Several items.** `--add` repeated, `--add="A; B; C"`, or a list in plain words ("add X, Y and Z for 1.5.0") all mean one `yayh roadmap add` per title, in the order given. A per-item hint in the title is honoured and stripped: `"Gift wrap [S]"`, `"Dark mode [L, sprint 2]"`. `--sprint`, `--size` and `--target` apply to the items without their own hint.
+  - **A screenshot** with the request (a UI, a bug, a layout) is evidence for that item: what it shows shapes the `acceptance`, and the file is kept with `yayh asset add R-<n> <path> "<caption>"` and a `screenshots` bullet. See `${CLAUDE_PLUGIN_ROOT}/reference/artifacts.md` (Screenshots).
   - The user's request is the evidence for an item they name. When they gave no reason, the why is `requested <date>` plus anything the evidence adds (a `B-<n>`, `#issue`). Don't ask for one.
   - **Short or unclear titles** ("Reminders", "Bulk export"): before writing, check that you read each one the way the user means it. See **Unclear items** in `${CLAUDE_PLUGIN_ROOT}/reference/roadmap-extras.md`.
   - Show the added items as one table (id, title, sprint, size, target, acceptance), so a misread item is visible.

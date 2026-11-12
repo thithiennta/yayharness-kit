@@ -138,3 +138,20 @@ MD
   "$YAYH" roadmap check >/dev/null && _pass || _fail "roadmap check: $("$YAYH" roadmap check 2>&1)"
   assert_eq "R-3" "$("$YAYH" id next R)"
 }
+
+test_archive_takes_screenshots_and_waits_for_uncommitted_ones() {
+  export YAY_REPO; YAY_REPO="$(_xrepo)"
+  # B-1 (fixed after the tag) gets a committed screenshot; re-tag so it ships
+  mkdir -p "$YAY_REPO/docs/assets/B-1" "$YAY_REPO/docs/assets/R-2"
+  printf 'png' > "$YAY_REPO/docs/assets/B-1/1-bug.png"; printf 'png' > "$YAY_REPO/docs/assets/R-2/1-wip.png"
+  commit_all "$YAY_REPO" "docs: shots"
+  git -C "$YAY_REPO" tag -d v1.0.0 >/dev/null; git -C "$YAY_REPO" tag -a v1.0.0 -m "v1.0.0"
+  # an uncommitted extra screenshot keeps the bug back
+  printf 'png' > "$YAY_REPO/docs/assets/B-1/2-more.png"
+  assert_contains "$("$YAYH" artifact archive)" "keep	B-1	has uncommitted changes"
+  rm "$YAY_REPO/docs/assets/B-1/2-more.png"
+  assert_contains "$("$YAYH" artifact archive)" "archive	B-1	fixed"
+  "$YAYH" artifact archive --yes >/dev/null
+  assert_no_file "$YAY_REPO/docs/assets/B-1"
+  assert_file "$YAY_REPO/docs/assets/R-2/1-wip.png"            # R-2 stays, so do its screenshots
+}

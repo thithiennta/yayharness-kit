@@ -31,7 +31,7 @@ Find **why**, with evidence, and write it down. This skill doesn't fix product c
 ### 1. Intake
 - For `B-<n>`, resolve it, read it, and continue from its current status.
 - Otherwise, before writing anything, pull the facts out of the input: the exact error text, where it shows (storefront, checkout, admin, email, REST), the edition and version, WP/WC/PHP versions, the theme, block vs classic checkout, HPOS, and other plugins involved. Ask with **one** AskUserQuestion only for what blocks the investigation and can't be found out.
-- `yayh artifact new bug "<short symptom>" severity=<s> editions="<e>"`. Fill in Symptoms and Environment now, and set `found_in` (`yayh fm set <file> found_in <version>`).
+- `yayh artifact new bug "<short symptom>" severity=<s> editions="<e>"`. Fill in Symptoms and Environment now (a screenshot of the bug goes in Symptoms, kept as in `${CLAUDE_PLUGIN_ROOT}/reference/artifacts.md` (Screenshots)), and set `found_in` (`yayh fm set <file> found_in <version>`).
 
 ### 2. Ground
 - Read the project block, `docs/knowledge/known-issues.md` (it may already be known), and the knowledge doc for the area.
