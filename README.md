@@ -9,6 +9,9 @@ The marketplace for **`yay`**, the shared Claude Code harness for YayCommerce Wo
 ./tests/run.sh                 # before committing: all tests, once per available JSON engine, in parallel
 ./tests/run.sh git hooks       # only tests/unit/*git* and *hooks*
 ./tests/run.sh --changed=main  # what this branch changed, on every engine
+./tests/run.sh --tested        # exit 0 if a green full run already tested the kit code as it is now
 claude plugin validate .       # marketplace manifest
 claude plugin validate plugins/yay
 ```
+
+Working on the kit itself, two repo-local skills do the git work: **`/kit-ship`** takes the working tree to a merged PR on `main` (branch, CHANGELOG entry, tests, commit, PR, merge), and **`/kit-release`** releases a version (bump, dated CHANGELOG, eval score, PR, merge). A release re-runs the tests only when no green full run covers the code, and the eval suite only when skill text changed since the last scored version (`.claude/skills/kit-release/gate.sh` decides).

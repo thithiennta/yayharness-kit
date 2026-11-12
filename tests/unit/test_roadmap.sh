@@ -380,7 +380,7 @@ test_split_keeps_every_item_and_writes_one_file_per_section() {
   assert_eq "$before" "$("$YAYH" roadmap list)"
   assert_exit 1 test -f "$YAY_REPO/docs/roadmap.md"
   local d="$YAY_REPO/docs/roadmap"
-  assert_eq "later.md README.md sprint-1.md sprint-2.md" "$(ls "$d" | tr '\n' ' ' | sed 's/ $//')"
+  assert_eq "README.md later.md sprint-1.md sprint-2.md" "$(ls "$d" | LC_ALL=C sort | tr '\n' ' ' | sed 's/ $//')"
   assert_eq "## Sprint 1 (2026-11-10 → 2026-11-23)" "$(sed -n 1p "$d/sprint-1.md")"
   assert_contains "$(cat "$d/sprint-2.md")" '### R-0 Example inside a fence'
   assert_eq "2026-12-07" "$("$YAYH" fm get "$d/README.md" horizon)"
