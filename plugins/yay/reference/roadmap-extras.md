@@ -17,7 +17,7 @@ One read-only owner agent per plugin researches its repo; the owners then read e
 1. **Plugins.** `yayh roadmap peers` lists the sibling plugin folders (dir, name, slug, harnessed, path). `--plugins=all` means every harnessed peer plus this repo. Otherwise match each name against the dir, slug or name, case-insensitively, and stop on anything unmatched. Plugins without a harness can join the research, but get no roadmap file written (say so).
 2. **Calendar.** Settle the horizon, sprint length, start, capacity and freezes once, for everyone (the skill's Plan step 1), then build the sprint list with `yayh roadmap sprints`.
 3. **Cost.** The run uses 2N + 1 agents (N + 1 with `--rounds=1`). Only when N > 3, ask one question: start with this many agents? (Calendar defaults are decisions, listed under **Decided**, not questions.)
-4. **Run** the Workflow tool with `scriptPath: ${CLAUDE_PLUGIN_ROOT}/workflows/roadmap-portfolio.js` and `args`:
+4. **Run** the Workflow tool with the whole text of `${CLAUDE_PLUGIN_ROOT}/workflows/roadmap-portfolio.js` (read it first) as `script`. Don't pass the plugin path as `scriptPath`: the Workflow tool only accepts a `scriptPath` it returned itself or one inside the session's working directory, so a plugin path is refused. Pass these `args`:
    ```json
    { "today": "YYYY-MM-DD", "horizon": "YYYY-MM-DD", "sprintLength": "2w", "capacity": 8,
      "focus": "", "web": false, "rounds": 2, "models": { /* yayh model table --json */ },
