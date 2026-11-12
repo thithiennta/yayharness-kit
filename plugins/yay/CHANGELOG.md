@@ -2,7 +2,7 @@
 
 `/yay:harness-update` reads this file to tell a repo what changed between its recorded kit version and the installed one. Each entry lists new skills, config keys, template changes and behavior changes.
 
-## Unreleased (0.9.0)
+## 0.9.0 (2026-11-12)
 - **`/yay:roadmap` asks before turning a vision into items.** A request that names a direction rather than items ("make it the go-to gift plugin for B2B stores") now gets one early round of up to 3 questions (who and which edition, the must-have and by when, what's out of scope), skipping any the request already answers, before candidates are drawn up. The answers are written as a **Vision** paragraph at the top of `docs/roadmap/README.md`, and items derived from it cite it as their evidence (`why: vision <date>: …`). Concrete requests ("add X and Y for 1.5.0") still ask nothing. Nothing to run in a repo: the skill comes with the plugin update.
 
 ## 0.8.0 (2026-11-12)

@@ -58,6 +58,7 @@ The whole suite (**Run** above) is for re-baselining by hand, not a release requ
 | 0.7.1 | 0 | not run | — | Released without the suite (the maintainer's call). The next full run compares against 0.5.0. |
 | 0.7.2 | 0 | not run | — | Released without the suite (the maintainer's call). It changes the spawn line in nine skills and `reference/models.md` (the routed `effort` is now asked for explicitly), so the next full run compares against 0.5.0. |
 | 0.8.0 | 0 | not run | — | Released without the suite (the maintainer's call). It changes the branch, commit and PR title wording in implement, fix, changelog, the tiny lane and autopilot, so the next full run compares against 0.5.0. |
+| 0.9.0 | 1 | 0.95 (16 of 16 cases) | `fix-regression-test-first` 0.25 | 2026-11-12; the first per-case release run (`evals.sh`, one run each): every case was due, since none had been scored since 0.5.0. `fix-regression-test-first` holds its 0.5.0 score (its grader still fails correct replies). `roadmap-vision-asks-first` is new: 1.00, its baseline. $6.69. |
 
 ## Adding a case
 
