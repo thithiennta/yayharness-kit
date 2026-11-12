@@ -31,6 +31,7 @@ Worktrees live at `<repo>/.claude/worktrees/<slug>/`, one per branch.
 - Assign the PR to its owner, the developer who asked for the work: `gh pr create --assignee @me …`. Ownership is recorded on the PR, never in the branch name, so there are no `<owner>/…` prefixes.
 - Body comes from `.github/pull_request_template.md`: what and why, the linked artifact (`P-4`, `B-7`), what's worth a closer look, how it was verified and what wasn't, how to test it, and the editions affected.
 - Release PRs are titled `chore(release): x.y.z`.
+- **Merge with a merge commit** by default: `gh pr merge <n> --merge`, or the method `git.mergeMethod` names (`merge`, `squash` or `rebase`). A merge commit keeps each task's commit, with its `Plan:`, `Fixes:` and `Roadmap:` trailers, on the base branch. A squash merge folds them into one commit.
 
 ## Tags
 

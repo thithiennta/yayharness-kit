@@ -22,6 +22,7 @@ JSON, not YAML, so hooks can read it with `jq`, `node` or `php` and nothing to i
 | `git.tagFormat` | string | Tag template. `{version}` is replaced, e.g. `v{version}`. |
 | `git.branchTypes` | string[] | Allowed branch prefixes. Default `["feat","fix","chore","hotfix","docs","refactor","test"]`. |
 | `git.scopes` | string[] | Optional allowed commit scopes. Empty means any scope is allowed. |
+| `git.mergeMethod` | string | How PRs merge: `merge` (a merge commit, the default), `squash` or `rebase`. It's the flag for `gh pr merge --<method>`. |
 | `commands.<name>` | string | Shell commands run from the repo root. Known names: `install`, `dev`, `build`, `lint`, `typecheck`, `test`, `package`, and the e2e set `e2e` (runs Playwright; `yayh e2e run` appends its arguments), `e2e-install`, `e2e-start`, `e2e-stop`, `e2e-reset`, and the test layers `test-unit`, `test-integration` (runs in wp-env's `tests-cli`), `test-js` (`yayh test run <layer>` appends its arguments; `test` stays the fast default: unit + js). Placeholders: `{version}`, `{edition}`. A missing command means the step does not apply. |
 | `package.output` | string \| object | Glob for the built zip, e.g. `release/{slug}-{edition}-{version}.zip`. When editions name their zips differently, use a map: `{"pro": "release/{slug}-{version}.zip", "lite": "release/{slug}-lite-{version}.zip"}`. |
 | `package.forbidden` | object | Map from edition to paths that must not appear in that edition's zip, e.g. `{"free": ["includes/Pro/"]}`. `yayh build check` (run by `/yay:release`) fails the zip when they do. |

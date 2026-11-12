@@ -10,6 +10,7 @@ yay_config_default() {
   case "$1" in
     git.tagFormat)    echo 'v{version}' ;;
     git.branchTypes)  printf '%s\n' feat fix chore hotfix docs refactor test ;;
+    git.mergeMethod)  echo merge ;;
     changelog.readme) echo 'readme.txt' ;;
     changelog.notesDir) echo 'docs/releases' ;;
     requires.php)     echo '7.4' ;;

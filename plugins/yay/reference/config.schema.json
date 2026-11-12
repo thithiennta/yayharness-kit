@@ -115,6 +115,15 @@
           "items": {
             "type": "string"
           }
+        },
+        "mergeMethod": {
+          "type": "string",
+          "enum": [
+            "merge",
+            "squash",
+            "rebase"
+          ],
+          "default": "merge"
         }
       }
     },

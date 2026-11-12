@@ -51,6 +51,7 @@ test_defaults_apply() {
   export YAY_REPO; YAY_REPO="$(_cfg_repo)"
   assert_eq "v{version}" "$("$YAYH" config get git.tagFormat)"
   assert_contains "$("$YAYH" config get git.branchTypes)" "hotfix"
+  assert_eq "merge" "$("$YAYH" config get git.mergeMethod)"
   assert_eq "readme.txt" "$("$YAYH" config get changelog.readme)"
 }
 
