@@ -2,7 +2,8 @@
 
 `/yay:harness-update` reads this file to tell a repo what changed between its recorded kit version and the installed one. Each entry lists new skills, config keys, template changes and behavior changes.
 
-## Unreleased (0.8.0)
+## 0.8.0 (2026-11-12)
+- Released without the eval suite or a test run (the maintainer's call; the kit code is unchanged since the last green full run).
 - **Branches, commits and PR titles lead with the artifact id.** Work with a plan or bug now reads the same everywhere: branch `feat/p-4-refund-window`, commit and PR title `feat(refunds): P-4 add refund window setting`. The id is the most specific one: `P-<n>` for a plan, `B-<n>` for a fix, `R-<n>` only in the tiny lane. Releases and kit chores carry none.
   - `yayh git branch-name <type> "<title>" --id=P-4` builds the name, and the new `yayh git branch-id <branch>` reads the id back.
   - The post-commit hook hints when a commit on such a branch doesn't lead with its id. It blocks only in a strict repo, like the other style hints.
