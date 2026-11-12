@@ -2,6 +2,12 @@
 
 `/yay:harness-update` reads this file to tell a repo what changed between its recorded kit version and the installed one. Each entry lists new skills, config keys, template changes and behavior changes.
 
+## Unreleased (0.11.0)
+- **The changelog keeps hand-written lines.** You can write a version's `readme.txt` entry by hand before the release, for example `= 1.5.0 =` with a couple of lines in your own words. `/yay:changelog` and `/yay:release` now keep those lines as written, add a line only for customer-visible changes they don't already cover, and date the heading. They used to stop with "already has an entry", and `--replace` threw the hand-written lines away. The same goes for an existing `docs/releases/<version>.md`. The report shows which lines were kept and which were added, and names any hand-written line with no commit behind it.
+  - New `yayh changelog write <version> <file> --merge`: it keeps the existing lines in order, puts each new line after the last one with the same label, and skips exact duplicates. `--replace` still starts the entry over.
+  - **Adding a line after the fact** (`--merge` without `--date`) keeps a dated entry's heading, so it doesn't re-date a release. An undated hand-written heading (`= 1.5.0 =`) gets dated.
+  - Fix: `yayh changelog style` takes the heading format from the first dated entry. An undated hand-written entry on top made it drop the date from the release's heading.
+
 ## 0.10.0 (2026-11-12)
 - **`/yay:roadmap` checks short, unclear items before adding them.** When an item's title could mean two things that would be built differently ("Reminders": the shopper's, before a scheduled delivery, or the merchant's, for unsent gifts), it now asks one question per unclear item (at most 3): "I read '<title>' as: <acceptance>. Is that it?", with its reading recommended and 1–2 alternatives. The answer becomes the item's acceptance. Clear titles are still added without a question, and every added-items table now shows the acceptance line, so a misread item is easy to spot. Nothing to run in a repo: the skill comes with the plugin update.
 

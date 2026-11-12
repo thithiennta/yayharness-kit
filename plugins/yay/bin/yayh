@@ -193,7 +193,7 @@ Versions, changelog, build
   changelog suggest [--since=<tag>] major|minor|patch|none from the commit types
   changelog baseline               last tag, else the commit that introduced the current version
   changelog style                  the readme's heading template, bullet marker and labels
-  changelog write <version> <bullets-file> [--date=YYYY-MM-DD] [--replace]
+  changelog write <version> <bullets-file> [--date=YYYY-MM-DD] [--merge|--replace]
                                    insert the entry under == Changelog ==
   changelog entry <version>        print that version's bullets
   release check <version> [--rc]   version files, newer than the last tag, Stable tag, changelog entry, notes
@@ -440,7 +440,7 @@ case "$cmd" in
       suggest) yay_changelog_suggest "$@" ;;
       baseline) yay_changelog_baseline ;;
       style) yay_changelog_style ;;
-      write) [ $# -ge 2 ] || yay_die "usage: yayh changelog write <version> <bullets-file> [--date=] [--replace]"; yay_changelog_write "$@" ;;
+      write) [ $# -ge 2 ] || yay_die "usage: yayh changelog write <version> <bullets-file> [--date=] [--merge|--replace]"; yay_changelog_write "$@" ;;
       entry) [ $# -eq 1 ] || yay_die "usage: yayh changelog entry <version>"; yay_changelog_entry "$1" ;;
       *) yay_die "usage: yayh changelog collect|suggest|baseline|style|write|entry" ;;
     esac ;;

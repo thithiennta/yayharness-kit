@@ -96,7 +96,7 @@ Every mode uses this. It needs a version `v` (the version the zips carry) and a 
    - Show the commit summary: `yayh changelog collect`, counted by type, with breaking changes listed.
    - **Hard questions only** (`${CLAUDE_PLUGIN_ROOT}/reference/asking.md`). Use the suggested version without asking. Ask only for a **major** bump (breaking changes reach customers), a bump argument that disagrees with the commits, or a version-file or baseline doubt from preflight. Hold these for step 9's round when they can wait that long; they rarely can't.
 3. **Branch.** `branch="$(yayh git branch-name chore "release $new")"`, `wt="$(yayh git worktree "$branch")"`, then `cd "$wt"`.
-4. **Changelog.** Follow `/yay:changelog` steps 1–6 with `--version=$new --since=$last`: the readme entry plus `docs/releases/$new.md`.
+4. **Changelog.** Follow `/yay:changelog` steps 1–6 with `--version=$new --since=$last`: the readme entry plus `docs/releases/$new.md`. Lines a developer already wrote for `$new` are kept; only what's missing is added.
 5. **Versions.** `yayh version set "$new"`, then `yayh version check` must print `$new`. With `--wp-tested`/`--wc-tested`: `yayh version tested wp=… wc=…`.
 6. **Close the loop on artifacts.** These are the commits since `$last` (from the collect output):
    - **`Fixes: B-<n>`:** `yayh fm set <bug> fixed_in "$new"`, and `status fixed` if not already.
