@@ -2,7 +2,8 @@
 
 `/yay:harness-update` reads this file to tell a repo what changed between its recorded kit version and the installed one. Each entry lists new skills, config keys, template changes and behavior changes.
 
-## Unreleased (0.6.0)
+## 0.6.0 (2026-11-12)
+- Released without the eval suite or a test run (the maintainer's call); the score log records it as not run.
 - **`/yay:archive`: clean shipped work out of `docs/`.** After a release, finished artifacts are deleted from `docs/`: plans, brainstorms, bugs, backlog notes, designs, roadmap items, empty past sprints and released versions' briefs. Each gets one row in the new `docs/archive.md` (id, title, final status, date, file and the commit that still has it), so `git show <commit>:<file>` brings it back. It runs on its own branch and PR.
   - Only what was final in the release tag and still is, with no uncommitted changes, and with no id link to anything that stays (a plan stays while its roadmap item is in progress). The dry run says why each finished artifact stays.
   - New `yayh artifact archive [--release=<tag>] [--yes]`. `yayh id next` counts archived ids, so they're never reused. `yayh artifact resolve <id>` of an archived id prints its `git show` command.
