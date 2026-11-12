@@ -107,6 +107,17 @@ test_tag_creation_reserved_for_release() {
   assert_exit 0 _bash guard-bash.sh "$r" 'git tag'
 }
 
+test_post_commit_hints_missing_branch_id() {
+  local r; r="$(_repo)"
+  git -C "$r" switch -q -c feat/p-4-refund-window
+  echo a >> "$r/a.txt"; git -C "$r" add -A; git -C "$r" commit -qm "feat(core): add refund window" --no-verify
+  local out; out="$(_bash check-commit.sh "$r" 'git commit -m x' 2>&1)"
+  assert_exit 0 _bash check-commit.sh "$r" 'git commit -m x'
+  assert_contains "$out" "is for P-4; lead the summary with it"
+  git -C "$r" commit -q --amend -m "feat(core): P-4 add refund window" --no-verify
+  assert_eq "" "$(_bash check-commit.sh "$r" 'git commit --amend')"
+}
+
 test_post_commit_checks_message_and_branch() {
   local r; r="$(_repo)"
   echo a >> "$r/a.txt"; git -C "$r" add -A; git -C "$r" commit -qm "Added stuff" --no-verify

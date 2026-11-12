@@ -222,7 +222,8 @@ Knowledge (CLAUDE.md project block + docs/knowledge/)
 
 Git
   git base                         base branch
-  git branch-name <type> <text>    validated <type>/<slug>
+  git branch-name <type> <text> [--id=P-4]  validated <type>/<slug>; with an id, <type>/p-4-<slug>
+  git branch-id <branch>           the artifact id the branch leads with (feat/p-4-x -> P-4)
   git branch-check <branch>        exit 0 if the name follows conventions
   git commit-check <msg|file>      exit 0 if the header is a valid conventional commit
   git last-tag                     latest release tag (version order)
@@ -300,7 +301,8 @@ case "$cmd" in
     sub="${1:-}"; shift || true
     case "$sub" in
       base) yay_base_branch ;;
-      branch-name) [ $# -ge 2 ] || yay_die "usage: yayh git branch-name <type> <text>"; yay_branch_name "$@" ;;
+      branch-name) [ $# -ge 2 ] || yay_die "usage: yayh git branch-name <type> <text> [--id=P-<n>|B-<n>|R-<n>]"; yay_branch_name "$@" ;;
+      branch-id) [ $# -eq 1 ] || yay_die "usage: yayh git branch-id <branch>"; yay_branch_id "$1" ;;
       branch-check) [ $# -eq 1 ] || yay_die "usage: yayh git branch-check <branch>"
                     yay_branch_check "$1" || { echo "branch '$1' must be <type>/<kebab-slug> with type in: $(yay_config_get git.branchTypes | tr '\n' ' ')" >&2; exit 1; } ;;
       commit-check) [ $# -eq 1 ] || yay_die "usage: yayh git commit-check <msg|file>"; yay_commit_check "$1" ;;
@@ -310,7 +312,7 @@ case "$cmd" in
       bump) [ $# -eq 2 ] || yay_die "usage: yayh git bump <current> <major|minor|patch|x.y.z>"; yay_semver_bump "$1" "$2" ;;
       worktree) [ $# -ge 1 ] || yay_die "usage: yayh git worktree <branch> [from]"; yay_worktree_create "$@" ;;
       merged-worktrees) yay_merged_worktrees "$@" ;;
-      *) yay_die "usage: yayh git base|branch-name|branch-check|commit-check|last-tag|tag-for|version-of-tag|bump|worktree|merged-worktrees" ;;
+      *) yay_die "usage: yayh git base|branch-name|branch-id|branch-check|commit-check|last-tag|tag-for|version-of-tag|bump|worktree|merged-worktrees" ;;
     esac ;;
   harness)
     sub="${1:-}"; shift || true

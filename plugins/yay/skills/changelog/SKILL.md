@@ -49,6 +49,6 @@ Turn commits into words a merchant understands. Two outputs:
 7. **Report.** Show the readme entry and the notes' headline. List the commits left out as internal (one line each), so the user can disagree.
 
 ## Don'ts
-- Don't paste commit subjects verbatim. Rewrite them for merchants.
+- Don't paste commit subjects verbatim. Rewrite them for merchants, and drop the artifact id a summary leads with (`P-4`, `B-7`, `R-12`).
 - Don't invent changes that aren't in the commits, and don't drop a customer-visible fix because it's small.
 - Don't change the readme's existing style or entries (except with `--replace` for this version).

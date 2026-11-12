@@ -2,6 +2,13 @@
 
 `/yay:harness-update` reads this file to tell a repo what changed between its recorded kit version and the installed one. Each entry lists new skills, config keys, template changes and behavior changes.
 
+## Unreleased (0.8.0)
+- **Branches, commits and PR titles lead with the artifact id.** Work with a plan or bug now reads the same everywhere: branch `feat/p-4-refund-window`, commit and PR title `feat(refunds): P-4 add refund window setting`. The id is the most specific one: `P-<n>` for a plan, `B-<n>` for a fix, `R-<n>` only in the tiny lane. Releases and kit chores carry none.
+  - `yayh git branch-name <type> "<title>" --id=P-4` builds the name, and the new `yayh git branch-id <branch>` reads the id back.
+  - The post-commit hook hints when a commit on such a branch doesn't lead with its id. It blocks only in a strict repo, like the other style hints.
+  - `/yay:implement` renames the branch when it renumbers a clashing plan id. `/yay:changelog` drops the id from merchant-facing lines.
+  - Run `/yay:harness-update` to pick up the updated `yay-git.md` rule. Branches already open keep their names.
+
 ## 0.7.2 (2026-11-12)
 - Released without the eval suite or a test run (the maintainer's call).
 - **Routed agents get their effort level, not only their model.** Every skill that spawns an agent (scouts, hypothesis checkers, reviewers, delegated tasks, web research) now asks for both the Agent tool's `model` and `effort` from `yayh model resolve`. Agents used to get the model but run at their default effort, because the Agent tool only sets `effort` when a skill explicitly asks for it (for example, a `veryfast` scout ran at the default instead of medium). `reference/models.md` says so. Nothing to run in a repo: the skills come with the plugin update.
