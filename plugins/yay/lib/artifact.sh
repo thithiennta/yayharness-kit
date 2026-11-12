@@ -224,6 +224,13 @@ EOF
   if [ "$lane" != small ] && yay_config_get commands.e2e >/dev/null 2>&1 && ! grep -Eq '^\*\*E2E:\*\*[[:space:]]*[^[:space:]]' "$f"; then
     _pw "no '**E2E:** <browser-only flows, or none>' line (this repo has e2e set up)"
   fi
+  # Findings: what reading the code changed (standard plans still being written or reviewed).
+  if [ "$lane" != small ]; then
+    case "$st" in draft|ready)
+      awk '/^## Findings/{on=1; next} /^## /{on=0} on && /[^[:space:]]/ && !/^<!--/{found=1} END{exit !found}' "$f" \
+        || _pw "'## Findings' is missing or empty: what reading the code changed about the source, with file:line, or 'none'" ;;
+    esac
+  fi
   if ! awk '/^## Verify/{on=1; next} /^## /{on=0} on && /[^[:space:]]/ && !/^<!--/ && !/^[[:space:]]*([-*]|[0-9]+\.)[[:space:]]*$/{found=1} END{exit !found}' "$f"; then
     _pe "'## Verify' is missing or empty: write exact manual checks"
   fi

@@ -260,6 +260,24 @@ test_small_plan_needs_only_goal_tasks_and_verify() {
   assert_fails "$YAYH" artifact new bug "X" lane=small
 }
 
+test_plan_check_asks_for_findings_while_planning() {
+  export YAY_REPO; YAY_REPO="$(_arepo)"
+  local q; q="$("$YAYH" artifact new plan "Findings plan")"
+  assert_contains "$("$YAYH" plan check "$q" 2>&1 || true)" "warn: '## Findings' is missing or empty"
+  python3 -I - "$YAY_REPO/$q" <<'X'
+import sys; p=sys.argv[1]; s=open(p).read()
+s=s.replace("## Findings\n", "## Findings\n1. Guests have customer_id 0 (includes/Cart.php:212): T2 skips them.\n", 1)
+open(p,"w").write(s)
+X
+  case "$("$YAYH" plan check "$q" 2>&1 || true)" in *Findings*) _fail "filled Findings still warned" ;; *) _pass ;; esac
+  # a done plan isn't asked again
+  python3 -I - "$YAY_REPO/$q" <<'X'
+import sys,re; p=sys.argv[1]; s=open(p).read()
+s=re.sub(r"## Findings\n1\..*?\n", "## Findings\n", s); s=s.replace("status: draft","status: done",1); open(p,"w").write(s)
+X
+  case "$("$YAYH" plan check "$q" 2>&1 || true)" in *Findings*) _fail "done plan asked for Findings" ;; *) _pass ;; esac
+}
+
 test_artifact_where_and_tidy_leftover_copies() {
   export YAY_REPO; YAY_REPO="$(_arepo)"
   local p wt; p="$("$YAYH" artifact new plan "Carried plan")"

@@ -47,9 +47,11 @@ When a small plan turns out bigger than that, switch it to standard (`yayh fm se
    - **Roadmap item:** if there's no brainstorm and the approach isn't obvious, plan the most likely approach, and say in the report that `/yay:brainstorm --from=R-<n>` would compare options.
    - **Open notes:** run `yayh backlog open --for=<source id>` (and `--for=P-<n>` when revising a plan). These are decisions and work an earlier step parked for later. Settle each one now if you can; see "Picking up notes" below.
 2. **Ground it.** Read the project block and the relevant `docs/knowledge/` docs. Read **every file the plan will touch**. A plan that names a file you haven't opened is a guess.
+   - **Findings** (standard lane): write down what the reading changed. For each surprise that changes the source's approach or adds work, one numbered item with its evidence (`includes/Cart.php:212`, or the WooCommerce or WordPress source file and line) and what the plan does about it. A guard the brief missed, an API that behaves differently, an edge case in the data. Compare the plan with the knowledge docs, `CLAUDE.md` and the design: a place where the plan **differs** from what a doc says gets a task that updates that doc in the same branch. The section is the implementer's and the reviewer's starting point, so keep it to facts, not a diary. Write `none` when nothing surprised you.
 3. **Design.**
    - **Goal:** the user-visible outcome and "done means…", starting from the roadmap item's acceptance.
    - **Non-goals.**
+   - **Findings:** from step 2.
    - **Approach:** hooks, storage and option keys, REST, UI, the edition split, compatibility, migration.
    - **Risks** with a rollback.
    - **UI:** when the change adds or changes something people see (an admin screen, tab or modal, a storefront, cart, checkout or My Account element, a block, an email), it follows a design. Use the one that exists (`yayh artifact list design`, or a `UX-<n>` that names this source), else write one now with `/yay:design --quick` (`${CLAUDE_PLUGIN_ROOT}/skills/design/SKILL.md`; the full skill when there are several screens). Set the plan's `design:` with `yayh fm set <plan> design UX-<n>`. A UI that only adds an option to an existing, obvious place needs no design file; give its place, label and default in the Approach.
@@ -77,6 +79,7 @@ When a small plan turns out bigger than that, switch it to standard (`yayh fm se
      - Is any task too big?
      - Does any task re-implement something that already exists (price or date formatting, settings reads, capability checks, a near-copy of a helper)? Search once more for each new function a task adds.
      - Is the Verify list enough to catch a regression?
+     - Does every Findings item end in a task, a Non-goal or a note? A finding nothing acts on is lost.
 
    Fix what you find.
 7. **Hard questions only** (`${CLAUDE_PLUGIN_ROOT}/reference/asking.md`). If the user is around and something hard is open, show the task list and ask **one** AskUserQuestion with at most 3 questions, from these:
