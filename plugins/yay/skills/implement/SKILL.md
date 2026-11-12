@@ -120,7 +120,10 @@ gh pr create --base <base> --head "$branch" --assignee @me [--draft] \
 Fill the PR body from `.github/pull_request_template.md`:
 - link `P-<n>` (and `R-<n>`, `BS-<n>`, `UX-<n>`; with a design, mention its mockup path when one exists, which reviewers can regenerate with `/yay:design UX-<n> --mockup`)
 - list what changed
-- give the exact checks run, with their results (e2e specs by tag: passed, or not run), and the manual checks that are left
+- under "Worth a closer look": the 2–5 places a reviewer should read first (risk-3 tasks first, then the plan's Findings that shaped the code), each as `path:line`: what it does and why it's done that way
+- give the exact checks run, with their results (e2e specs by tag: passed, or not run)
+- under "Not verified": every check that didn't run here and why (no browser, no Docker, one edition), and what a human must do before merging; "none" when everything ran
+- under "How to test": numbered steps for the reviewer, built from the plan's manual Verify items (where to go, the input, what they should see), with one edge case
 - name the editions
 - write a customer-facing release note line, or "internal"
 - under "Decided": the choices you made where the plan was silent
