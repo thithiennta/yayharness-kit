@@ -9,7 +9,7 @@ This page is what a new developer needs. The kit internals are in [`plugins/yay/
 You need `git`, `bash`, `gh` (logged in) and one of `jq`, `node`, `php` or `python3`.
 
 ```bash
-claude plugin marketplace add ~/yayharness       # for now; later: YayCommerce/yayharness on GitHub
+claude plugin marketplace add thithiennta/yayharness-kit   # or a clone you work on: claude plugin marketplace add ~/yayharness
 claude plugin install yay@yayharness
 ```
 

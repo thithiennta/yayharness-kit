@@ -389,12 +389,20 @@ yay_registry() { grep -v '^#' "$YAY_TEMPLATES/registry.tsv" | grep -v '^[[:space
 
 # Marketplace source for .claude/settings.json: the user's registered source
 # for "yayharness", else the planned GitHub repo.
+# The marketplace source written into each repo's settings: $YAY_MARKETPLACE_SOURCE,
+# else this machine's `yayharness` marketplace when teammates can fetch it too (a
+# github or git source), else the published kit. A local folder (`marketplace add
+# ~/yayharness`) is never copied: its path only exists on this machine.
+YAY_MARKETPLACE_DEFAULT='{"source":"github","repo":"thithiennta/yayharness-kit"}'
 yay_marketplace_source() {
-  local km="$HOME/.claude/plugins/known_marketplaces.json" src=""
+  local km="$HOME/.claude/plugins/known_marketplaces.json" src="" kind=""
   if [ -n "${YAY_MARKETPLACE_SOURCE:-}" ]; then printf '%s\n' "$YAY_MARKETPLACE_SOURCE"; return; fi
-  if [ -f "$km" ]; then src="$(yay_json_get "$km" yayharness.source 2>/dev/null)" || src=""; fi
+  if [ -f "$km" ]; then
+    kind="$(yay_json_get "$km" yayharness.source.source 2>/dev/null)" || kind=""
+    case "$kind" in github|git) src="$(yay_json_get "$km" yayharness.source 2>/dev/null)" || src="" ;; esac
+  fi
   [ -n "$src" ] && { printf '%s\n' "$src"; return; }
-  printf '{"source":"github","repo":"YayCommerce/yayharness"}\n'
+  printf '%s\n' "$YAY_MARKETPLACE_DEFAULT"
 }
 
 # yay_render <template-file> -> stdout. Placeholders: {{dotted.config.key}},

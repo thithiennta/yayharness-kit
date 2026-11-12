@@ -232,6 +232,19 @@ test_marketplace_source_override() {
   assert_contains "$(cat "$YAY_REPO/.claude/settings.json")" '/opt/yayharness'
 }
 
+test_marketplace_source_skips_a_local_folder() {
+  local h r1 r2; h="$(mktemp -d "${T_TMP:?}/home.XXXXXX")"; mkdir -p "$h/.claude/plugins"
+  # this machine added the kit from a folder: teammates get the published kit instead
+  printf '{"yayharness":{"source":{"source":"directory","path":"/Users/me/yayharness"}}}\n' > "$h/.claude/plugins/known_marketplaces.json"
+  r1="$(_fixture bare)"; HOME="$h" _init "$r1"
+  assert_contains "$(cat "$r1/.claude/settings.json")" '"repo": "thithiennta/yayharness-kit"'
+  assert_not_contains "$(cat "$r1/.claude/settings.json")" '/Users/me'
+  # a fetchable source is kept
+  printf '{"yayharness":{"source":{"source":"github","repo":"acme/kit"}}}\n' > "$h/.claude/plugins/known_marketplaces.json"
+  r2="$(_fixture bare)"; HOME="$h" _init "$r2"
+  assert_contains "$(cat "$r2/.claude/settings.json")" '"repo": "acme/kit"'
+}
+
 test_sync_removes_files_the_kit_dropped() {
   export YAY_REPO; YAY_REPO="$(_fixture bare)"
   _init "$YAY_REPO"

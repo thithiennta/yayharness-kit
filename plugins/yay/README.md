@@ -23,12 +23,14 @@ A Claude Code plugin that gives every Yay WordPress plugin the same harness and 
 | `templates/` | Files `harness-init` writes into a repo |
 | `hooks/` | Guards (generated paths, commit and branch conventions, debug markers, tags), the code rules at session start, and non-blocking reuse and comment hints after edits |
 
-## Install (local, for now)
+## Install
 
 ```bash
-claude plugin marketplace add ~/yayharness
+claude plugin marketplace add thithiennta/yayharness-kit   # published kit: https://github.com/thithiennta/yayharness-kit
 claude plugin install yay@yayharness
 ```
+
+To work on the kit itself, add your clone instead (`claude plugin marketplace add ~/yayharness`): Claude Code then reads the plugin straight from it. The settings `/yay:harness-init` writes into a repo always name the published kit (or another GitHub/git source this machine uses), never a local folder.
 
 Then open a plugin repo and run `/yay:harness-init`.
 
