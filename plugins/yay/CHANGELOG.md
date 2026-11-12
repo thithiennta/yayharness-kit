@@ -2,7 +2,7 @@
 
 `/yay:harness-update` reads this file to tell a repo what changed between its recorded kit version and the installed one. Each entry lists new skills, config keys, template changes and behavior changes.
 
-## Unreleased (0.13.0)
+## 0.13.0 (2026-11-12)
 - **Screenshots stay with the roadmap item, plan or bug they explain.** When you attach a screenshot (a UI, a bug, a layout) to `/yay:roadmap`, `/yay:plan`, `/yay:brainstorm`, `/yay:design`, `/yay:debug` or `/yay:fix`, the skill reads it and writes what it shows into the artifact in text (a `**Seen in screenshot:**` line, plus the acceptance, symptoms or Verify it shapes). Given a file path, it also keeps the image in `docs/assets/<ID>/` and links it from the artifact (`**Screenshots:**`, or a `screenshots` bullet on a roadmap item). An image pasted straight into the chat has no file, so it can't be saved; the report says so and asks you to drag the file into the terminal instead. The rule is in `reference/artifacts.md` (Screenshots).
   - New `yayh asset add <ID> <file> ["caption"]` copies a png, jpg, gif or webp to `docs/assets/<ID>/<n>-<slug>.<ext>` and prints its markdown link. `yayh asset list <ID>` lists an artifact's screenshots, and `yayh asset move <old> <new>` moves them when an id is renumbered.
   - `yayh artifact carry` takes an artifact's untracked screenshots into the worktree with it, and accepts a folder. `yayh artifact archive` removes an artifact's screenshots with it, and keeps the artifact while one of them has uncommitted changes.
