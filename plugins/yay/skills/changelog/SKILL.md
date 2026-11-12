@@ -21,7 +21,7 @@ Turn commits into words a merchant understands. Two outputs:
 | `--since=<tag\|ref>` | Start point. Default: `yayh changelog baseline`, which is the last release tag, or the commit that introduced the current version when the repo has no tags yet. |
 | `--date=YYYY-MM-DD` | Entry date. Default: today. |
 | `--no-readme` / `--no-notes` | Skip one of the two outputs. |
-| `--replace` | Replace an existing entry for this version. |
+| `--replace` | Throw away an existing entry for this version, hand-written lines included, and write it fresh. Without it, an existing entry is kept and only what's missing is added (step 5). |
 | `--dry-run` | Print both outputs and write nothing. |
 
 ## Steps
@@ -40,15 +40,18 @@ Turn commits into words a merchant understands. Two outputs:
    - avoids class names, hooks and internal IDs, unless the audience is developers (a hook added for developers: "New: `yayreturns_extra_delivery_days` filter for …")
    - goes in this order: New, Improved, Fixed, then developer items
    - for a breaking change, starts with "Breaking:" and says what to do
-5. **Readme entry** (unless `--no-readme`). Write the bullets to a temp file, then run `yayh changelog write <version> <file> [--date=…] [--replace]`. Check the result with `yayh changelog entry <version>`.
+5. **Readme entry** (unless `--no-readme`).
+   - **Hand-written lines win.** First run `yayh changelog entry <version>`. Lines already there (a developer may have written some ahead of the release) are kept exactly as written. For each customer-visible item from step 2, decide whether one of those lines already covers it, even in other words; if so, drop your line for it. Keep only the lines for what's missing.
+   - Write those to a temp file, then run `yayh changelog write <version> <file> [--date=…] --merge` (or `--replace` when asked). `--merge` keeps the existing lines in their order, puts each new line after the last one with the same label, skips exact duplicates, and dates an undated heading (a dated one keeps its date unless you pass `--date`); with no entry yet, it just writes yours. Check the result with `yayh changelog entry <version>`.
+   - A hand-written line with no commit behind it stays: say so in the report, so the developer can check it.
    - If the readme has `== Upgrade Notice ==` and the release is breaking or needs action, add a `= <version> =` entry there too.
-6. **Release notes** (unless `--no-notes`). Create `docs/releases/<version>.md` with the front-matter from `${CLAUDE_PLUGIN_ROOT}/reference/artifacts.md` (Release notes) and these sections:
+6. **Release notes** (unless `--no-notes`). When `docs/releases/<version>.md` already exists, keep what's written and add only the missing items to its sections. Otherwise create `docs/releases/<version>.md` with the front-matter from `${CLAUDE_PLUGIN_ROOT}/reference/artifacts.md` (Release notes) and these sections:
    - a one-line headline
    - **New**, **Improved** and **Fixed**: short paragraphs or bullets, written for merchants, with no commit hashes or internal IDs
    - "Before you update", only when action is needed
-7. **Report.** Show the readme entry and the notes' headline. List the commits left out as internal (one line each), so the user can disagree.
+7. **Report.** Show the readme entry, marking which lines were kept from the hand-written entry and which were added (from the `merged` line), and the notes' headline. List the commits left out as internal (one line each), so the user can disagree.
 
 ## Don'ts
 - Don't paste commit subjects verbatim. Rewrite them for merchants, and drop the artifact id a summary leads with (`P-4`, `B-7`, `R-12`).
 - Don't invent changes that aren't in the commits, and don't drop a customer-visible fix because it's small.
-- Don't change the readme's existing style or entries (except with `--replace` for this version).
+- Don't change the readme's existing style or entries, and never reword or drop a hand-written line in this version's entry (only `--replace` does that).

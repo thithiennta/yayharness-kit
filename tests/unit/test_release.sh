@@ -108,6 +108,49 @@ test_changelog_write_insert_refuse_replace_entry() {
   assert_eq "* Fix: something." "$("$YAYH" changelog entry 1.2.3)"
 }
 
+test_changelog_write_merge_keeps_hand_lines_and_adds_the_rest() {
+  export YAY_REPO; YAY_REPO="$(_rrepo)"
+  local b="$T_TMP/b.$RANDOM"
+  printf '* New: Express checkout buttons, written by hand.\n* Fix: Coupon field keeps its value.\n' > "$b"
+  "$YAYH" changelog write 1.3.0 "$b" --date=2026-11-20 >/dev/null
+  printf '* New: Gift wrap option.\n* Fix: Coupon field keeps its value.\n* Fix: Emoji in gift messages.\n* Tweak: Faster cart.\n' > "$b"
+  local out; out="$("$YAYH" changelog write 1.3.0 "$b" --date=2026-11-24 --merge)"
+  assert_contains "$out" "merged	kept 2	added 3"
+  assert_file "$b"
+  assert_eq "* New: Express checkout buttons, written by hand.
+* New: Gift wrap option.
+* Fix: Coupon field keeps its value.
+* Fix: Emoji in gift messages.
+* Tweak: Faster cart." "$("$YAYH" changelog entry 1.3.0)"
+  assert_eq "1" "$(grep -c '^= 1.3.0' "$YAY_REPO/readme.txt")"
+  assert_contains "$(cat "$YAY_REPO/readme.txt")" "= 1.3.0 - 2026-11-24 ="
+  assert_eq "* Fix: something." "$("$YAYH" changelog entry 1.2.3)"
+  # nothing new: the entry stays as it is
+  "$YAYH" changelog write 1.3.0 "$b" --date=2026-11-24 --merge >/dev/null
+  assert_eq "5" "$("$YAYH" changelog entry 1.3.0 | grep -c .)"
+  # a line added later, without --date, keeps the entry's date
+  printf '* Fix: Late addition.\n' > "$b"
+  "$YAYH" changelog write 1.3.0 "$b" --merge >/dev/null
+  assert_contains "$(cat "$YAY_REPO/readme.txt")" "= 1.3.0 - 2026-11-24 ="
+  assert_contains "$("$YAYH" changelog entry 1.3.0)" "* Fix: Late addition."
+  # an undated hand-written heading gets dated
+  perl -0 -i -pe 's/(== Changelog ==\n)/$1\n= 1.5.0 =\n* New: By hand.\n/' "$YAY_REPO/readme.txt"
+  "$YAYH" changelog write 1.5.0 "$b" --merge --date=2026-12-01 >/dev/null
+  assert_contains "$(cat "$YAY_REPO/readme.txt")" "= 1.5.0 - 2026-12-01 ="
+  assert_eq "* New: By hand.
+* Fix: Late addition." "$("$YAYH" changelog entry 1.5.0)"
+  printf '* Fix: Undated, no --date.\n' > "$b"
+  perl -0 -i -pe 's/(== Changelog ==\n)/$1\n= 1.6.0 =\n* New: By hand.\n/' "$YAY_REPO/readme.txt"
+  "$YAYH" changelog write 1.6.0 "$b" --merge >/dev/null
+  assert_not_contains "$(cat "$YAY_REPO/readme.txt")" "= 1.6.0 ="
+  printf '* Fix: x.\n' > "$b"
+  # no entry yet: --merge just writes it
+  out="$("$YAYH" changelog write 1.4.0 "$b" --merge)"
+  assert_not_contains "$out" "merged"
+  assert_eq "1" "$("$YAYH" changelog entry 1.4.0 | grep -c .)"
+  assert_fails "$YAYH" changelog write 1.3.0 "$b" --merge --replace
+}
+
 _zip() { # repo topfolder [extra-file...] -> zip path
   local r="$1" top="$2"; shift 2
   local stage="$T_TMP/stage.$RANDOM"; mkdir -p "$stage/$top"

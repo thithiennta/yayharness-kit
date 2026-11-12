@@ -160,9 +160,12 @@ yay_changelog_style() {
     on && /^== / { on=0 }
     on && /^= .* =[[:space:]]*$/ {
       n++
-      if (!h) { h=$0; sub(/[[:space:]]+$/, "", h)
-        if (match(h, /[0-9]+\.[0-9]+(\.[0-9]+)?([-.][0-9A-Za-z.]+)?/)) h=substr(h,1,RSTART-1) "{version}" substr(h,RSTART+RLENGTH)
-        if (match(h, /[0-9][0-9][0-9][0-9]-[0-9][0-9]-[0-9][0-9]/)) h=substr(h,1,RSTART-1) "{date}" substr(h,RSTART+RLENGTH)
+      # The template comes from the first dated heading: an undated one on top is
+      # usually a hand-written entry for the next release, not the house style.
+      if (!hd) { t=$0; sub(/[[:space:]]+$/, "", t)
+        if (match(t, /[0-9]+\.[0-9]+(\.[0-9]+)?([-.][0-9A-Za-z.]+)?/)) t=substr(t,1,RSTART-1) "{version}" substr(t,RSTART+RLENGTH)
+        if (match(t, /[0-9][0-9][0-9][0-9]-[0-9][0-9]-[0-9][0-9]/)) { t=substr(t,1,RSTART-1) "{date}" substr(t,RSTART+RLENGTH); hd=t }
+        if (!h) h=t
       }
       next }
     on && n>0 && n<=5 && /^[*-] / {
@@ -170,6 +173,7 @@ yay_changelog_style() {
       if (match($0, /^[*-] [A-Z][A-Za-z]+:/)) { l=substr($0, 3, RLENGTH-3); if (!(l in seen)) { seen[l]=1; labels=labels (labels?", ":"") l } }
     }
     END {
+      if (hd) h=hd
       if (!h) h="= {version} - {date} ="
       if (!b) b="*"
       printf "heading\t%s\nbullet\t%s\nlabels\t%s\nentries\t%d\n", h, b, labels, n
@@ -180,17 +184,46 @@ yay_changelog_style() {
 # Insert "<heading>\n<bullets>\n" right after "== Changelog ==".
 yay_changelog_write() {
   local ver="$1" bullets="$2"; shift 2 || true
-  local date replace=0 a root readme heading tmp
+  local date replace=0 merge=0 a root readme heading tmp datearg=0
   date="$(yay_today)"
-  for a in "$@"; do case "$a" in --date=*) date="${a#--date=}";; --replace) replace=1;; *) yay_die "write: unknown option $a";; esac; done
+  for a in "$@"; do case "$a" in --date=*) date="${a#--date=}"; datearg=1;; --replace) replace=1;; --merge) merge=1;; *) yay_die "write: unknown option $a";; esac; done
   [ -f "$bullets" ] || yay_die "no bullets file: $bullets"
+  [ "$replace$merge" != 11 ] || yay_die "write: --replace and --merge don't go together"
   root="$(yay_repo_root)"; readme="$root/$(yay_config_get changelog.readme)"
   [ -f "$readme" ] || yay_die "no $(yay_config_get changelog.readme)"
   grep -q '^== *Changelog *==' "$readme" || yay_die "$(basename "$readme") has no '== Changelog ==' section"
   heading="$(yay_changelog_style | sed -n 's/^heading	//p')"
   heading="$(yay_fill "$heading" "version=$ver" "date=$date")"
+  local kept=0 added=0 merged=""
   if grep -Fqx -- "$heading" "$readme" || awk -v v="$ver" '/^= .* =/ && index($0, " " v " ") {f=1} END{exit !f}' "$readme"; then
-    [ "$replace" = 1 ] || yay_die "the changelog already has an entry for $ver (pass --replace)"
+    [ "$replace$merge" != 00 ] || yay_die "the changelog already has an entry for $ver (pass --merge to keep its lines and add the new ones, or --replace)"
+    if [ "$merge" = 1 ]; then
+      # Keep every line already in the entry, as written and in order. A new line
+      # goes after the last kept line with the same label ("New:", "Fix:"), else
+      # at the end. A new line identical to a kept one is dropped.
+      tmp="$(mktemp)"
+      { yay_changelog_entry "$ver"; printf '\036\n'; cat "$bullets"; } | awk '
+        function trim(x) { sub(/^[[:space:]]+/, "", x); sub(/[[:space:]]+$/, "", x); return x }
+        function label(x) { x = trim(x); sub(/^[*-][[:space:]]+/, "", x); return match(x, /^[A-Za-z][A-Za-z ]*:/) ? substr(x, 1, RLENGTH) : "" }
+        $0 == "\036" { part = 2; next }
+        part != 2 { if (trim($0) != "") { n++; line[n] = $0; seen[trim($0)] = 1 } next }
+        trim($0) == "" || (trim($0) in seen) { next }
+        {
+          seen[trim($0)] = 1; l = label($0); at = n
+          if (l != "") for (i = n; i >= 1; i--) if (label(line[i]) == l) { at = i; break }
+          for (i = n; i > at; i--) line[i + 1] = line[i]
+          line[at + 1] = $0; n++; added++
+        }
+        END { for (i = 1; i <= n; i++) print line[i]; print added > "/dev/stderr" }' > "$tmp" 2> "$tmp.n"
+      added="$(cat "$tmp.n")"; kept=$(( $(grep -c . "$tmp") - added ))
+      merged="$tmp"; bullets="$tmp"; rm -f "$tmp.n"
+      # An entry that already has a date keeps its heading (adding a line later
+      # doesn't re-date a release), unless --date was given.
+      if [ "$datearg" = 0 ]; then
+        local old; old="$(awk -v v="$ver" '/^= .* =/ && index($0, " " v " ") { print; exit }' "$readme")"
+        case "$old" in *[0-9][0-9][0-9][0-9]-[0-9][0-9]-[0-9][0-9]*) heading="$old" ;; esac
+      fi
+    fi
     tmp="$(mktemp)"
     awk -v v="$ver" '
       /^= .* =/ { skip = index($0, " " v " ") ? 1 : 0 }
@@ -207,7 +240,9 @@ yay_changelog_write() {
       if (nxt != "") print nxt
       done=1 }' "$readme" > "$tmp"
   cat "$tmp" > "$readme"; rm -f "$tmp"
+  [ -z "$merged" ] || rm -f "$merged"
   printf 'wrote\t%s\t%s\n' "$(yay_config_get changelog.readme)" "$heading"
+  [ -z "$merged" ] || printf 'merged\tkept %s\tadded %s\n' "$kept" "$added"
 }
 
 # yay_changelog_entry <version> -> the bullets of that version's readme entry.

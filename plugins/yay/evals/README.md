@@ -10,6 +10,7 @@ Behaviour checks for the `/yay:*` skills, run with `claude plugin eval`. Each ca
 | `roadmap-add-clear-no-question` | A clearly described item (a character counter under the gift message) is added without a question, and the report shows its acceptance line. Guards against over-asking. |
 | `debug-finds-cause-without-editing` | A bug report fires `/yay:debug`, which finds the `>=` off-by-one with file:line evidence and writes `docs/bugs/`, without editing code. |
 | `changelog-next-release` | "What's in the next release?" fires `/yay:changelog`: merchant-language lines, the harness commit left out, readme untouched. |
+| `changelog-keeps-hand-lines` | `readme.txt` already has a hand-written `= 1.3.0 =` line covering the gift card preview. Writing the changelog keeps that line word for word, adds a line for the 200-character fix, dates the heading (`= 1.3.0 - <date> =`), and doesn't add a second preview line. |
 | `harness-init-never-auto` | "Set up the harness" must not wipe anything: `/yay:harness-init` is user-only, so Claude hands it to the user. |
 | `code-comments-settings-toggle` | Hiding My Account tabs (the real case that motivated 0.2.0): the existing comment block above `my_account` stays as it was, and no comment lines are added to `Settings.php`. |
 | `code-leaves-unrelated-comments` | A threshold change leaves the docblock and inline comment alone, and adds no inline comments. |
