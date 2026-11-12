@@ -37,7 +37,7 @@ With no scope at all, use `--sprint=current`.
    - A dependency cycle is an error: report it and stop.
    - Check `git status`: the main checkout must have no tracked changes (`yayh artifact carry` refuses tracked, modified artifacts). Run `yayh artifact tidy --yes` first, so leftover copies from an interrupted run don't count. `yayh artifact where <id>` shows where any artifact's copies are.
 2. **Show the queue** as a table (order, id, title, stage, after/waits), with the agent count: about 1 per item to prepare, plus about 3 per item to build (implement, review, resolve), and 1 more per revised item. With `--dry-run`, stop here. Don't ask whether to start: the user asked for the run. Only when the run is over 10 items **and** `--parallel` > 3, make "start N agents?" one question of step 4's round.
-3. **Prepare.** Run the Workflow tool with `scriptPath: ${CLAUDE_PLUGIN_ROOT}/workflows/autopilot.js` and
+3. **Prepare.** Read `${CLAUDE_PLUGIN_ROOT}/workflows/autopilot.js` and run the Workflow tool with its whole text as `script`. Don't pass the plugin path as `scriptPath`: the Workflow tool only accepts a `scriptPath` it returned itself or one inside the session's working directory, and the plugin is installed outside the repo, so it's refused. Pass these `args`:
    ```json
    { "mode": "prepare", "kit": "<yayh root>", "repo": "<repo root>", "base": "<yayh git base>", "today": "YYYY-MM-DD",
      "parallel": 1, "models": { /* yayh model table --json */ },
@@ -51,7 +51,7 @@ With no scope at all, use `--sprint=current`.
    - Write the sheet to `.yay/runs/<today>-autopilot.md` (gitignored): the queue, every item's plan and option, each question with its answer (or "recommended, not asked"), every agent's **decided** list, and the decision notes still open with the default each build follows.
    - An answered decision note goes into that item's `answers` entry as `BL-<n>: <answer>`, so the revise step settles it. A note that isn't asked stays open, and the build follows its default. Items prepare **blocked** are listed with their reason and are not built.
    - With `--plan-only`, report and stop. The plans are ready for `/yay:implement` or a later `/yay:autopilot --ready`.
-5. **Build.** Run the Workflow tool again with the same `scriptPath` and
+5. **Build.** Run the Workflow tool again with the same script: as `scriptPath`, give the saved-script path that this session's prepare result returned, or, when prepare ran in an earlier session (`--ready`, a resumed run), read the file and pass it inline as `script` again. Pass these `args`:
    ```json
    { "mode": "build", "kit": "…", "repo": "…", "base": "…", "today": "…", "parallel": 1, "pr": true, "draft": false, "models": { /* as in prepare */ },
      "items": [ /* the queue again, from a fresh `yayh roadmap queue`, so each artifact is now the P-<n>; with size */ ],

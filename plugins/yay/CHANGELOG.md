@@ -2,6 +2,9 @@
 
 `/yay:harness-update` reads this file to tell a repo what changed between its recorded kit version and the installed one. Each entry lists new skills, config keys, template changes and behavior changes.
 
+## Unreleased (0.5.1)
+- **`/yay:autopilot` and `/yay:roadmap --multi-agent` run from any repo.** They used to give the Workflow tool the plugin's script path (`${CLAUDE_PLUGIN_ROOT}/workflows/*.js`) as `scriptPath`, which the tool refuses because it only accepts a path inside the session's working directory or one it returned itself, and the plugin is installed outside the repo. Now the skill reads the script and passes its text as `script`. Autopilot's build step reuses the saved-script path that prepare returned, and reads the file again when prepare ran in an earlier session.
+
 ## 0.5.0 (2026-11-12)
 - **`/yay:implement`'s report names each review.** The correctness review (`yay:bug-reviewer`, including risk-3 task reviews) and the reuse and comments review (`yay:code-reviewer`) are reported separately, each finding fixed or answered, or "clean".
 - **A release brief per version: `docs/roadmap/release-<x.y.z>.md`.** `yayh roadmap brief <v>` creates it from a template. It's hand-written and `yayh roadmap` never rewrites or removes it. It holds the goal, the `- [ ]` release criteria, what's out of scope (and what to cut first if the work runs late), the risks, and open questions, each with the proposal used until it's answered. The generated `v<x.y.z>.md` and the README's version table link to it.
