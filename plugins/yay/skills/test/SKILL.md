@@ -36,7 +36,7 @@ Tests at the cheapest layer that proves each risk, tagged with the artifact they
      - If the line is `none`, apply the ladder to the plan's acceptance criteria. If a risk deserves a test, add it to the plan's `**Tests:**` line first, then write it.
    - **`B-<n>`:** read Root cause and Regression test proposal. Test at the layer where the root cause lives (`reference/testing.md`, "Bugs").
      - If the cause is markup, JS rendering or a click path that only a browser shows, hand over to `/yay:e2e B-<n>`.
-   - **A unit or a behaviour:** read the code, its callers and its `git log`. List 2–4 cases (input → expected), each backed by the code, a docblock or history.
+   - **A unit or a behaviour:** read the code, its callers and its `git log`. List 2–4 cases (input → expected), each backed by the code, a docblock or history. A limit (a cap, a minimum, a threshold) gets three cases: one below it, one exactly at it, and one just above it (for a 200 cap: 199, 200, 201). A case far past the limit doesn't stand in for the one just above it.
    - For each risk, pick the layer by the ladder (or `--layer`). When a risk is browser-only, it goes to `/yay:e2e`, not here.
    - **Existing coverage first:** `yayh test list`, `yayh test list <ID>`, and the **Coverage** table in `docs/knowledge/testing.md`. Extend the existing test class for that unit instead of adding a near-copy.
 3. **Write.** Read `TestCase.php` (unit), one existing test from the same layer, and the bootstrap, then write in their style, following `reference/testing.md`:

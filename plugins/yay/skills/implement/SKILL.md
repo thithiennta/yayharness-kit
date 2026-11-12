@@ -134,7 +134,14 @@ Fill the PR body from `.github/pull_request_template.md`:
 Then record the PR number with `yayh fm set <plan> pr <number>`, and commit and push that.
 
 ### 6. Report
-Give the plan (and, when step 0 wrote it, that it did, with its task count and any **Decided** planning choices), the notes settled and the notes written or still open (`BL-<n>`, kind, default), the branch, the worktree path, the commits (one line each), the checks and their results, the review findings per reviewer (the correctness review by `yay:bug-reviewer`, including any per-task risk-3 reviews, and the reuse and comments review by `yay:code-reviewer`: each finding fixed or answered with the reason, or "clean"), the pre-existing failures, the knowledge updated, the PR URL, and the manual checks left for the reviewer. End with the **Next** line (`reference/asking.md`): `yayh next P-<n>` (the plan is done, so this is the most urgent other work).
+Give the plan (and, when step 0 wrote it, that it did, with its task count and any **Decided** planning choices), the notes settled and the notes written or still open (`BL-<n>`, kind, default), the branch, the worktree path, the commits (one line each), the checks and their results, the pre-existing failures, the knowledge updated, the PR URL, and the manual checks left for the reviewer. End with the **Next** line (`reference/asking.md`): `yayh next P-<n>` (the plan is done, so this is the most urgent other work).
+
+The reviews get a section of their own, one line per reviewer, even when a reviewer found nothing. Never merge the two into one list:
+```
+**Reviews**
+- Correctness (`yay:bug-reviewer`, with the risk-3 task reviews): <each finding: fixed, or answered with the reason, or parked as BL-<n>>, or "clean"
+- Reuse and comments (`yay:code-reviewer`): <each finding, the same way>, or "clean"
+```
 
 ## Don'ts
 - Don't implement anything the plan doesn't list. Write follow-ups as deferred notes (`yayh artifact new backlog "<what>" kind=deferred from=P-<n>`).

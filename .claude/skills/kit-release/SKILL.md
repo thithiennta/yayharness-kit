@@ -27,13 +27,13 @@ Run every command from the repo root.
 - **tests `run`:** `./tests/run.sh` (full suite, every engine), in the background, and wait. A failure stops the release. **tests `skip`:** the code a version bump can't touch already passed on this machine. Keep the reason for the PR.
 - **evals `run`** (unless `--no-evals`): the whole suite, plugin arm, as the score log's release rule says (`plugins/yay/evals/README.md`):
   ```bash
-  claude plugin eval plugins/yay --runs 2 -j 3 --judge-model sonnet --ablation none \
+  PATH="$PWD/plugins/yay/bin:$PATH" claude plugin eval plugins/yay --runs 2 -j 3 --judge-model sonnet --ablation none \
     --scaffold --allow-tools Bash Write Edit --trust-plugin --no-publish --max-cost-usd 15
   ```
   Run it in the background and wait; it takes a while and costs up to the cap. Take the mean and every case below 1.00 from its report, and compare with the last score-log row that has Runs above 0:
   - the mean dropped, or one case dropped by more than 0.25: **stop**. Name the cases, and point at their transcripts in `plugins/yay/evals/results/`. The release goes ahead only once the drop is fixed (by `/kit-ship`) or the user says to explain it in the CHANGELOG instead.
   - a case is new since that row: it starts its own baseline and never blocks.
-  - a sandbox failure, not a skill one (the README notes `/usr/bin/git` and `mktemp` trouble): re-run just that case (`--case <name>`) once and use the re-run.
+  - a sandbox failure, not a skill one (the README notes `/usr/bin/git` and `mktemp` trouble): re-run just that case (`--case <name>`) once and use the re-run. Replies saying `yayh` was blocked ("Operation not permitted" on `lib/common.sh`) mean the eval ran the installed plugin's `yayh`, not the one under test: the whole run is invalid. Check the `PATH` prefix and run the suite again.
 - **evals `skip`:** no skill, agent, reference, template, workflow or eval case changed since the last scored version, so the score can't have moved.
 - **`--no-evals` while the gate said `run`:** it's the maintainer's call. Record it as "not run" with the reason given.
 
