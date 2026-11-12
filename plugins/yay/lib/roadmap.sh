@@ -806,7 +806,9 @@ _yay_roadmap_build() {
       while (np && P[np] ~ /^[[:space:]]*$/) np--
       p = out "/README.md"
       for (i = 1; i <= np; i++) print P[i] > p
-      printf "\n%s\n**Sprints and sections**\n\n| Section | Dates | Goal | Items | Dev-days |\n|---|---|---|---|---|\n", is > p
+      printf "\n%s\n**Sprints and sections**\n\n", is > p
+      if (!ns) printf "_No sprints yet._\n" > p
+      else printf "| Section | Dates | Goal | Items | Dev-days |\n|---|---|---|---|---|\n" > p
       for (j = 1; j <= ns; j++) {
         k = S[j]
         printf "| [%s](%s) | %s | %s | %d (%d shipped) | %g |\n", S_label[k], S_file[k], (S_start[k] != "" ? S_start[k] " → " S_end[k] : "-"), cell(S_goal[k]), S_n[k], S_sh[k], S_dd[k] > p

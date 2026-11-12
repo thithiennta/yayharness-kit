@@ -197,6 +197,9 @@ test_seeded_roadmap_takes_items_in_split_files() {
   _init "$YAY_REPO"
   assert_eq "split" "$("$YAYH" roadmap layout)"
   assert_eq "" "$("$YAYH" roadmap list)"
+  assert_ok "$YAYH" roadmap render --check
+  "$YAYH" roadmap render >/dev/null
+  assert_contains "$(cat "$YAY_REPO/docs/roadmap/README.md")" "_No sprints yet._"
   assert_eq "R-1" "$("$YAYH" roadmap add "First item" size=S)"
   assert_contains "$(cat "$YAY_REPO/docs/roadmap/later.md")" "### R-1 First item"
   assert_contains "$(cat "$YAY_REPO/docs/roadmap/README.md")" "| [Later](later.md) |"
