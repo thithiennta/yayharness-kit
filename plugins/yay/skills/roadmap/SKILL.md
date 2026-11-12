@@ -26,7 +26,7 @@ Always edit through `yayh roadmap` where a command exists (`add`, `set`, `move`)
 | `--horizon=…` | Plan up to a date, `<n>sprints`, `eoq` (end of quarter) or `eoy` (Dec 31). Default: the front-matter `horizon` if it's still ahead, else 4 sprints (shown in the confirm round, where it can be changed). |
 | `--sprint-length=2w` | `1w`, `2w`, `10d`… Default: the front-matter `sprint_length`, else `2w`. |
 | `--start=YYYY-MM-DD` | First new sprint's start. Default: the day after the current sprint ends, or today when there's none. |
-| `--capacity=<n>` | Dev-days per sprint (sizes: S = 1.5, M = 4, L = 8). Default: 8 per 2-week sprint (one developer), scaled to the sprint length; shown in the confirm round. |
+| `--capacity=<n>` | Dev-days per sprint (sizes: S = 1.5, M = 4, L = 8). Default: the front-matter `capacity`, else 8 per 2-week sprint (one developer), scaled to the sprint length; shown in the confirm round, next to the `yayh roadmap pace` suggestion when there is one. |
 | `--freeze=a..b` | A window with hotfix-class work only (fixes, compat, docs), e.g. around BFCM. Repeatable. |
 | `--focus="…"` | A theme to favour (e.g. "conversion before BFCM"). |
 | `--web` | Also research wordpress.org (reviews, support forum) and 3–5 competitors. |
@@ -56,6 +56,7 @@ Commit by path with `docs(roadmap): <summary>` (the `roadmap` scope is always al
 3. Report, in this order:
    - the current sprint, its goal line, and each of its items with status
    - slipped items (sprint ended, not shipped)
+   - the `pace` line (planned dev-days against working days taken, and the suggested capacity), when there is one
    - critical and high bugs with no roadmap item or fix branch: they compete for this sprint's capacity
    - status drift from `links`, and check errors
    - the next actions, as commands, from `yayh status` (each row's `next` column), plus `/yay:roadmap` when the horizon has passed or a lot slipped
@@ -70,7 +71,7 @@ An item's `- target: x.y.z` is the plugin version it's meant to ship in. It's in
 ## Quick edits
 
 Small changes, on a branch as above, then `yayh roadmap check`, **one** commit and the PR question, however many items the request names.
-- `--add="<title>"`: `yayh roadmap add "<title>" sprint=<n|later> size=<S|M|L> [target=<x.y.z>] "why=<one line>"`. When the why or size is missing, infer them from the title and the evidence, and say what you used. Default sprint: `later`. Warn if the sprint is now over capacity.
+- `--add="<title>"`: `yayh roadmap add "<title>" sprint=<n|later> size=<S|M|L> [target=<x.y.z>] "why=<one line>" "acceptance=<one line>"`. When the why, size or acceptance is missing, infer them from the title and the evidence, and say what you used. The acceptance is what a user can see or do when it's done ("a coupon applies in one click on cart and checkout"), not how it's built; `/yay:plan` turns it into its Goal and Verify. Default sprint: `later`. Warn if the sprint is now over capacity.
   - **Several items.** `--add` repeated, `--add="A; B; C"`, or a list in plain words ("add X, Y and Z for 1.5.0") all mean one `yayh roadmap add` per title, in the order given. A per-item hint in the title is honoured and stripped: `"Gift wrap [S]"`, `"Dark mode [L, sprint 2]"`. `--sprint`, `--size` and `--target` apply to the items without their own hint.
   - The user's request is the evidence for an item they name. When they gave no reason, the why is `requested <date>` plus anything the evidence adds (a `B-<n>`, `#issue`). Don't ask for one.
   - Show the added items as one table (id, title, sprint, size, target).
@@ -89,7 +90,7 @@ With `--trello`, sync only the item that changed (`reference/roadmap-extras.md`,
    - With no roadmap at all (`yayh roadmap layout` prints `none`), the harness isn't set up: suggest `/yay:harness-init` and stop.
    - `yayh roadmap status`, `yayh roadmap check` and `yayh roadmap links`. Keep every existing item and its id.
    - **Legacy roadmap or backlog** (content without front-matter or `### R-<n>` items, or backlog files without `id:`): read **Legacy conversion** in `${CLAUDE_PLUGIN_ROOT}/reference/roadmap-extras.md` before going on.
-   - Settle horizon, sprint length, start, capacity and freezes from the options and the front-matter, and use the defaults for the rest. Don't ask yet: the defaults are shown in step 5's single round. Then `yayh roadmap sprints start=… length=… until=…|count=… first=<next sprint number>` gives the new sprint dates. Past and current sprints keep their headings and dates.
+   - Settle horizon, sprint length, start, capacity and freezes from the options and the front-matter, and use the defaults for the rest. **Pace:** `yayh roadmap pace` compares each built item's size with the working days it took (from its `started` and `built` dates). With 3+ items it prints a suggested capacity: when it differs from the current one by 2 dev-days or more, plan with the suggestion, say so under **Decided**, and write it to the front-matter (`capacity`). Fewer items: keep the current capacity. Don't ask yet: the defaults are shown in step 5's single round. Then `yayh roadmap sprints start=… length=… until=…|count=… first=<next sprint number>` gives the new sprint dates. Past and current sprints keep their headings and dates.
 2. **Evidence.** Read what's there; don't invent demand.
    - Unfinished roadmap items, and `links` drift.
    - `yayh artifact list backlog --status=idea`, and the parked work and decisions from plans and fixes: `yayh backlog open` (a `deferred` note whose plan is done is a candidate item; an open `decision` that affects a scheduled item is worth naming in its `note:`), open bugs (`yayh roadmap status` lists them by severity), ready and in-progress plans, open and decided brainstorms.
@@ -108,7 +109,7 @@ With `--trello`, sync only the item that changed (`reference/roadmap-extras.md`,
    - Front-matter: `horizon`, `sprint_length`, `updated` (today). Keep any other keys (`published`, `hub`).
    - Add the new sprint headings from `yayh roadmap sprints … --md`, each followed by its `Goal:` line. Never rewrite past sprints' headings.
    - Existing items: `yayh roadmap move R-<n> <sprint|later>`, and for each `links` drift, `yayh roadmap set R-<n> status <suggested>`.
-   - New items: `yayh roadmap add "<title>" sprint=<n|later> size=… "why=…" ["editions=free, pro"] [from=…] ["depends=R-<a>, R-<b>"] [target=<x.y.z>]`. It prints the id. Every dependency you scheduled around goes in `depends=` (and `yayh roadmap set R-<n> depends "…"` for existing items), because `/yay:autopilot` and `yayh status` order work by it. Write `editions` with the config's edition names, comma and space separated.
+   - New items: `yayh roadmap add "<title>" sprint=<n|later> size=… "why=…" "acceptance=…" ["editions=free, pro"] [from=…] ["depends=R-<a>, R-<b>"] [target=<x.y.z>]`. It prints the id. Every item you schedule into a sprint gets an `acceptance` (one line: what a user can see or do when it's done, plus the edge case that matters most); `roadmap check` warns about a scheduled, unplanned item without one, so add it to existing items too (`yayh roadmap set R-<n> acceptance "…"`). Every dependency you scheduled around goes in `depends=` (and `yayh roadmap set R-<n> depends "…"` for existing items), because `/yay:autopilot` and `yayh status` order work by it. Write `editions` with the config's edition names, comma and space separated.
    - Backlog ideas that became items: `yayh fm set docs/backlog/<file> status promoted:R-<n>`. A deferred note that became an item: `yayh fm set <file> affects "[R-<n>]"`, so the item's plan picks it up (it stays `open` until a plan takes it).
    - `yayh roadmap check` must have no errors.
 7. **Trello** (only with `--trello`): sync before committing, so the saved card URLs go in the same commit. See `reference/roadmap-extras.md`.
@@ -120,11 +121,17 @@ With `--trello`, sync only the item that changed (`reference/roadmap-extras.md`,
 Plan one release instead of the whole horizon.
 1. Resolve `<v>` (**Target version**). Run Plan steps 1–2 as usual.
 2. **Scope.** The version's items are `yayh roadmap list --target=<v>`, plus any items the request names (added with `target=<v>`). When the request asks for suggestions ("what should go in 1.5.0"), propose evidenced candidates (Plan step 3) and say which you added.
-3. **Fit.** Sum the sizes against capacity from the current sprint on. Schedule the version's items into the earliest sprints that fit, dependencies first, ahead of untargeted work. The sprint where the last one lands is the earliest the version can be released: say so. When that's past the horizon or in a freeze, name what to cut or retarget (a hard call for the step-5 question round).
-4. **Write and commit** as in Plan steps 6–8 (`docs(roadmap): plan <v>`); every item in scope carries `target=<v>`.
-5. **Report** the version's table (id, title, size, sprint, status), its earliest release sprint, and **Next**: `/yay:autopilot --target=<v>` to build it all, or `/yay:brainstorm --from=R-<n>` for the first item.
+3. **Fit.** Sum the sizes against capacity from the current sprint on. Schedule the version's items into the earliest sprints that fit, dependencies first, ahead of untargeted work. The sprint where the last one lands is the earliest the version can be released: say so. When that's past the horizon or in a freeze, name what to cut or retarget (a hard call for the step-5 question round). Even when it fits, name the **cut candidates**: the 1–3 items that go first if the work runs late (low value per day, nothing depends on them).
+4. **Brief.** `yayh roadmap brief <v>` creates `docs/roadmap/release-<v>.md` (or says it exists; then update it rather than rewrite it). It's hand-written and `yayh roadmap` never touches it. Fill it in plain words a leader or support can read:
+   - **Goal:** what the release is for and who gets what.
+   - **Release criteria:** `- [ ]` lines that must be true to ship: each item's `acceptance` merged into release-level checks (works on every edition and checkout it names, upgrades from the last release, any guideline a wordpress.org submission needs). `/yay:release` checks them.
+   - **Out of scope:** what people might expect and where it goes instead, plus "Cut first if late: R-<a>, R-<b>" from step 3.
+   - **Risks:** what could go wrong for merchants or shoppers, its impact, and what limits it.
+   - **Open questions:** each with the proposal the work follows until someone answers. Your own hard calls from step 3 go here too when they can wait.
+5. **Write and commit** as in Plan steps 6–8 (`docs(roadmap): plan <v>`); every item in scope carries `target=<v>`, and the brief rides in the same commit (`git add -- docs/roadmap`).
+6. **Report** the version's table (id, title, size, sprint, status), its earliest release sprint, the cut candidates, the open questions, and **Next**: `/yay:autopilot --target=<v>` to build it all, or `/yay:brainstorm --from=R-<n>` for the first item.
 
-`--status --target=<v>` is read-only: the version's items with status and sprint (`docs/roadmap/v<v>.md`, or `yayh roadmap list --target=<v>`), what's left to build, the item whose sprint ends last (it holds the release back), and the target counts from `yayh roadmap status`.
+`--status --target=<v>` is read-only: the version's items with status and sprint (`docs/roadmap/v<v>.md`, or `yayh roadmap list --target=<v>`), what's left to build, the item whose sprint ends last (it holds the release back), the target counts from `yayh roadmap status`, and `yayh roadmap brief <v> --check`: the release criteria not yet ticked and the open questions (or that the version has no brief yet: `/yay:roadmap --target=<v>` writes one).
 
 ## Multi-agent, publish and Trello
 
@@ -133,7 +140,7 @@ Plan one release instead of the whole horizon.
 ## Don'ts
 - Never renumber, reuse or delete an `R-<n>`. Dropped items stay with `status: dropped`.
 - Never edit the roadmap on the base branch, and never stage with `git add -A`.
-- Edit items with `yayh roadmap add|set|move`. A hand edit of a sprint file (a goal line, a note) is fine: run `yayh roadmap render` after it. Never edit `v<x.y.z>.md` or the README's index: they're regenerated.
+- Edit items with `yayh roadmap add|set|move`. A hand edit of a sprint file (a goal line, a note) is fine: run `yayh roadmap render` after it. Never edit `v<x.y.z>.md` or the README's index: they're regenerated. The release brief `release-<v>.md` is the opposite: always edited by hand.
 - Don't rewrite past sprints' dates or move shipped items.
 - Don't schedule past capacity or put feature work in a freeze sprint without the user agreeing.
 - Don't invent evidence: every new item's `why` points at something real (a user naming the item counts).

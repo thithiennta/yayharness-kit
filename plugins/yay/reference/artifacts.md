@@ -42,12 +42,14 @@ docs/roadmap/
   sprint-2.md
   later.md       "## Later" and its items
   v1.5.0.md      generated: the items with "- target: 1.5.0"
+  release-1.5.0.md  hand-written release brief (yayh roadmap brief 1.5.0): goal, release criteria, out of scope, risks, open questions
 ```
 Put together (README first, sprints by number, later last), the document reads:
 ```markdown
 ---
 horizon: 2026-12-31
 sprint_length: 2w
+capacity: 8                     # optional: dev-days per sprint (/yay:roadmap; yayh roadmap pace suggests one)
 updated: 2026-11-10
 published:                      # page URL, set by /yay:roadmap --publish (hub: for a portfolio)
 ---
@@ -61,6 +63,7 @@ Goal: checkout speed before BFCM.
 - status: planned
 - size: M
 - why: one line on the customer value, with its evidence (B-3, #241, a review URL)
+- acceptance: one click on the product page pays with Apple Pay or Google Pay; hidden when the gateway is off
 - editions: free, pro
 - target: 1.5.0
 - from: BL-9
@@ -72,7 +75,7 @@ Goal: checkout speed before BFCM.
 - size: L
 ```
 - Sections are `## Sprint <n> (<start> → <end>)` (dates are `YYYY-MM-DD`, sprints in order and not overlapping), then `## Later`.
-- Items are `### R-<n> Title` with `- key: value` bullets (no front-matter, because many items share one file). `status` and `size` are required. Optional: `why`, `editions`, `target` (the plugin version it should ship in, `x.y.z`; `yayh roadmap list --target=`, `/yay:autopilot --target=`), `from`, `note` (e.g. why it was dropped), `shared` and `depends` (cross-plugin work), and `trello` (its card URL, set by `/yay:roadmap --trello`).
+- Items are `### R-<n> Title` with `- key: value` bullets (no front-matter, because many items share one file). `status` and `size` are required. Optional: `why`, `acceptance` (what a user can see or do when it's done: the plan's Goal and Verify start from it, and `roadmap check` warns about a scheduled item still `planned` or `brainstorming` without one), `editions`, `target` (the plugin version it should ship in, `x.y.z`; `yayh roadmap list --target=`, `/yay:autopilot --target=`), `from`, `started` and `built` (dates: set when the item goes `in-progress`, and by `/yay:implement` when its plan is done; `yayh roadmap pace` compares them with the size), `note` (e.g. why it was dropped), `shared` and `depends` (cross-plugin work), and `trello` (its card URL, set by `/yay:roadmap --trello`).
 - `status` is one of `planned`, `brainstorming[:BS-<n>]`, `planned-in:P-<n>`, `in-progress`, `shipped:<version>`, `dropped`. `/yay:roadmap` syncs it from brainstorms and plans (`yayh roadmap links`), `/yay:implement` sets `in-progress`, and `/yay:release` sets `shipped:<version>`.
 - `size`: S (≤ 2 days), M (≤ 1 week), L (more).
 - Edit with `yayh roadmap add|set|move`, and validate with `yayh roadmap check`. Each write regenerates the README index and the `v<x.y.z>.md` lists; after a hand edit of a sprint file, run `yayh roadmap render`. The generated files never start a line with `### R-`, so they never take an id.
@@ -106,7 +109,7 @@ reviewed:                       # autopilot only: pending once built, yes once b
 editions: [free, pro]
 created: 2026-11-10
 ```
-Body: Goal, Non-goals, Approach, `## Tasks` as `- [ ] T1 …` checkboxes, each naming the files it touches and followed by an indented `- Reuse: …` line (the existing code it calls, `none, new X() because …`, or `n/a`). A task may end with a tier tag, `[tier: veryfast]`, which makes `/yay:implement` delegate it to a subagent on that tier (`reference/models.md`). Then come a `**Tests:**` line (tests the user accepted, or `none`) and a `## Verify` section with exact checks. A check written as ``- `<command>` → <expected>`` (`exit N`, or text the output contains) is a command check that `yayh verify P-<n> --run` runs; every other item is a manual check. `/yay:implement` ticks the boxes as it goes. A `lane: small` plan (`yayh artifact new plan … lane=small`) has only Goal, Tasks and Verify; `yayh plan check` skips its Reuse, Tests and E2E checks. A tiny change has no plan file at all (`/yay:implement`'s tiny lane).
+Body: Goal, Non-goals, Findings (what reading the code changed about the source, each with file:line evidence, and docs the plan differs from; `none` when nothing did), Approach, `## Tasks` as `- [ ] T1 …` checkboxes, each naming the files it touches and followed by an indented `- Reuse: …` line (the existing code it calls, `none, new X() because …`, or `n/a`). A task may end with a risk tag, `[risk: 1|2|3]` (how hard it is to undo; untagged is 2, and `yayh plan risk` lists them), which makes `/yay:implement` review a risk-3 task before its commit, and a tier tag, `[tier: veryfast]`, which makes `/yay:implement` delegate it to a subagent on that tier (`reference/models.md`). Then come a `**Tests:**` line (tests the user accepted, or `none`) and a `## Verify` section with exact checks. A check written as ``- `<command>` → <expected>`` (`exit N`, or text the output contains) is a command check that `yayh verify P-<n> --run` runs; every other item is a manual check. `/yay:implement` ticks the boxes as it goes. A `lane: small` plan (`yayh artifact new plan … lane=small`) has only Goal, Tasks and Verify; `yayh plan check` skips its Reuse, Tests and E2E checks. A tiny change has no plan file at all (`/yay:implement`'s tiny lane).
 
 ### Design: `docs/designs/<slug>.md`
 ```

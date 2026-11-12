@@ -23,10 +23,14 @@ Don't remember a command? Type `/yay:go` followed by what you want in plain word
 ```
 /yay:roadmap --add="Feature X [M]; Feature Y [S]; Feature Z [L]" --target=1.0.0   # → R-1, R-2, R-3, one PR
 /yay:roadmap --target=1.0.0          # fits 1.0.0 into the sprints against capacity; says the earliest release sprint
+                                     # and writes docs/roadmap/release-1.0.0.md, the release brief
 ```
 
+- Each item gets an `acceptance:` line: what a user can see or do when it's done. Its plan's Goal and Verify start from it.
+- The release brief is written by hand and read by people: the goal, the release criteria `/yay:release` checks, what's out of scope (and what gets cut first if it runs late), the risks, and open questions with the proposal used until they're answered.
+
 - Plain words work too: `/yay:roadmap add X, Y and Z for 1.0.0`. `--target=minor` (or `patch`, `major`) means the next such version.
-- Sizes: S = 1.5 dev-days, M = 4, L = 8. Capacity defaults to 8 dev-days per 2-week sprint.
+- Sizes: S = 1.5 dev-days, M = 4, L = 8. Capacity defaults to 8 dev-days per 2-week sprint. Once 3 items are built, `yayh roadmap pace` compares their sizes with the working days they took and suggests a capacity, and `/yay:roadmap` plans with it.
 - Each command opens one `docs(roadmap): …` PR. Merge it.
 - `/yay:roadmap --status --target=1.0.0` shows what's left for the version, and `/yay:roadmap --status` the current sprint; neither changes anything.
 - Moved a feature to the next version? `/yay:roadmap --retarget=R-3:1.1.0`.
@@ -80,7 +84,7 @@ If it stops, run the same command again: it resumes from each item's brainstorm 
 ```
 /yay:release --bundle            # QA build (1.0.0-rc.1): zips and screenshots in release/bundles/
 /yay:release 1.0.0 --dry-run     # preview the version, changelog, checks and build
-/yay:release 1.0.0               # release PR; marks the roadmap items shipped
+/yay:release 1.0.0               # release PR; marks the roadmap items shipped, ticks the brief's release criteria it can verify and asks about the rest
 # merge the release PR, then:
 /yay:release --tag-only          # tag it and build the final zip from the tag
 ```

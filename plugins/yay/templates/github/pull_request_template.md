@@ -6,10 +6,21 @@
 ## Changes
 -
 
+## Worth a closer look
+<!-- The 2–5 places where the reasoning is subtle or the risk sits (risk-3 tasks first): path:line (or the function), what it does and why it's done that way. Not a list of every change. "nothing unusual" if none. -->
+-
+
 ## Verified
 <!-- The exact commands you ran and the UI checks you did, with the result. "Tests: none" is fine when the plan says so. -->
 - [ ] lint / typecheck / tests that apply
 - [ ] manual check:
+
+## Not verified
+<!-- What wasn't run here and why (no browser, no Docker, one order storage only, one edition), and what someone must do before merging. "none" if everything ran. -->
+
+## How to test
+<!-- Numbered steps a reviewer can follow on a test site: where to click or which command, the input, and what they should see. Include one edge case. -->
+1.
 
 ## Open decisions and later work
 <!-- Backlog notes this branch wrote, left open or settled: BL-<n>, the question or the work, and the default built. "none" if none. -->

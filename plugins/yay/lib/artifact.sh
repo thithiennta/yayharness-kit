@@ -128,6 +128,21 @@ yay_plan_tasks() {
     printf "%s\t%s\t%s\n", t, (done?"done":"open"), rest }' "$f"
 }
 
+# yay_plan_risk <plan> [T<n>] -> TSV: T<n> risk (1, 2 or 3; untagged tasks are 2).
+# A task's [risk: N] tag says how hard it is to undo: 1 = copy, UI or docs; 2 = new
+# logic; 3 = stores or deletes data, runs in the background, emails customers, touches
+# money, personal data or permissions. /yay:implement reviews risk-3 tasks before
+# their commit.
+yay_plan_risk() {
+  local plan="$1" want="${2:-}"
+  [ -z "$want" ] || printf '%s' "$want" | grep -Eq '^T[0-9]+$' || yay_die "task must look like T3"
+  yay_plan_tasks "$plan" | awk -F '\t' -v want="$want" '
+    want != "" && $1 != want { next }
+    { r = 2; if (match($3, /\[risk:[[:space:]]*[0-9]+[[:space:]]*\]/)) { r = substr($3, RSTART, RLENGTH); gsub(/[^0-9]/, "", r) }
+      print $1 "\t" r; hit = 1 }
+    END { if (want != "" && !hit) exit 3 }' || yay_die "$plan has no task $want"
+}
+
 # yay_plan_tick <plan> <T<n>> [--undo]
 yay_plan_tick() {
   local plan="$1" task="$2" undo="${3:-}" rel f tmp from to
@@ -201,6 +216,18 @@ EOF
   done <<EOF
 $tasks
 EOF
+  # A [risk: N] tag is 1, 2 or 3; a risk-3 task needs a test or a command check that proves it.
+  local risky=""
+  while IFS="$(printf '\t')" read -r t _ k; do
+    tag="$(printf '%s' "$k" | sed -nE 's/.*\[risk:[[:space:]]*([^]]*)\].*/\1/p' | sed -E 's/[[:space:]]+$//')"
+    case "$tag" in '') ;; 1|2) ;; 3) risky="$risky $t" ;; *) _pw "task $t has risk '$tag'; use 1, 2 or 3 (untagged is 2)" ;; esac
+  done <<EOF
+$tasks
+EOF
+  if [ -n "$risky" ] && [ "$lane" != small ] && grep -Eq '^\*\*Tests:\*\*[[:space:]]*none' "$f" \
+     && ! awk '/^## Verify/{on=1; next} /^## /{on=0} on && !/^<!--/ && /`[^`]+`[[:space:]]*(→|->)/{found=1} END{exit !found}' "$f"; then
+    _pw "risk-3 task(s)$risky but '**Tests:** none' and no command check in Verify: add a test or a \`command\` → expected check that proves the risky part"
+  fi
   # Notes left for this plan (lib/backlog.sh): settle them or keep their default on purpose.
   case "$st" in draft|ready|in-progress)
     yay_backlog_open --for="$(yay_fm_get "$f" id 2>/dev/null || echo -)" 2>/dev/null | while IFS="$(printf '\t')" read -r k kind _ _ def ti _; do
@@ -223,6 +250,13 @@ EOF
   # Repos with e2e set up decide per plan which flows get a browser spec.
   if [ "$lane" != small ] && yay_config_get commands.e2e >/dev/null 2>&1 && ! grep -Eq '^\*\*E2E:\*\*[[:space:]]*[^[:space:]]' "$f"; then
     _pw "no '**E2E:** <browser-only flows, or none>' line (this repo has e2e set up)"
+  fi
+  # Findings: what reading the code changed (standard plans still being written or reviewed).
+  if [ "$lane" != small ]; then
+    case "$st" in draft|ready)
+      awk '/^## Findings/{on=1; next} /^## /{on=0} on && /[^[:space:]]/ && !/^<!--/{found=1} END{exit !found}' "$f" \
+        || _pw "'## Findings' is missing or empty: what reading the code changed about the source, with file:line, or 'none'" ;;
+    esac
   fi
   if ! awk '/^## Verify/{on=1; next} /^## /{on=0} on && /[^[:space:]]/ && !/^<!--/ && !/^[[:space:]]*([-*]|[0-9]+\.)[[:space:]]*$/{found=1} END{exit !found}' "$f"; then
     _pe "'## Verify' is missing or empty: write exact manual checks"
