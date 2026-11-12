@@ -2,7 +2,8 @@
 
 `/yay:harness-update` reads this file to tell a repo what changed between its recorded kit version and the installed one. Each entry lists new skills, config keys, template changes and behavior changes.
 
-## Unreleased (0.7.2)
+## 0.7.2 (2026-11-12)
+- Released without the eval suite or a test run (the maintainer's call).
 - **Routed agents get their effort level, not only their model.** Every skill that spawns an agent (scouts, hypothesis checkers, reviewers, delegated tasks, web research) now asks for both the Agent tool's `model` and `effort` from `yayh model resolve`. Agents used to get the model but run at their default effort, because the Agent tool only sets `effort` when a skill explicitly asks for it (for example, a `veryfast` scout ran at the default instead of medium). `reference/models.md` says so. Nothing to run in a repo: the skills come with the plugin update.
 
 ## 0.7.1 (2026-11-12)
