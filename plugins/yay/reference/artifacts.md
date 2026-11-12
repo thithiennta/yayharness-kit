@@ -61,7 +61,7 @@ velocity: [7, 6.5]              # dev-days done per closed sprint, written by ya
 Goal: checkout speed before BFCM.
 
 ### R-12 Express checkout buttons
-- status: planned
+- status: todo
 - size: M
 - why: one line on the customer value, with its evidence (B-3, #241, a review URL)
 - acceptance: one click on the product page pays with Apple Pay or Google Pay; hidden when the gateway is off
@@ -72,12 +72,12 @@ Goal: checkout speed before BFCM.
 ## Later
 
 ### R-15 Import layouts from a URL
-- status: planned
+- status: todo
 - size: L
 ```
 - Sections are `## Sprint <n> (<start> → <end>)` (dates are `YYYY-MM-DD`, sprints in order and not overlapping), then `## Later`.
-- Items are `### R-<n> Title` with `- key: value` bullets (no front-matter, because many items share one file). `status` and `size` are required. Optional: `why`, `acceptance` (what a user can see or do when it's done: the plan's Goal and Verify start from it, and `roadmap check` warns about a scheduled item still `planned` or `brainstorming` without one), `editions`, `target` (the plugin version it should ship in, `x.y.z`; `yayh roadmap list --target=`, `/yay:autopilot --target=`), `from`, `started` and `built` (dates: set when the item goes `in-progress`, and by `/yay:implement` when its plan is done; `yayh roadmap pace` compares them with the size), `note` (e.g. why it was dropped), `shared` and `depends` (cross-plugin work), and `trello` (its card URL, set by `/yay:roadmap --trello`).
-- `status` is one of `planned`, `brainstorming[:BS-<n>]`, `planned-in:P-<n>`, `in-progress`, `done`, `shipped:<version>`, `dropped`. `/yay:roadmap` syncs it from brainstorms and plans (`yayh roadmap sync`), `/yay:implement` sets `in-progress`, and `/yay:release` sets `shipped:<version>`. `done` means merged but not released yet: every plan for the item reads `status: done` on the base branch. It counts as finished for its sprint (never slipped), and setting it adds `- merged: <date>`, which ends the item's `pace` record in place of `built`.
+- Items are `### R-<n> Title` with `- key: value` bullets (no front-matter, because many items share one file). `status` and `size` are required. Optional: `why`, `acceptance` (what a user can see or do when it's done: the plan's Goal and Verify start from it, and `roadmap check` warns about a scheduled item still `todo` or `brainstorming` without one), `editions`, `target` (the plugin version it should ship in, `x.y.z`; `yayh roadmap list --target=`, `/yay:autopilot --target=`), `from`, `started` and `built` (dates: set when the item goes `in-progress`, and by `/yay:implement` when its plan is done; `yayh roadmap pace` compares them with the size), `note` (e.g. why it was dropped), `shared` and `depends` (cross-plugin work), and `trello` (its card URL, set by `/yay:roadmap --trello`).
+- `status` is one of `todo` (on the roadmap, not started), `brainstorming[:BS-<n>]`, `planned-in:P-<n>`, `in-progress`, `done`, `shipped:<version>`, `dropped`. `/yay:roadmap` syncs it from brainstorms and plans (`yayh roadmap sync`), `/yay:implement` sets `in-progress`, and `/yay:release` sets `shipped:<version>`. `done` means merged but not released yet: every plan for the item reads `status: done` on the base branch. It counts as finished for its sprint (never slipped), and setting it adds `- merged: <date>`, which ends the item's `pace` record in place of `built`.
 - **Closed sprints** (`/yay:roadmap --close`, `yayh roadmap close <n>`) get a `Closed: YYYY-MM-DD · <done>/<planned> dev-days` line under their Goal and a `#### Sprint review` block at the end, with Done, Slipped, Keep and Change lines. The front-matter `velocity: [7, 6.5]` keeps the done dev-days of each closed sprint, and `yayh roadmap velocity` averages the last 3. `roadmap check` warns when the last sprint that ended more than 3 days ago isn't closed.
 - `size`: S (≤ 2 days), M (≤ 1 week), L (more).
 - Edit with `yayh roadmap add|set|move`, and validate with `yayh roadmap check`. Each write regenerates the README index and the `v<x.y.z>.md` lists; after a hand edit of a sprint file, run `yayh roadmap render`. The generated files never start a line with `### R-`, so they never take an id.

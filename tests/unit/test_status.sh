@@ -13,13 +13,13 @@ sprint_length: 2w
 ## Sprint 1 (2026-10-27 → 2026-11-09)
 
 ### R-1 Old item
-- status: planned
+- status: todo
 - size: S
 
 ## Sprint 2 (2026-11-10 → 2026-11-23)
 
 ### R-2 Coupons
-- status: planned
+- status: todo
 - size: M
 
 ### R-3 Gift wrap
@@ -27,7 +27,7 @@ sprint_length: 2w
 - size: S
 
 ### R-4 Coupon report
-- status: planned
+- status: todo
 - size: S
 - depends: R-2
 
@@ -42,7 +42,7 @@ sprint_length: 2w
 - size: M
 
 ### R-6 Someday
-- status: planned
+- status: todo
 - size: L
 EOT
   printf -- '---\nid: BS-1\ntitle: Gift wrap\nstatus: decided\nfrom: R-3\n---\n' > "$r/docs/brainstorms/gift-wrap.md"
