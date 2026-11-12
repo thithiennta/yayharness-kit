@@ -2,7 +2,8 @@
 
 `/yay:harness-update` reads this file to tell a repo what changed between its recorded kit version and the installed one. Each entry lists new skills, config keys, template changes and behavior changes.
 
-## Unreleased (0.7.1)
+## 0.7.1 (2026-11-12)
+- Released without the eval suite (the maintainer's call).
 - **`/yay:autopilot` builds every plan of a split item.** Until now, an item split into several plans (`/yay:plan --split`) was queued as its most advanced plan alone, so once that plan was done the item read done and the other plans were never built. `yayh roadmap queue` now gives such an item one row per live plan (`R-<n>/P-<m>`), in plan order. Each one stacks on the plan before it and gets its own PR, and an item that depends on `R-<n>` waits for all of them. `yayh status` shows each plan's row under its item.
 
 ## 0.7.0 (2026-11-12)
