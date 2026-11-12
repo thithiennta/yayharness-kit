@@ -42,7 +42,7 @@ Find **why**, with evidence, and write it down. This skill doesn't fix product c
 Write 2–5 hypotheses, each specific and falsifiable. For example: "`OrderSync::apply()` reads `_billing_country` with `get_post_meta`, which is empty under HPOS". "Something with orders" is not a hypothesis.
 
 ### 4. Check them in parallel (skip with `--quick`)
-Spawn one `yay:hypothesis-checker` agent per hypothesis, **in one message**, up to `--agents`, with the model and effort from `yayh model resolve hypothesis` (model routing: `${CLAUDE_PLUGIN_ROOT}/reference/models.md`). Each brief gets the hypothesis, the symptom and environment, the files to start from, and the read-only WP-CLI permission if `--repro`. Weigh the verdicts. Re-check any "supported" verdict yourself, against the cited lines, before relying on it.
+Spawn one `yay:hypothesis-checker` agent per hypothesis, **in one message**, up to `--agents`, with the Agent tool's `model` and `effort` both set from `yayh model resolve hypothesis` (model routing: `${CLAUDE_PLUGIN_ROOT}/reference/models.md`). Each brief gets the hypothesis, the symptom and environment, the files to start from, and the read-only WP-CLI permission if `--repro`. Weigh the verdicts. Re-check any "supported" verdict yourself, against the cited lines, before relying on it.
 
 ### 5. Confirm (as far as the options allow)
 - **Logs** (`--logs`): look for the matching lines and timestamps.

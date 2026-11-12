@@ -32,7 +32,7 @@ Turn a topic into a recorded decision: a `BS-<n>` file that `/yay:plan` builds o
    - WooCommerce surfaces: block vs classic checkout, HPOS, emails
    - existing data and options that must keep working
    - hard rules
-3. **Develop the options.** Each option says how it works (citing files and hooks), pros, cons, risks, the edition split, and a size (S/M/L). Make them really different approaches, not variations on one. With `--research`, add what you learned, with links. For big topics, you may run one `Explore` agent per option in parallel to check feasibility in the code, with the model and effort from `yayh model resolve feasibility` (model routing: `${CLAUDE_PLUGIN_ROOT}/reference/models.md`).
+3. **Develop the options.** Each option says how it works (citing files and hooks), pros, cons, risks, the edition split, and a size (S/M/L). Make them really different approaches, not variations on one. With `--research`, add what you learned, with links. For big topics, you may run one `Explore` agent per option in parallel to check feasibility in the code, with the Agent tool's `model` and `effort` both set from `yayh model resolve feasibility` (model routing: `${CLAUDE_PLUGIN_ROOT}/reference/models.md`).
 4. **Recommend.** Pick one and say why in a paragraph, plus what would change your mind. Be honest when two are close.
 5. **Write it.**
    - `yayh artifact new brainstorm "<title>" from=<id>` prints the path.

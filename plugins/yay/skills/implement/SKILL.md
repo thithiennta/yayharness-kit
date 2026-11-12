@@ -82,7 +82,7 @@ For each unticked task in order (or only `--task`):
    - `yayh code unused <base>`: every symbol this task added has a caller. Delete one that doesn't, unless a later task's `Callers:` line wires it up. A test alone isn't a caller.
 
    Fix what fails. If something fails that your change can't explain, check whether it also fails on the base branch: `git stash`, or run it in a temporary detached worktree of the base. A pre-existing failure is reported, not fixed.
-3. **Risk-3 tasks get a review before the commit** (`yayh plan risk P-<n> T<n>` prints `3`; skipped with `--no-review`). Spawn one read-only `yay:bug-reviewer` with the model and effort from `yayh model resolve review --plan=P-<n>`. Its brief: the worktree path, "review the uncommitted diff (`git diff`, plus untracked files) of task T<n>", the task's text, and the plan's **Goal**, with none of your reasoning. Fix each finding before committing, or answer it with a reason. Either way it goes under "Review" in the PR, marked `T<n>`. The final review (step 4.5) still runs on the whole branch; this one catches a data, money or background-job mistake while it's still one task's diff.
+3. **Risk-3 tasks get a review before the commit** (`yayh plan risk P-<n> T<n>` prints `3`; skipped with `--no-review`). Spawn one read-only `yay:bug-reviewer` with the Agent tool's `model` and `effort` both set from `yayh model resolve review --plan=P-<n>`. Its brief: the worktree path, "review the uncommitted diff (`git diff`, plus untracked files) of task T<n>", the task's text, and the plan's **Goal**, with none of your reasoning. Fix each finding before committing, or answer it with a reason. Either way it goes under "Review" in the PR, marked `T<n>`. The final review (step 4.5) still runs on the whole branch; this one catches a data, money or background-job mistake while it's still one task's diff.
 4. **Tick the task:** `yayh plan tick <plan> T<n>`.
 5. **Commit** the code and the ticked plan together:
    ```
@@ -98,7 +98,7 @@ For each unticked task in order (or only `--task`):
 4. Run `yayh debug markers`. It must be empty. Then run `yayh code unused <base>` and deal with each symbol it lists: delete it, or call it where the plan needs it. Keep one only when WordPress or WooCommerce calls it by name (an override, a callback named in a string), and say so under **Decided** in the PR.
 5. **Review: correctness, then reuse and comments** (skip with `--no-review`):
    - Run `yayh review diff <base> --plan=P-<n>`.
-   - Spawn two read-only agents in parallel (one message), each with the model and effort from `yayh model resolve review --plan=P-<n>` (model routing: `${CLAUDE_PLUGIN_ROOT}/reference/models.md`). Don't pass your own reasoning to either, so their reads stay independent.
+   - Spawn two read-only agents in parallel (one message), each with the Agent tool's `model` and `effort` both set from `yayh model resolve review --plan=P-<n>` (model routing: `${CLAUDE_PLUGIN_ROOT}/reference/models.md`). Don't pass your own reasoning to either, so their reads stay independent.
      - `yay:bug-reviewer`. Its brief: the worktree path, the base branch, and the plan's **Goal** paragraph copied as it is, the tasks `yayh plan risk P-<n>` rates 3 (their text, as "the hard-to-undo parts"), and "review this branch for correctness".
      - `yay:code-reviewer`. Its brief: the worktree path, the base branch, `P-<n>`, and "review this branch".
    - For each finding, either fix it or answer it:

@@ -42,7 +42,7 @@ Work out the shape before splitting the work:
 Choose **2–6 areas**, for example PHP core/services, admin SPA, blocks/storefront, integrations/compat, build/release/tooling, and Pro (if it has its own tree). With `--area`, the one area is that path. With `--depth=quick`, explore the areas yourself, one after another, and skip step 3.
 
 ### 3. Scout in parallel (`--depth=full`)
-Spawn one `yay:knowledge-scout` agent per area, **all in a single message** so they run in parallel, up to `--agents`, with the model and effort from `yayh model resolve scout` (model routing: `${CLAUDE_PLUGIN_ROOT}/reference/models.md`). Each brief contains:
+Spawn one `yay:knowledge-scout` agent per area, **all in a single message** so they run in parallel, up to `--agents`, with the Agent tool's `model` and `effort` both set from `yayh model resolve scout` (model routing: `${CLAUDE_PLUGIN_ROOT}/reference/models.md`). Each brief contains:
 - the area name and its exact paths
 - the repo facts from step 2 the scout needs: editions, base branch, PHP floor, generated paths (never explore those)
 - the questions to answer for that area, taken from the doc table in knowledge.md
