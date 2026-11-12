@@ -3,6 +3,11 @@
 `/yay:harness-update` reads this file to tell a repo what changed between its recorded kit version and the installed one. Each entry lists new skills, config keys, template changes and behavior changes.
 
 ## Unreleased (0.5.0)
+- **A release brief per version: `docs/roadmap/release-<x.y.z>.md`.** `yayh roadmap brief <v>` creates it from a template. It's hand-written and `yayh roadmap` never rewrites or removes it. It holds the goal, the `- [ ]` release criteria, what's out of scope (and what to cut first if the work runs late), the risks, and open questions, each with the proposal used until it's answered. The generated `v<x.y.z>.md` and the README's version table link to it.
+  - `/yay:roadmap --target=<v>` writes it and names the cut candidates; `--status --target=<v>` reports what's still open in it.
+  - `yayh roadmap brief <v> --check` lists unticked criteria and unanswered questions (exit 1). `/yay:release` ticks the criteria it can verify and asks about the rest in its sign-off question.
+- **Planned vs actual pace: `yayh roadmap pace`.** An item gets `- started:` when it goes `in-progress` (automatically) and `- built:` when `/yay:implement` finishes its last plan. `pace` compares each item's size with the working days it took, and from 3 items on suggests a sprint capacity. `yayh roadmap status` adds a `pace` line, and `/yay:roadmap` plans with the suggestion when it's 2+ dev-days off the current `capacity` (a new optional front-matter key). `roadmap check` errors when either date isn't `YYYY-MM-DD`.
+- **`docs/yay-workflow.md`** covers acceptance lines, the release brief and pace.
 - **PR bodies help the reviewer more.** `.github/pull_request_template.md` (kit-owned: `/yay:harness-update` brings it in) gains three sections, and `/yay:implement` (with `/yay:fix` and `/yay:autopilot`, which follow it) fills them in:
   - **Worth a closer look:** the 2–5 places to read first, risk-3 tasks first, each as `path:line` with why it's done that way.
   - **Not verified:** checks that didn't run here and why, and what a human must do before merging.

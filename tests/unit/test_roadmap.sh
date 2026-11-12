@@ -444,3 +444,57 @@ test_split_status_and_queue_work() {
   assert_eq "R-3" "$("$YAYH" roadmap queue --sprint=2 | cut -f1)"
   assert_contains "$("$YAYH" status --today=2026-11-12)" "R-1"
 }
+
+test_release_brief_created_linked_and_checked() {
+  export YAY_REPO; YAY_REPO="$(_rsplit)"
+  local d="$YAY_REPO/docs/roadmap"
+  "$YAYH" roadmap set R-3 target 1.5.0 >/dev/null
+  assert_exit 3 "$YAYH" roadmap brief 1.5.0 --check
+  assert_eq "created	docs/roadmap/release-1.5.0.md" "$("$YAYH" roadmap brief 1.5.0)"
+  assert_eq "exists	docs/roadmap/release-1.5.0.md" "$("$YAYH" roadmap brief 1.5.0)"
+  assert_eq "# Release 1.5.0" "$(sed -n 1p "$d/release-1.5.0.md")"
+  assert_contains "$(cat "$d/v1.5.0.md")" "[Roadmap](README.md) · [Release brief](release-1.5.0.md)"
+  assert_contains "$(cat "$d/README.md")" "| [1.5.0](v1.5.0.md) · [brief](release-1.5.0.md) |"
+  # the brief is no section: no items, never rewritten or removed by a save
+  "$YAYH" roadmap set R-3 target none >/dev/null
+  assert_ok test -f "$d/release-1.5.0.md"
+  assert_eq "" "$("$YAYH" roadmap check --today=2026-11-12 | grep -v 'points at P-2' || true)"
+  "$YAYH" roadmap set R-3 target 1.5.0 >/dev/null
+  cat >> "$d/release-1.5.0.md" <<'B'
+| 1 | Cart tracking on by default? | Off | |
+| 2 | Wait in minutes? | Yes | Yes (lead, Nov 12) |
+B
+  python3 -I - "$d/release-1.5.0.md" <<'X'
+import sys; p=sys.argv[1]; s=open(p).read()
+s=s.replace("- [ ] Every item", "- [x] Unsubscribe stops every email\n- [ ] Every item", 1); open(p,"w").write(s)
+X
+  local out; out="$("$YAYH" roadmap brief 1.5.0 --check)"; assert_eq 1 $?
+  assert_contains "$out" "done	criterion	Unsubscribe stops every email"
+  assert_contains "$out" "open	criterion	Every item in this version works end to end"
+  assert_contains "$out" "open	question	Cart tracking on by default? (proposal: Off)"
+  case "$out" in *"Wait in minutes"*) _fail "answered question listed as open" ;; *) _pass ;; esac
+  assert_fails "$YAYH" roadmap brief soon
+}
+
+test_pace_started_on_in_progress_and_suggested_capacity() {
+  export YAY_REPO; YAY_REPO="$(_rrepo)"
+  "$YAYH" roadmap set R-3 status in-progress >/dev/null
+  assert_eq "$(date +%Y-%m-%d)" "$("$YAYH" roadmap get R-3 started)"
+  "$YAYH" roadmap set R-3 started 2026-11-02 >/dev/null
+  "$YAYH" roadmap set R-3 status planned >/dev/null
+  "$YAYH" roadmap set R-3 status in-progress >/dev/null
+  assert_eq "2026-11-02" "$("$YAYH" roadmap get R-3 started)"   # kept, not restamped
+  assert_eq "total	0	0	0	-" "$("$YAYH" roadmap pace)"
+  # L = 8 dev-days, Mon 2026-11-02 .. Fri 2026-11-13 = 10 working days
+  "$YAYH" roadmap set R-3 built 2026-11-13 >/dev/null
+  assert_eq "item	R-3	L	8	10	2026-11-02	2026-11-13
+total	1	8	10	0.80" "$("$YAYH" roadmap pace)"
+  # S = 1.5 over Mon..Tue (2), M = 4 over Wed..Wed across a weekend (5)
+  "$YAYH" roadmap set R-2 started 2026-11-16 >/dev/null; "$YAYH" roadmap set R-2 built 2026-11-17 >/dev/null
+  "$YAYH" roadmap set R-4 started 2026-11-18 >/dev/null; "$YAYH" roadmap set R-4 built 2026-11-24 >/dev/null
+  local out; out="$("$YAYH" roadmap pace)"
+  assert_contains "$out" "total	3	13.5	17	0.79"
+  # 2w sprint = 10 working days x 0.79, to the half day; no capacity in front-matter -> 8
+  assert_contains "$out" "capacity	8	8"
+  assert_contains "$("$YAYH" roadmap status --today=2026-11-12)" "pace	3 items	planned 13.5 dev-days, took 17 working days (0.79)	suggested capacity 8 (now 8)"
+}

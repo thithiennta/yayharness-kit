@@ -108,7 +108,7 @@ For each unticked task in order (or only `--task`):
 
    Apart from blockers, the reviews flag and never block.
 6. Run `yayh knowledge stale --since=<base>`. For each doc this branch made wrong, update it now on this branch, following `/yay:knowledge-update`'s rules. Then `yayh knowledge check` must pass, and you run `yayh knowledge stamp <doc>`. Commit it as `docs(knowledge): …`.
-7. Run `yayh fm set <plan> status done` and commit it as `docs(plan): complete P-<n>`.
+7. Run `yayh fm set <plan> status done`. If the plan has `roadmap: R-<n>` and it's the item's last open plan, also run `yayh roadmap set R-<n> built "$(date +%Y-%m-%d)"` (with `started`, set when the item went in-progress, it's the item's pace record for `yayh roadmap pace`). Commit both as `docs(plan): complete P-<n>`, with the roadmap files (`git status -- docs/roadmap docs/roadmap.md`).
 
 ### 5. Push and PR
 Do this by default, without asking. With `--no-pr` or `--no-push`, skip it and end the report with the exact commands (`git push -u origin <branch>` and the `gh pr create …` line). If there's no `origin` remote, or `gh` isn't installed or logged in, skip it the same way, and say why (`${CLAUDE_PLUGIN_ROOT}/reference/asking.md`).

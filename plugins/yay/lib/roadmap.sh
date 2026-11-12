@@ -292,6 +292,10 @@ yay_roadmap_set() {
   _yay_roadmap_touch "$f"
   [ "$drop" = 0 ] || val=none
   printf '%s\t%s\t%s\n' "$id" "$key" "$val"
+  # The day work starts is the start of the item's pace record (yayh roadmap pace).
+  if [ "$key" = status ] && [ "$val" = in-progress ] && ! yay_roadmap_get "$id" started >/dev/null 2>&1; then
+    yay_roadmap_set "$id" started "$(yay_today)" >/dev/null
+  fi
 }
 
 _yay_roadmap_status_ok() {
@@ -520,6 +524,8 @@ yay_roadmap_status() {
         for (i = 1; i <= k; i++) printf "%s\t%d\t%d\t%d\t%d\n", vs[i], op[vs[i]], ip[vs[i]], sh[vs[i]], dr[vs[i]] } }' \
       | { IFS= read -r h || exit 0; printf '%s\n' "$h"; sort -t . -k1,1n -k2,2n -k3,3n; }
     yay_roadmap_check --today="$today" 2>/dev/null | sed -n 's/^warn: \(R-[0-9]* slipped.*\)/slipped\t\1/p' || true
+    # Pace: planned dev-days per working day so far, once items have a started and built date.
+    yay_roadmap_pace 2>/dev/null | awk -F '\t' '$1 == "total" && $2 > 0 { t = "pace\t" $2 " items\tplanned " $3 " dev-days, took " $4 " working days (" $5 ")" } $1 == "capacity" { t = t "\tsuggested capacity " $3 " (now " $2 ")" } END { if (t != "") print t }'
   else
     printf 'roadmap\tnone\n'
   fi
@@ -537,6 +543,56 @@ yay_roadmap_status() {
   done
   yay_artifact_list plan --status=in-progress | awk -F '\t' '{ printf "plan\t%s\tin-progress\t%s\n", $1, $3 }'
   yay_artifact_list plan --status=ready | awk -F '\t' '{ printf "plan\t%s\tready\t%s\n", $1, $3 }'
+}
+
+# _yay_weekday <YYYY-MM-DD> -> 1 (Monday) … 7 (Sunday), BSD or GNU date.
+_yay_weekday() {
+  date -j -f %Y-%m-%d "$1" +%u 2>/dev/null || date -d "$1" +%u
+}
+
+# _yay_workdays <from> <to> -> Monday–Friday days from..to, both included (at least 1).
+_yay_workdays() {
+  local d="$1" n=0 w i=0
+  while [ ! "$d" \> "$2" ] && [ "$i" -lt 800 ]; do
+    w="$(_yay_weekday "$d")"; [ "$w" -ge 6 ] || n=$((n + 1))
+    d="$(yay_date_add "$d" 1)"; i=$((i + 1))
+  done
+  [ "$n" -gt 0 ] || n=1
+  printf '%d\n' "$n"
+}
+
+# yay_roadmap_pace -> how long items took against their size. TSV:
+#   item  R-n size planned actual started built     (dev-days; actual = workdays started..built)
+#   total <items> <planned> <actual> <planned/actual>
+#   capacity <current> <suggested>                  (only with 3+ items; per sprint)
+# started is set when the item goes in-progress, built by /yay:implement when its plan is done.
+yay_roadmap_pace() {
+  local f rows="" rec id k v sz started built p a n=0 tp=0 ta=0 len days cap
+  f="$(_yay_roadmap_need)"
+  rows="$(yay_roadmap_parse "$f" | awk -F '\t' '
+    $1 == "I" { id = $2; sz[id] = $4; order[++n] = id }
+    $1 == "K" && ($3 == "started" || $3 == "built") { v[$2, $3] = $4 }
+    END { for (i = 1; i <= n; i++) { id = order[i]; s = v[id, "started"]; b = v[id, "built"]
+      if (s != "" && b != "" && (sz[id] == "S" || sz[id] == "M" || sz[id] == "L")) print id "\t" sz[id] "\t" s "\t" b } }')"
+  while IFS="$YAY_TAB" read -r id sz started built; do
+    [ -n "$id" ] || continue
+    _yay_is_date "$started" && _yay_is_date "$built" || continue
+    [ ! "$built" \< "$started" ] || continue
+    case "$sz" in S) p=1.5 ;; M) p=4 ;; L) p=8 ;; esac
+    a="$(_yay_workdays "$started" "$built")"
+    printf 'item\t%s\t%s\t%s\t%s\t%s\t%s\n' "$id" "$sz" "$p" "$a" "$started" "$built"
+    n=$((n + 1)); tp="$(awk -v x="$tp" -v y="$p" 'BEGIN { print x + y }')"; ta=$((ta + a))
+  done <<EOF
+$rows
+EOF
+  [ "$n" -gt 0 ] || { printf 'total\t0\t0\t0\t-\n'; return 0; }
+  printf 'total\t%d\t%s\t%d\t%s\n' "$n" "$tp" "$ta" "$(awk -v x="$tp" -v y="$ta" 'BEGIN { printf "%.2f", x / y }')"
+  [ "$n" -ge 3 ] || return 0
+  len="$(yay_fm_get "$f" sprint_length 2>/dev/null || echo 2w)"; days="$( (_yay_length_days "$len") 2>/dev/null || echo 14)"
+  cap="$(yay_fm_get "$f" capacity 2>/dev/null || true)"
+  [ -n "$cap" ] || cap="$(awk -v d="$days" 'BEGIN { printf "%g", 8 * d / 14 }')"
+  # Working days in a sprint, scaled by how much planned work fitted in each day so far.
+  printf 'capacity\t%s\t%s\n' "$cap" "$(awk -v d="$days" -v x="$tp" -v y="$ta" 'BEGIN { printf "%g", int(d * 5 / 7 * x / y * 2 + 0.5) / 2 }')"
 }
 
 # yay_roadmap_peers -> TSV: dir name slug harnessed(yes|no) path
@@ -744,8 +800,10 @@ yay_roadmap_queue() {
 # section, and a generated v<x.y.z>.md per target version. Generated files never
 # start a line with `### R-` or `id: `, so they never count as IDs.
 _yay_roadmap_build() {
-  local c="$1" out="$2"
-  awk -v out="$out" -v mark="<!-- $YAY_ROADMAP_MARK from the sprint files. Don't edit: change the sprint files (yayh roadmap add|set|move) and this follows. -->" \
+  local c="$1" out="$2" briefs="" b
+  # Hand-written release briefs (release-<x.y.z>.md) the version lists link to.
+  for b in "$(_yay_roadmap_dir)"/release-*.md; do [ -f "$b" ] || continue; b="${b##*/release-}"; briefs="$briefs ${b%.md}"; done
+  awk -v out="$out" -v briefs="$briefs " -v mark="<!-- $YAY_ROADMAP_MARK from the sprint files. Don't edit: change the sprint files (yayh roadmap add|set|move) and this follows. -->" \
       -v is="$YAY_ROADMAP_IDX_START" -v ie="$YAY_ROADMAP_IDX_END" '
     function cell(v) { if (v == "") return "-"; gsub(/\|/, "\\|", v); return v }
     function days(sz) { return sz == "S" ? 1.5 : sz == "M" ? 4 : sz == "L" ? 8 : 0 }
@@ -803,7 +861,8 @@ _yay_roadmap_build() {
         }
         V_line[v] = sprintf("%s: %d open, %d in progress, %d shipped, %d dropped", items(cnt), op, ip, sh, dr)
         V_last[v] = last == "" ? "-" : "[Sprint " last "](sprint-" last ".md)" (S_end[last] != "" ? ", ends " S_end[last] : "")
-        printf "%s\n# Version %s\n\n[Roadmap](README.md)\n\n%s.\n", mark, v, V_line[v] > p
+        hasb = index(briefs " ", " " v " ") > 0
+        printf "%s\n# Version %s\n\n[Roadmap](README.md)%s\n\n%s.\n", mark, v, (hasb ? " · [Release brief](release-" v ".md)" : ""), V_line[v] > p
         if (last != "") printf "The last open item is in %s: the earliest this version can ship.\n", V_last[v] > p
         if (later) printf "**%s not in a sprint yet**, so there is no ship date.\n", items(later) > p
         printf "\n| ID | Title | Status | Size | Sprint |\n|---|---|---|---|---|\n" > p
@@ -812,7 +871,7 @@ _yay_roadmap_build() {
           printf "| %s | %s | %s | %s | %s |\n", I_id[i], cell(I_ti[i]), cell(I_st[i]), cell(I_sz[i]), sl > p
         }
         close(p)
-        printf "%s\t| [%s](v%s.md) | %s | %s |\n", v, v, v, V_line[v], V_last[v] > (out "/.versions")
+        printf "%s\t| [%s](v%s.md)%s | %s | %s |\n", v, v, v, (hasb ? " · [brief](release-" v ".md)" : ""), V_line[v], V_last[v] > (out "/.versions")
       }
       close(out "/.versions")
       # README: what came before the first section, then the index
@@ -893,6 +952,40 @@ yay_roadmap_split() {
   _yay_roadmap_stamp "$c" > "$c.stamp"
   ( cd "$root" && ls docs/roadmap/*.md ) | sed 's/^/wrote	/'
   printf 'removed\tdocs/roadmap.md\n'
+}
+
+# yay_roadmap_brief <x.y.z> [--check]: the hand-written release brief
+# docs/roadmap/release-<x.y.z>.md (goal, release criteria, out of scope, risks, open
+# questions). Without --check: create it from the template if missing, link it from the
+# version list, and print "created|exists<TAB>path". --check -> TSV lines
+# "open|done<TAB>criterion<TAB>text" and "open<TAB>question<TAB>text (proposal: …)";
+# exit 1 when a criterion is unticked or a question unanswered, 3 when there's no brief.
+yay_roadmap_brief() {
+  local v="" check=0 a dir f rel
+  for a in "$@"; do case "$a" in --check) check=1 ;; -*) yay_die "usage: yayh roadmap brief <x.y.z> [--check]" ;; *) v="$a" ;; esac; done
+  [ -n "$v" ] || yay_die "usage: yayh roadmap brief <x.y.z> [--check]"
+  _yay_target_ok "$v" || yay_die "version '$v' must look like 1.5.0"
+  dir="$(_yay_roadmap_dir)"; f="$dir/release-$v.md"; rel="docs/roadmap/release-$v.md"
+  if [ "$check" = 1 ]; then
+    [ -f "$f" ] || { printf 'none\t%s\n' "$rel"; return 3; }
+    awk '
+      /^## / { sec = $0; next }
+      /^<!--/ { next }
+      sec == "## Release criteria" && /^- \[[ xX]\][[:space:]]*[^[:space:]]/ {
+        st = (substr($0, 4, 1) == " ") ? "open" : "done"; t = substr($0, 7); sub(/^[[:space:]]+/, "", t)
+        print st "\tcriterion\t" t; if (st == "open") bad = 1; next }
+      sec == "## Open questions" && /^\|/ && !/^\|[-:| ]+\|[[:space:]]*$/ {
+        n = split($0, c, "|"); for (i = 1; i <= n; i++) { gsub(/^[[:space:]]+|[[:space:]]+$/, "", c[i]) }
+        if (c[2] == "#" || c[3] == "") next
+        if (c[5] == "") { print "open\tquestion\t" c[3] (c[4] != "" ? " (proposal: " c[4] ")" : ""); bad = 1 } }
+      END { exit bad }' "$f"
+    return
+  fi
+  [ "$(yay_roadmap_layout)" = split ] || yay_die "release briefs live in docs/roadmap/; run yayh roadmap split first"
+  if [ -f "$f" ]; then printf 'exists\t%s\n' "$rel"; return 0; fi
+  sed "s/{{version}}/$v/g" "$YAY_TEMPLATES/docs/roadmap/release-brief.md" > "$f"
+  _yay_roadmap_save "$(_yay_roadmap_need)" >/dev/null
+  printf 'created\t%s\n' "$rel"
 }
 
 # yay_roadmap_render [--check]: rewrite the generated parts (README index, v<x.y.z>.md)

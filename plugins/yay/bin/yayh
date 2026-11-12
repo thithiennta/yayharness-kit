@@ -113,6 +113,10 @@ Roadmap (docs/roadmap/: README.md + one file per sprint; or one docs/roadmap.md)
   roadmap split                    convert docs/roadmap.md into docs/roadmap/ (one file per sprint) and remove it
   roadmap render [--check]         rewrite the generated README index and v<x.y.z>.md lists after hand
                                    edits to the sprint files (add/set/move do it themselves)
+  roadmap brief <x.y.z> [--check]  create the hand-written release brief docs/roadmap/release-<v>.md;
+                                   --check lists its unticked criteria and unanswered questions (exit 1)
+  roadmap pace                     items with started and built dates: size vs working days taken,
+                                   the ratio, and a suggested sprint capacity (3+ items)
   roadmap list [--status=s] [--sprint=n|later] [--target=x.y.z]
                                    id, status, size, section, title (TSV)
   roadmap get <R-n> <key>          one bullet's value
@@ -366,9 +370,11 @@ case "$cmd" in
       queue) yay_roadmap_queue "$@" ;;
       split) yay_roadmap_split ;;
       render) yay_roadmap_render "$@" ;;
+      brief) yay_roadmap_brief "$@" ;;
+      pace) yay_roadmap_pace ;;
       file) yay_roadmap_source ;;
       layout) yay_roadmap_layout ;;
-      *) yay_die "usage: yayh roadmap list|get|set|add|move|sprints|current|check|status|links|peers|queue|split|render|file|layout" ;;
+      *) yay_die "usage: yayh roadmap list|get|set|add|move|sprints|current|check|status|links|peers|queue|split|render|brief|pace|file|layout" ;;
     esac ;;
   code)
     sub="${1:-}"; shift || true

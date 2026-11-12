@@ -42,12 +42,14 @@ docs/roadmap/
   sprint-2.md
   later.md       "## Later" and its items
   v1.5.0.md      generated: the items with "- target: 1.5.0"
+  release-1.5.0.md  hand-written release brief (yayh roadmap brief 1.5.0): goal, release criteria, out of scope, risks, open questions
 ```
 Put together (README first, sprints by number, later last), the document reads:
 ```markdown
 ---
 horizon: 2026-12-31
 sprint_length: 2w
+capacity: 8                     # optional: dev-days per sprint (/yay:roadmap; yayh roadmap pace suggests one)
 updated: 2026-11-10
 published:                      # page URL, set by /yay:roadmap --publish (hub: for a portfolio)
 ---
@@ -73,7 +75,7 @@ Goal: checkout speed before BFCM.
 - size: L
 ```
 - Sections are `## Sprint <n> (<start> → <end>)` (dates are `YYYY-MM-DD`, sprints in order and not overlapping), then `## Later`.
-- Items are `### R-<n> Title` with `- key: value` bullets (no front-matter, because many items share one file). `status` and `size` are required. Optional: `why`, `acceptance` (what a user can see or do when it's done: the plan's Goal and Verify start from it, and `roadmap check` warns about a scheduled item still `planned` or `brainstorming` without one), `editions`, `target` (the plugin version it should ship in, `x.y.z`; `yayh roadmap list --target=`, `/yay:autopilot --target=`), `from`, `note` (e.g. why it was dropped), `shared` and `depends` (cross-plugin work), and `trello` (its card URL, set by `/yay:roadmap --trello`).
+- Items are `### R-<n> Title` with `- key: value` bullets (no front-matter, because many items share one file). `status` and `size` are required. Optional: `why`, `acceptance` (what a user can see or do when it's done: the plan's Goal and Verify start from it, and `roadmap check` warns about a scheduled item still `planned` or `brainstorming` without one), `editions`, `target` (the plugin version it should ship in, `x.y.z`; `yayh roadmap list --target=`, `/yay:autopilot --target=`), `from`, `started` and `built` (dates: set when the item goes `in-progress`, and by `/yay:implement` when its plan is done; `yayh roadmap pace` compares them with the size), `note` (e.g. why it was dropped), `shared` and `depends` (cross-plugin work), and `trello` (its card URL, set by `/yay:roadmap --trello`).
 - `status` is one of `planned`, `brainstorming[:BS-<n>]`, `planned-in:P-<n>`, `in-progress`, `shipped:<version>`, `dropped`. `/yay:roadmap` syncs it from brainstorms and plans (`yayh roadmap links`), `/yay:implement` sets `in-progress`, and `/yay:release` sets `shipped:<version>`.
 - `size`: S (≤ 2 days), M (≤ 1 week), L (more).
 - Edit with `yayh roadmap add|set|move`, and validate with `yayh roadmap check`. Each write regenerates the README index and the `v<x.y.z>.md` lists; after a hand edit of a sprint file, run `yayh roadmap render`. The generated files never start a line with `### R-`, so they never take an id.
