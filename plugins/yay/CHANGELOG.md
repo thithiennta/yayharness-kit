@@ -2,7 +2,8 @@
 
 `/yay:harness-update` reads this file to tell a repo what changed between its recorded kit version and the installed one. Each entry lists new skills, config keys, template changes and behavior changes.
 
-## Unreleased (0.7.0)
+## 0.7.0 (2026-11-12)
+- Released without the full eval suite (the maintainer's call). The first full run was invalid (the sandbox blocked `yayh`); after the fix, the two cases it flagged scored 1.00. The score log has the details.
 - **Merged work counts as done for its sprint.** A new roadmap status, `done`, between `in-progress` and `shipped:<version>`.
   - **What it means:** an item is `done` once every plan for it reads `status: done` on the base branch. That works for merge, squash and rebase merges, and after the branch is deleted.
   - **Setting it:** new `yayh roadmap sync [--dry-run]` applies every `roadmap links` suggestion and dates the `- merged:` bullet from the base branch.
