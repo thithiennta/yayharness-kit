@@ -1,4 +1,3 @@
-# engine-independent
 # verify: a plan's command checks run and pass or fail
 
 _vplan() { # plan P-1 with a mix of command and manual checks

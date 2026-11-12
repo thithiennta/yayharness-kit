@@ -1,4 +1,3 @@
-# engine-independent
 # fixture repos build and contain the legacy layouts init must handle
 
 FIX="${KIT%/plugins/yay}/tests/fixtures/build.sh"

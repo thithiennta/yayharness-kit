@@ -1,4 +1,3 @@
-# engine-independent
 # slug, version, sha256, CLI dispatch
 
 test_slug_basic() {

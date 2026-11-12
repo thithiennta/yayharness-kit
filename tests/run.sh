@@ -1,10 +1,11 @@
 #!/usr/bin/env bash
 # Run the kit's tests:
-#   ./tests/run.sh [filter...] [--engines=jq,node,php,python3] [-j N] [--changed[=<ref>]] [--quick]
-# Each tests/unit/*.sh file runs once per available JSON engine, because the
-# config and manifest readers have one backend per engine (files marked
-# `# engine-independent` run once). Every test function is its own job, run in
-# parallel, slowest first.
+#   ./tests/run.sh [filter...] [--engines=jq,node,php,python3] [--all-engines] [-j N] [--changed[=<ref>]] [--quick]
+# The JSON helpers have one backend per engine. Files marked `# per-engine`
+# (the JSON helpers, the config and manifest readers) run on every available
+# engine; every other file runs once, on the first engine. Every test function
+# is its own job, run in parallel, slowest first.
+#   --all-engines    run every file on every engine (the old matrix; slow, rarely needed)
 #   filter...        only files whose path contains one of these
 #   -j N, --jobs=N   parallel jobs (default: CPU count)
 #   --changed[=ref]  only the files that cover what changed vs ref (default: the working tree vs HEAD)
@@ -17,7 +18,7 @@ ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 export ROOT
 export YAYH="$ROOT/plugins/yay/bin/yayh"
 export KIT="$ROOT/plugins/yay"
-FILTERS=""; ENGINES=""; JOBS=""; CHANGED=""; CHANGED_REF=""; QUICK=""; TESTED=""
+FILTERS=""; ENGINES=""; JOBS=""; CHANGED=""; CHANGED_REF=""; QUICK=""; TESTED=""; ALL_ENGINES=""
 while [ $# -gt 0 ]; do
   case "$1" in
     --engines=*) ENGINES="${1#--engines=}" ;;
@@ -28,6 +29,7 @@ while [ $# -gt 0 ]; do
     --changed=*) CHANGED=1; CHANGED_REF="${1#--changed=}" ;;
     --quick) CHANGED=1; QUICK=1 ;;
     --tested) TESTED=1 ;;
+    --all-engines) ALL_ENGINES=1 ;;
     -h|--help) sed -n '2,/^set /p' "$0" | sed '$d' | sed 's/^# \{0,1\}//'; exit 0 ;;
     -*) echo "unknown option $1 (see --help)" >&2; exit 2 ;;
     *) FILTERS="$FILTERS $1" ;;
@@ -51,6 +53,7 @@ _cover() { # path -> test file basenames, or ALL
     plugins/yay/lib/model.sh) printf '%s\n' test_model.sh test_artifact.sh ;;
     plugins/yay/lib/backlog.sh) printf '%s\n' test_backlog.sh test_artifact.sh ;;
     plugins/yay/lib/bundle.sh) echo test_release.sh ;;
+    plugins/yay/lib/release.sh) printf '%s\n' test_release.sh test_json.sh ;;
     plugins/yay/lib/*.sh) echo "test_$(basename "$1")" ;;
     plugins/yay/hooks/*) echo test_hooks.sh ;;
     plugins/yay/templates/artifacts/*) printf '%s\n' test_artifact.sh test_backlog.sh test_design.sh ;;
@@ -131,8 +134,8 @@ for engine in $(printf '%s' "$ENGINES" | tr ',' ' '); do
       hit=""; for x in $FILTERS; do case "$f" in *"$x"*) hit=1 ;; esac; done
       [ -n "$hit" ] || continue
     fi
-    # Engine-independent files run once, on the first engine only.
-    if grep -q '^# engine-independent' "$f" && [ "$engine" != "$first" ]; then continue; fi
+    # Only `# per-engine` files run past the first engine (unless --all-engines).
+    if [ -z "$ALL_ENGINES" ] && [ "$engine" != "$first" ] && ! grep -q '^# per-engine' "$f"; then continue; fi
     for t in $(sed -nE 's/^(test_[A-Za-z0-9_]+)\(\).*/\1/p' "$f"); do
       w="$(awk -v k="$engine $(basename "$f") $t" '$1 " " $2 " " $3 == k { print $4 }' "$TIMES" 2>/dev/null)"
       jobs="$jobs${w:-1} $engine $f $t

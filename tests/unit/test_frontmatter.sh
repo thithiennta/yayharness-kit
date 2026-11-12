@@ -1,4 +1,3 @@
-# engine-independent
 # front-matter get/set and ID allocation
 
 _doc() {

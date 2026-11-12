@@ -1,4 +1,3 @@
-# engine-independent
 # artifact new/resolve/list/carry, plan tasks/tick/check, id conflicts, run, debug markers
 
 FIX="${KIT%/plugins/yay}/tests/fixtures/build.sh"

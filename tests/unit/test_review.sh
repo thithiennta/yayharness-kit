@@ -1,4 +1,3 @@
-# engine-independent
 # review diff: flag-only reuse and comment findings
 
 _rvrepo() {

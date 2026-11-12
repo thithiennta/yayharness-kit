@@ -1,4 +1,3 @@
-# engine-independent
 # backlog notes: artifact new backlog kind=decision|deferred, backlog open/settle, plan check warnings
 
 _brepo() { # initialized fixture on dev, with plan P-1 for roadmap item R-3

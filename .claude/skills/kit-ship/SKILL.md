@@ -31,7 +31,7 @@ On `main`: `git switch -c <type>/<slug>`. The slug is the summary in kebab case,
 
 ## 4. Checks
 
-1. **Tests.** `./tests/run.sh --tested`. Exit 0 means a green full run already tested the kit code exactly as it is now (a skill, doc or changelog change doesn't change that code): skip, and keep the `tested …` line for the PR. Otherwise run `./tests/run.sh` (the full suite, on every engine; it stamps `tests/.passed` when green). It can take several minutes: run it in the background and wait. Any failure stops the ship. Show the FAIL lines and fix them only if the fix is plainly part of this change, then run again; otherwise stop and report.
+1. **Tests.** `./tests/run.sh --tested`. Exit 0 means a green full run already tested the kit code exactly as it is now (a skill, doc or changelog change doesn't change that code): skip, and keep the `tested …` line for the PR. Otherwise run `./tests/run.sh` (the full suite: every file on the first engine, the JSON-backend files on every engine; it stamps `tests/.passed` when green). It takes about a minute and a half. Any failure stops the ship. Show the FAIL lines and fix them only if the fix is plainly part of this change, then run again; otherwise stop and report.
 2. **Manifests.** `claude plugin validate .` and `claude plugin validate plugins/yay`. An error stops the ship.
 3. **Skill size.** A `SKILL.md` that this change grew past 150 lines: mention it in the PR under **Not verified** (ROADMAP R-8 is shrinking them). It doesn't block.
 
@@ -45,7 +45,7 @@ Stage by path, never `git add -A` or `git add .`. Commit with the header and a b
 2. `gh pr create --base main --head <branch> --assignee @me --title "<header>" [--draft] --body-file <file>` with the sections the kit's PRs use:
    - `## Summary`: one or two sentences.
    - `## Changes`: the bullets, with file paths.
-   - `## Not verified`: what no check proved (a skill's wording isn't covered by unit tests: say so when skills changed). Tests: either "Full suite, all engines: passed" or "Skipped: `<tested line>`".
+   - `## Not verified`: what no check proved (a skill's wording isn't covered by unit tests: say so when skills changed). Tests: either "Full suite: passed" or "Skipped: `<tested line>`".
    - `## How to test`: the commands, for example `claude plugin marketplace update yayharness`, then the skill or `yayh` command to try.
 3. Unless `--no-merge` or `--draft`: `gh pr merge <n> --merge`. Keep the remote branch (the kit has kept them so far). A merge that fails (conflict, a required check): stop and report the PR URL with the reason. Never force-push or rebase `main`.
 4. **Update `main`** where it's checked out (`git worktree list`). In this checkout: `git switch main && git pull --ff-only`. In another one (you shipped from a worktree, and git won't switch to a branch checked out elsewhere): `git -C <that path> pull --ff-only` when its tree is clean; otherwise leave it and say it's behind. A worktree under `.claude/worktrees/` whose branch is now merged: name `git worktree remove <path>` in the report, since the session may be running inside it.

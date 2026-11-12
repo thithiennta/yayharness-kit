@@ -1,4 +1,3 @@
-# engine-independent
 # roadmap: parse/list/get/set/add/move, sprint calendar, check, status, peers
 
 _rrepo() { # repo with a two-sprint roadmap

@@ -1,4 +1,3 @@
-# engine-independent
 # R-20/R-21: merged work counts as done for its sprint; closing a sprint
 
 _sprepo() { # git repo on main: Sprint 1 ended, Sprint 2 far ahead

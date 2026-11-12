@@ -1,4 +1,3 @@
-# engine-independent
 # hooks: feed the JSON Claude Code sends on stdin, check exit codes
 
 H="$KIT/hooks"
