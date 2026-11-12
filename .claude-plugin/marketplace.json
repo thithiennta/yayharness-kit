@@ -10,7 +10,7 @@
       "name": "yay",
       "source": "./plugins/yay",
       "description": "One workflow for every Yay plugin: harness and knowledge init and update, brainstorm, plan, implement, debug, fix, roadmap, changelog, build and release.",
-      "version": "0.5.0"
+      "version": "0.5.1"
     }
   ]
 }

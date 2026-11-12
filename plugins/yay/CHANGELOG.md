@@ -2,7 +2,8 @@
 
 `/yay:harness-update` reads this file to tell a repo what changed between its recorded kit version and the installed one. Each entry lists new skills, config keys, template changes and behavior changes.
 
-## Unreleased (0.5.1)
+## 0.5.1 (2026-11-12)
+- Released without the eval suite (the maintainer's call); the score log records it as not run.
 - **PRs merge with a merge commit by default.** New config key `git.mergeMethod` (`merge`, `squash` or `rebase`; default `merge`). The kit-managed git rule (`.claude/rules/yay-git.md`) now says to merge with `gh pr merge <n> --<method>`, so each task's commit and its `Plan:`/`Fixes:` trailers stay on the base branch. Run `/yay:harness-update` to pick up the rule.
 - **Dead code: everything a branch adds needs a caller.**
   - The code rules, loaded every session, gain "Write only what's used": nothing "for later" (no helper, parameter, option, filter or REST field the change doesn't call), every new symbol has a caller, and a test alone isn't one. Unused code outside the task becomes a deferred note, not part of the same change.
