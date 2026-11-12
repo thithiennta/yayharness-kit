@@ -81,8 +81,9 @@ For each unticked task in order (or only `--task`):
    - the tests on the plan's `**Tests:**` line that belong to this task. Write them in the same task, following `/yay:test` steps 3–4: tag them `P-<n>`, put them at the layer the plan names, and prove that they fail without the change. Run them with `yayh test run <layer> --id=P-<n>`. Integration needs this worktree's tests site (`yayh e2e env start`); without Docker, write the tests and mark them **not run**.
 
    Fix what fails. If something fails that your change can't explain, check whether it also fails on the base branch: `git stash`, or run it in a temporary detached worktree of the base. A pre-existing failure is reported, not fixed.
-3. **Tick the task:** `yayh plan tick <plan> T<n>`.
-4. **Commit** the code and the ticked plan together:
+3. **Risk-3 tasks get a review before the commit** (`yayh plan risk P-<n> T<n>` prints `3`; skipped with `--no-review`). Spawn one read-only `yay:bug-reviewer` with the model and effort from `yayh model resolve review --plan=P-<n>`. Its brief: the worktree path, "review the uncommitted diff (`git diff`, plus untracked files) of task T<n>", the task's text, and the plan's **Goal**, with none of your reasoning. Fix each finding before committing, or answer it with a reason. Either way it goes under "Review" in the PR, marked `T<n>`. The final review (step 4.5) still runs on the whole branch; this one catches a data, money or background-job mistake while it's still one task's diff.
+4. **Tick the task:** `yayh plan tick <plan> T<n>`.
+5. **Commit** the code and the ticked plan together:
    ```
    git add -- <files you changed> <plan file>
    git commit -m "<type>(<scope>): <task summary>" -m "<why, if not obvious>" -m "Plan: P-<n>"
@@ -97,7 +98,7 @@ For each unticked task in order (or only `--task`):
 5. **Review: correctness, then reuse and comments** (skip with `--no-review`):
    - Run `yayh review diff <base> --plan=P-<n>`.
    - Spawn two read-only agents in parallel (one message), each with the model and effort from `yayh model resolve review --plan=P-<n>` (model routing: `${CLAUDE_PLUGIN_ROOT}/reference/models.md`). Don't pass your own reasoning to either, so their reads stay independent.
-     - `yay:bug-reviewer`. Its brief: the worktree path, the base branch, and the plan's **Goal** paragraph copied as it is, and "review this branch for correctness".
+     - `yay:bug-reviewer`. Its brief: the worktree path, the base branch, and the plan's **Goal** paragraph copied as it is, the tasks `yayh plan risk P-<n>` rates 3 (their text, as "the hard-to-undo parts"), and "review this branch for correctness".
      - `yay:code-reviewer`. Its brief: the worktree path, the base branch, `P-<n>`, and "review this branch".
    - For each finding, either fix it or answer it:
      - **Fix:** the change the finding names. Commit `fix(<scope>): <what>` for a correctness finding, or `refactor(<scope>): reuse <helper>` / `refactor(<scope>): restore comments`, with the `Plan:` trailer, then re-run the checks the change touches. A bug fix gets a test at the cheapest layer that proves it, when it's a real risk.

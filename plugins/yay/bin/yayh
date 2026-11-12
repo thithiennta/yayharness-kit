@@ -97,6 +97,7 @@ Artifacts (brainstorms, plans, bugs, backlog)
   plan tasks <plan>                T<n>, done|open, text (TSV)
   plan tick <plan> <T<n>> [--undo] tick a task's checkbox
   plan check <plan>                structure errors and warnings (exit 1 on errors)
+  plan risk <plan> [T<n>]          each task's risk from its [risk: 1|2|3] tag (untagged: 2)
   verify <plan> [--run]            the plan's Verify items: n, cmd|manual, command, expected (TSV);
                                    --run runs the `cmd` → expected ones: pass|fail|manual (exit 1 on a fail)
   id conflicts [base]              ids this branch adds that the base branch already uses
@@ -325,7 +326,8 @@ case "$cmd" in
       tasks) [ $# -eq 1 ] || yay_die "usage: yayh plan tasks <plan>"; yay_plan_tasks "$1" ;;
       tick) [ $# -ge 2 ] || yay_die "usage: yayh plan tick <plan> <T<n>> [--undo]"; yay_plan_tick "$@" ;;
       check) [ $# -eq 1 ] || yay_die "usage: yayh plan check <plan>"; yay_plan_check "$1" ;;
-      *) yay_die "usage: yayh plan tasks|tick|check" ;;
+      risk) [ $# -ge 1 ] && [ $# -le 2 ] || yay_die "usage: yayh plan risk <plan> [T<n>]"; yay_plan_risk "$@" ;;
+      *) yay_die "usage: yayh plan tasks|tick|check|risk" ;;
     esac ;;
   backlog)
     sub="${1:-}"; shift || true

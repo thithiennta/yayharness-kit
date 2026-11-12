@@ -278,6 +278,36 @@ X
   case "$("$YAYH" plan check "$q" 2>&1 || true)" in *Findings*) _fail "done plan asked for Findings" ;; *) _pass ;; esac
 }
 
+test_plan_risk_tags() {
+  export YAY_REPO; YAY_REPO="$(_arepo)"
+  local q; q="$("$YAYH" artifact new plan "Risky plan")"
+  python3 -I - "$YAY_REPO/$q" <<'X'
+import sys,re; p=sys.argv[1]; s=open(p).read()
+tasks = """## Tasks
+- [ ] T1 Label copy — `includes/Admin.php` [risk: 1]
+  - Reuse: n/a
+- [ ] T2 Fee logic — `includes/Fee.php`
+  - Reuse: n/a
+- [ ] T3 Add the fees table — `includes/Install.php` [risk: 3] [tier: deep]
+  - Reuse: n/a
+- [ ] T4 Odd — `includes/X.php` [risk: high]
+  - Reuse: n/a
+"""
+s=re.sub(r"## Tasks\n.*?\n\n", tasks+"\n", s, flags=re.S); open(p,"w").write(s)
+X
+  assert_eq "T1	1
+T2	2
+T3	3
+T4	2" "$("$YAYH" plan risk "$q")"
+  assert_eq "T3	3" "$("$YAYH" plan risk "$q" T3)"
+  assert_fails "$YAYH" plan risk "$q" T9
+  local out; out="$("$YAYH" plan check "$q" 2>&1 || true)"
+  assert_contains "$out" "warn: task T4 has risk 'high'"
+  assert_contains "$out" "warn: risk-3 task(s) T3 but '**Tests:** none'"
+  sed -i.bak 's|^-$|- `wp db query "SHOW TABLES"` → fees|' "$YAY_REPO/$q"
+  case "$("$YAYH" plan check "$q" 2>&1 || true)" in *"risk-3 task"*) _fail "command check didn't satisfy risk 3" ;; *) _pass ;; esac
+}
+
 test_artifact_where_and_tidy_leftover_copies() {
   export YAY_REPO; YAY_REPO="$(_arepo)"
   local p wt; p="$("$YAYH" artifact new plan "Carried plan")"
