@@ -2,7 +2,7 @@
 
 `/yay:harness-update` reads this file to tell a repo what changed between its recorded kit version and the installed one. Each entry lists new skills, config keys, template changes and behavior changes.
 
-## Unreleased (0.11.0)
+## 0.11.0 (2026-11-12)
 - **The changelog keeps hand-written lines.** You can write a version's `readme.txt` entry by hand before the release, for example `= 1.5.0 =` with a couple of lines in your own words. `/yay:changelog` and `/yay:release` now keep those lines as written, add a line only for customer-visible changes they don't already cover, and date the heading. They used to stop with "already has an entry", and `--replace` threw the hand-written lines away. The same goes for an existing `docs/releases/<version>.md`. The report shows which lines were kept and which were added, and names any hand-written line with no commit behind it.
   - New `yayh changelog write <version> <file> --merge`: it keeps the existing lines in order, puts each new line after the last one with the same label, and skips exact duplicates. `--replace` still starts the entry over.
   - **Adding a line after the fact** (`--merge` without `--date`) keeps a dated entry's heading, so it doesn't re-date a release. An undated hand-written heading (`= 1.5.0 =`) gets dated.

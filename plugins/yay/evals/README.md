@@ -63,6 +63,7 @@ The whole suite (**Run** above) is for re-baselining by hand, not a release requ
 | 0.8.0 | 0 | not run | — | Released without the suite (the maintainer's call). It changes the branch, commit and PR title wording in implement, fix, changelog, the tiny lane and autopilot, so the next full run compares against 0.5.0. |
 | 0.9.0 | 1 | 0.95 (16 of 16 cases) | `fix-regression-test-first` 0.25 | 2026-11-12; the first per-case release run (`evals.sh`, one run each): every case was due, since none had been scored since 0.5.0. `fix-regression-test-first` holds its 0.5.0 score (its grader still fails correct replies). `roadmap-vision-asks-first` is new: 1.00, its baseline. $6.69. |
 | 0.10.0 | 1 | 1.00 (4 of 18 cases) | none | 2026-11-12; the roadmap cases only (the roadmap skill and `reference/roadmap-extras.md` changed): `roadmap-status-readonly` and `roadmap-vision-asks-first` held 1.00, and the new `roadmap-add-unclear-asks` and `roadmap-add-clear-no-question` start at 1.00. $1.32. |
+| 0.11.0 | 1 | 1.00 (2 of 19 cases) | none | 2026-11-12; the changelog cases only (`/yay:changelog` changed): `changelog-next-release` held 1.00, and the new `changelog-keeps-hand-lines` starts at 1.00. $0.60. |
 
 ## Adding a case
 
