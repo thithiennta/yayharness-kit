@@ -145,7 +145,7 @@ yay_status() {
       [ -n "$qid" ] || continue
       case "$stage" in done|dropped) continue ;; esac
       case " $covered " in *" $qid "*) continue ;; esac
-      scope="$(printf '%s\n' "$secs" | awk -F '\t' -v i="$qid" '$1 == i { print $2; exit }')"
+      scope="$(printf '%s\n' "$secs" | awk -F '\t' -v i="${qid%%/*}" '$1 == i { print $2; exit }')"
       case "$stage" in continue|review) scope=active ;; esac
       case "$scope" in active) pri=2 ;; slipped) pri=3 ;; *) pri=5 ;; esac
       extra=""
@@ -153,7 +153,7 @@ yay_status() {
       [ "$waits" = - ] || extra="$extra (waits on $waits)"
       [ "$art" = - ] || case "$art" in P-*) extra="$(_tasks "$art")$extra" ;; esac
       _row "$pri" "$scope" "$qid" "$stage" "$(_yay_st_stage_next "$stage" "$art" "$qid")" "$qti$extra"
-      _cover "$qid" "$art"
+      _cover "$qid" "$art" "${qid%%/*}"
     done <<EOT
 $( (yay_roadmap_queue $ids --today="$today") 2>/dev/null || true)
 EOT
