@@ -391,6 +391,21 @@ test_split_keeps_every_item_and_writes_one_file_per_section() {
   assert_exit 1 "$YAYH" roadmap split
 }
 
+test_vision_paragraph_survives_split_add_and_render() {
+  export YAY_REPO; YAY_REPO="$(_rrepo)"
+  local v='**Vision** (2026-11-12): the go-to gift plugin for B2B stores.
+For: wholesale merchants, pro. Must-have: bulk gift orders by 1.6.0. Out of scope: marketplaces.'
+  V="$v" perl -0 -i -pe 's/^(# Roadmap: Fixture\n)/$1\n$ENV{V}\n/m' "$YAY_REPO/docs/roadmap.md"
+  local before; before="$("$YAYH" roadmap list)"
+  "$YAYH" roadmap split >/dev/null
+  "$YAYH" roadmap add "Bulk gift orders" sprint=later size=M "why=vision 2026-11-12: B2B" >/dev/null
+  "$YAYH" roadmap render >/dev/null
+  local readme; readme="$(cat "$YAY_REPO/docs/roadmap/README.md")"
+  assert_contains "$readme" "$v"
+  assert_eq "$before" "$("$YAYH" roadmap list | grep -v 'Bulk gift orders')"
+  assert_eq "" "$("$YAYH" roadmap check --today=2026-11-12 | grep -v 'points at P-2' || true)"
+}
+
 test_split_writes_go_to_the_right_file_and_regenerate_versions() {
   export YAY_REPO; YAY_REPO="$(_rsplit)"
   local d="$YAY_REPO/docs/roadmap"

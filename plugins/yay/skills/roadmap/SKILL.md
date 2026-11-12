@@ -117,6 +117,7 @@ With `--trello`, sync only the item that changed (`reference/roadmap-extras.md`,
    - `git log --since=90.days --oneline` and unmerged branches, for work already under way.
    - `gh issue list --state open --limit 100` and `gh pr list --state open`, if gh works.
    - With `--web`: the plugin's wordpress.org page (installs, rating, the latest support threads, 1–3★ reviews) and 3–5 competitors. Hand this to one `Agent` with a fixed report format (pain points with links, competitor gaps), so the page dumps stay out of this context. Set its `model` and `effort` both from `yayh model resolve web-research` (model routing: `${CLAUDE_PLUGIN_ROOT}/reference/models.md`).
+   - **A vision request** (a direction or outcome, not named items): read **Vision** in `${CLAUDE_PLUGIN_ROOT}/reference/roadmap-extras.md` now. It asks its questions before the candidates and records the vision in the README.
 3. **Candidates.** For each, write: title, why (the customer value and its evidence: `B-<n>`, `BL-<n>`, `#issue`, a review URL), size S/M/L, editions, value high/medium/low, and `from` when it came from a backlog idea, bug or issue. Prefer small, evidenced items. A bug only becomes an item when it's bigger than a `/yay:fix` (otherwise it's just fixed).
 4. **Schedule.**
    - Unfinished items in past sprints have slipped. Each one moves to the current or a new sprint, or to Later. Say which.
@@ -161,5 +162,5 @@ Plan one release instead of the whole horizon.
 - Edit items with `yayh roadmap add|set|move`. A hand edit of a sprint file (a goal line, a note) is fine: run `yayh roadmap render` after it. Never edit `v<x.y.z>.md` or the README's index: they're regenerated. The release brief `release-<v>.md` is the opposite: always edited by hand.
 - Don't rewrite past sprints' dates or move shipped items. Never edit a `Closed:` line or the front-matter `velocity`: `yayh roadmap close` writes them.
 - Don't schedule past capacity or put feature work in a freeze sprint without the user agreeing.
-- Don't invent evidence: every new item's `why` points at something real (a user naming the item counts).
+- Don't invent evidence: every new item's `why` points at something real (a user naming the item, or the recorded vision, counts).
 - Don't target a version that's already released.
