@@ -32,6 +32,8 @@ Don't remember a command? Type `/yay:go` followed by what you want in plain word
 - Plain words work too: `/yay:roadmap add X, Y and Z for 1.0.0`. `--target=minor` (or `patch`, `major`) means the next such version.
 - Sizes: S = 1.5 dev-days, M = 4, L = 8. Capacity defaults to 8 dev-days per 2-week sprint. Once 3 items are built, `yayh roadmap pace` compares their sizes with the working days they took and suggests a capacity, and `/yay:roadmap` plans with it.
 - Each command opens one `docs(roadmap): …` PR. Merge it.
+- An item reads `done` once its plans are merged (`yayh roadmap sync`), so it isn't reported as slipped while it waits for the release. The release turns it into `shipped:<version>`.
+- When a sprint ends, `/yay:roadmap --close` writes its review (done, slipped, keep and change), carries over what's unfinished, and records the sprint's velocity. After 2 closed sprints, the next plan uses that velocity as the capacity.
 - `/yay:roadmap --status --target=1.0.0` shows what's left for the version, and `/yay:roadmap --status` the current sprint; neither changes anything.
 - Moved a feature to the next version? `/yay:roadmap --retarget=R-3:1.1.0`.
 

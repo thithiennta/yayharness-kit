@@ -2,6 +2,19 @@
 
 `/yay:harness-update` reads this file to tell a repo what changed between its recorded kit version and the installed one. Each entry lists new skills, config keys, template changes and behavior changes.
 
+## Unreleased (0.7.0)
+- **Merged work counts as done for its sprint.** A new roadmap status, `done`, between `in-progress` and `shipped:<version>`.
+  - **What it means:** an item is `done` once every plan for it reads `status: done` on the base branch. That works for merge, squash and rebase merges, and after the branch is deleted.
+  - **Setting it:** new `yayh roadmap sync [--dry-run]` applies every `roadmap links` suggestion and dates the `- merged:` bullet from the base branch.
+  - **What changes:** `roadmap check` no longer reports a merged item as slipped. `roadmap status`, `yayh status`, the README index and the version lists count it as done. `yayh roadmap pace` measures to `merged` instead of `built`. `/yay:release` turns every `done` item into `shipped:<version>`.
+  - `roadmap status`'s two tables gain a `done` column at the end.
+- **`/yay:roadmap --close`: end a sprint with a review, retro, carry-over and velocity.**
+  - New `yayh roadmap close <n> [--dry-run]` lists the sprint's items as done, open or dropped, planned against done dev-days, velocity, and the lessons dated inside the sprint.
+  - Closing writes a `Closed: <date> · <done>/<planned> dev-days` line and adds the done dev-days to the front-matter `velocity: […]`, which survives `/yay:archive`.
+  - The skill writes a `#### Sprint review` block (Done, Slipped, Keep, Change) and moves each unfinished item to the next sprint or Later, or drops it.
+  - New `yayh roadmap velocity` averages the last 3 closed sprints. With 2 or more, `/yay:roadmap` plans with it instead of pace. `roadmap status` shows it.
+  - `roadmap check` warns when the last sprint that ended more than 3 days ago isn't closed.
+
 ## 0.6.0 (2026-11-12)
 - Released without the eval suite or a test run (the maintainer's call); the score log records it as not run.
 - **`/yay:archive`: clean shipped work out of `docs/`.** After a release, finished artifacts are deleted from `docs/`: plans, brainstorms, bugs, backlog notes, designs, roadmap items, empty past sprints and released versions' briefs. Each gets one row in the new `docs/archive.md` (id, title, final status, date, file and the commit that still has it), so `git show <commit>:<file>` brings it back. It runs on its own branch and PR.

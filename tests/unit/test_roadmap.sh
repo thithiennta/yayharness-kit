@@ -351,9 +351,9 @@ test_target_status_counts_and_check_warns_on_released() {
   "$YAYH" roadmap set R-3 target 1.5.0 >/dev/null
   local out; out="$("$YAYH" roadmap status --today=2026-11-12)"
   # versions sort numerically: 1.5.0 before 1.10.0
-  assert_contains "$out" "target	open	in-progress	shipped	dropped
-1.5.0	1	0	1	0
-1.10.0	0	1	0	0"
+  assert_contains "$out" "target	open	in-progress	shipped	dropped	done
+1.5.0	1	0	1	0	0
+1.10.0	0	1	0	0	0"
   out="$("$YAYH" roadmap check --today=2026-11-12)"
   assert_contains "$out" "warn: R-3 targets 1.5.0, but 1.5.0 is already out and it is still 'planned'"
   assert_not_contains "$out" "R-2 targets"
