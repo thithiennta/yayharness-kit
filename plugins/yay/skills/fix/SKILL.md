@@ -60,7 +60,7 @@ Without a test, do the report's manual check exactly and record the result.
 
 ### 5. Verify and commit
 1. Run the configured checks for what changed (`yayh run lint`, `typecheck`, the relevant `test`). Report pre-existing failures as in `/yay:implement`.
-2. Run `yayh debug markers`. It must print nothing.
+2. Run `yayh debug markers`. It must print nothing. Run `yayh code unused <base>` too: a fix adds no symbol that nothing calls, so delete each one it lists (or keep it when WordPress calls it by name, and say so).
 3. **Review**: run `yayh review diff <base>`. Spawn one `yay:bug-reviewer` (brief: worktree path, base, the bug's symptom and root cause as the goal, "review this branch for correctness"). When `review diff` reports findings, or the fix is more than about 20 changed lines, also spawn one `yay:code-reviewer` (brief: worktree path, base, "review this branch") in the same message. Both use the model and effort from `yayh model resolve review` (model routing: `${CLAUDE_PLUGIN_ROOT}/reference/models.md`). Fix each finding, or answer it with a reason for the PR's "Review" section. A `blocker` is fixed before the PR (see `/yay:implement` step 4.5). Nothing else blocks.
 4. Update the report:
    - append `## Fix` with what changed, why it's enough, and how it was verified

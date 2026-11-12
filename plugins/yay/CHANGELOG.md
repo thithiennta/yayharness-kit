@@ -3,6 +3,16 @@
 `/yay:harness-update` reads this file to tell a repo what changed between its recorded kit version and the installed one. Each entry lists new skills, config keys, template changes and behavior changes.
 
 ## Unreleased (0.5.1)
+- **Dead code: everything a branch adds needs a caller.**
+  - The code rules, loaded every session, gain "Write only what's used": nothing "for later" (no helper, parameter, option, filter or REST field the change doesn't call), every new symbol has a caller, and a test alone isn't one. Unused code outside the task becomes a deferred note, not part of the same change.
+  - New `yayh code unused [base]` lists the symbols the branch adds that no other code names (`unused`) or that only tests call (`test-only`). For an override of a WordPress or WooCommerce class's method, it adds a hint that the parent may call it by name.
+  - `yayh review diff` reports these as `no-caller`, and `yay:code-reviewer` gains the `unused` and `speculative` findings.
+  - `/yay:implement` runs the check after each task and before the PR, and `/yay:fix` runs it before its review.
+  - Plan tasks that add symbols get a `Callers:` line (each new symbol → what calls it, and which task wires it up). `yayh plan check` warns about a `Reuse: none` task without one.
+- **Verify checks are commands, and the ones that guard a risk become tests.**
+  - `reference/testing.md` gains "Verify checks", with command recipes for options, rows, PHP results, REST routes with permissions, scheduled jobs and front-end markup. Checks that write data clean up after themselves. Manual checks end with what you should see, plus the command that shows the stored data.
+  - `/yay:plan` writes a check as a command whenever a command can make it.
+  - `yayh plan check` warns when a risk-3 task is proven only by Verify command checks in a repo with unit or integration tests: those checks stop running once the plan is done, and a test keeps guarding the risk.
 - **`/yay:autopilot` and `/yay:roadmap --multi-agent` run from any repo.** They used to give the Workflow tool the plugin's script path (`${CLAUDE_PLUGIN_ROOT}/workflows/*.js`) as `scriptPath`, which the tool refuses because it only accepts a path inside the session's working directory or one it returned itself, and the plugin is installed outside the repo. Now the skill reads the script and passes its text as `script`. Autopilot's build step reuses the saved-script path that prepare returned, and reads the file again when prepare ran in an earlier session.
 
 ## 0.5.0 (2026-11-12)

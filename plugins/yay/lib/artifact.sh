@@ -197,15 +197,17 @@ EOF
     | while read -r t; do [ -n "$t" ] && echo "warn: task $t names no files (backtick the paths, or write '(no files)')"; done
   # Every task says what existing code it reuses (or why it adds new code).
   [ "$lane" = small ] || awk '
-    function done_task() { if (t != "") { if (!reuse) print t "\tmissing"; else if (none && !why) print t "\tnowhy" } }
+    function done_task() { if (t != "") { if (!reuse) print t "\tmissing"; else if (none && !why) print t "\tnowhy"; if (none && !callers) print t "\tnocallers" } }
     /^## / { if (intasks) done_task(); intasks = ($0 ~ /^## Tasks/); t = ""; next }
-    intasks && /^- \[[ xX]\] T[0-9]+/ { done_task(); match($0, /T[0-9]+/); t = substr($0, RSTART, RLENGTH); reuse = 0; none = 0; why = 0; next }
+    intasks && /^- \[[ xX]\] T[0-9]+/ { done_task(); match($0, /T[0-9]+/); t = substr($0, RSTART, RLENGTH); reuse = 0; none = 0; why = 0; callers = 0; next }
     intasks && t != "" && /^[[:space:]]+[-*]?[[:space:]]*Reuse:/ { reuse = 1; if ($0 ~ /Reuse:[[:space:]]*none/) { none = 1; why = ($0 ~ /because/) } }
+    intasks && t != "" && /^[[:space:]]+[-*]?[[:space:]]*Callers:/ { callers = 1 }
     END { if (intasks) done_task() }' "$f" \
     | while IFS="$(printf '\t')" read -r t why; do
         case "$why" in
           missing) echo "warn: task $t has no 'Reuse:' line (the existing code it calls, 'none, new X() because …', or 'n/a')" ;;
           nowhy) echo "warn: task $t adds new code ('Reuse: none') without saying why the existing code doesn't fit ('because …')" ;;
+          nocallers) echo "warn: task $t adds new code ('Reuse: none') but has no 'Callers:' line (each new symbol → what calls it; a test alone isn't a caller)" ;;
         esac
       done
   # A [tier: <name>] tag sends the task to a subagent on that tier (reference/models.md).
@@ -224,9 +226,12 @@ EOF
   done <<EOF
 $tasks
 EOF
-  if [ -n "$risky" ] && [ "$lane" != small ] && grep -Eq '^\*\*Tests:\*\*[[:space:]]*none' "$f" \
-     && ! awk '/^## Verify/{on=1; next} /^## /{on=0} on && !/^<!--/ && /`[^`]+`[[:space:]]*(→|->)/{found=1} END{exit !found}' "$f"; then
-    _pw "risk-3 task(s)$risky but '**Tests:** none' and no command check in Verify: add a test or a \`command\` → expected check that proves the risky part"
+  if [ -n "$risky" ] && [ "$lane" != small ] && grep -Eq '^\*\*Tests:\*\*[[:space:]]*none' "$f"; then
+    if ! awk '/^## Verify/{on=1; next} /^## /{on=0} on && !/^<!--/ && /`[^`]+`[[:space:]]*(→|->)/{found=1} END{exit !found}' "$f"; then
+      _pw "risk-3 task(s)$risky but '**Tests:** none' and no command check in Verify: add a test or a \`command\` → expected check that proves the risky part"
+    elif [ -n "$(yay_config_get commands.test-unit 2>/dev/null)$(yay_config_get commands.test-integration 2>/dev/null)" ]; then
+      _pw "risk-3 task(s)$risky are proven only by Verify command checks, which stop running once the plan is done. This repo has tests, so add one on the Tests line that keeps guarding the risky part (reference/testing.md, \"Verify checks\")"
+    fi
   fi
   # Notes left for this plan (lib/backlog.sh): settle them or keep their default on purpose.
   case "$st" in draft|ready|in-progress)

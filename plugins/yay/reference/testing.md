@@ -41,6 +41,24 @@ For each **risk** in the change (an acceptance criterion, a bug's root cause, a 
 
 **Missing layer:** if the right layer isn't set up here (`yayh test status`), still pick it, and write the test into the plan as `[unit] … (not set up: /yay:test-init)`. Don't drop down to a worse layer. Then use the manual check until the layer exists.
 
+## Verify checks: run by a command, then kept as tests
+
+A plan's **Verify** list proves the plan is done. `yayh verify P-<n> --run` runs every ``- `command` → expected`` item. A manual item is someone clicking, so turn every check a command can make into a command check:
+
+| To check | Command check |
+|---|---|
+| an option or setting | ``- `wp option get giftly_settings --format=json` → "max_length":200`` |
+| rows, meta, a custom table | ``- `wp db query "SELECT status FROM wp_giftly_carts WHERE id=1" --skip-column-names` → active`` |
+| what a PHP function returns or a hook does | ``- `wp eval 'echo giftly_fee_for( 10 );'` → 2.5`` |
+| a REST route, with permissions | ``- `wp eval --user=admin 'echo wp_json_encode( rest_do_request( new WP_REST_Request( "GET", "/giftly/v1/settings" ) )->get_data() );'` → "maxLength"`` (run it with `--user=customer` too, for the 403) |
+| a scheduled job | ``- `wp action-scheduler action list --hook=giftly_cleanup --status=pending --format=count` → 1`` (or `wp cron event list`) |
+| front-end markup a theme renders | ``- `curl -s "$(wp option get home)/?p=12" \| grep -c 'giftly-badge'` → 1`` |
+
+- **Run it against the dev site:** `site.wpPath`, or `yayh e2e cli` for wp-env. Never run it against the tests site, which the integration suite resets.
+- **Leave nothing behind.** A check that creates data deletes it in the same command (`… && wp post delete "$id" --force`), so the list can run again after a fix. Data a check needs goes in the seed (`/yay:e2e-init`) or in the command itself.
+- **A manual check ends with what you should see.** When the action stores something, give the command that shows it (`wp db query …`), so the reviewer checks the data, not only the screen.
+- **Keep what guards a risk.** A Verify check stops running once its plan is done, but a test runs on every later change. A check that proves a risk-3 part (data written, money, a background job, permissions) becomes a test on the **Tests** line when that layer is set up. `yayh plan check` warns when a risk-3 task has only command checks in a repo that has tests. Add the test to the area's existing test class, so each area's tests grow plan by plan and `yayh test run all` re-checks all of them.
+
 ## Writing tests
 
 - **One test class per unit under test**, mirroring the source path: `includes/Rules/Tier.php` → `tests/php/unit/Rules/TierTest.php`. Use `snake_case` test methods that state the behaviour: `test_rounds_the_discount_to_cents`.

@@ -210,6 +210,7 @@ tasks="""## Tasks
   - Reuse: none, new Fee::total()
 - [ ] T4 Another helper — `includes/Wrap.php` (new)
   - Reuse: none, new Wrap::cost() because Format only formats
+  - Callers: Wrap::cost() → Checkout::fees() (T1)
 - [ ] T5 Docs (no files)
   - Reuse: n/a
 - [ ] T6 Forgot the paths
@@ -221,6 +222,7 @@ PY
   local out; out="$("$YAYH" plan check P-1 2>&1 || true)"
   assert_contains "$out" "warn: task T2 has no 'Reuse:' line"
   assert_contains "$out" "warn: task T3 adds new code ('Reuse: none') without saying why"
+  assert_contains "$out" "warn: task T3 adds new code ('Reuse: none') but has no 'Callers:' line"
   assert_contains "$out" "warn: task T6 names no files"
   case "$out" in *"task T1 has no"*|*"task T4 "*|*"task T5 has no"*) _fail "false reuse warning: $out" ;; *) _pass ;; esac
 }
@@ -306,6 +308,10 @@ T4	2" "$("$YAYH" plan risk "$q")"
   assert_contains "$out" "warn: risk-3 task(s) T3 but '**Tests:** none'"
   sed -i.bak 's|^-$|- `wp db query "SHOW TABLES"` → fees|' "$YAY_REPO/$q"
   case "$("$YAYH" plan check "$q" 2>&1 || true)" in *"risk-3 task"*) _fail "command check didn't satisfy risk 3" ;; *) _pass ;; esac
+  python3 -I - "$YAY_REPO/.yay/config.json" <<'PY2'
+import sys,json; p=sys.argv[1]; c=json.load(open(p)); c.setdefault("commands",{})["test-unit"]="vendor/bin/phpunit"; json.dump(c,open(p,"w"))
+PY2
+  assert_contains "$("$YAYH" plan check "$q" 2>&1 || true)" "warn: risk-3 task(s) T3 are proven only by Verify command checks"
 }
 
 test_artifact_where_and_tidy_leftover_copies() {
