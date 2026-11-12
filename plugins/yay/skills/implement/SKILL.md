@@ -59,7 +59,7 @@ When the argument isn't a plan (a requirement, or an `R-`/`BS-`/`B-<n>` with no 
    - if the plan has `roadmap: R-<n>`, run `yayh roadmap set R-<n> status in-progress`
    - settle the notes step 1 decided (`yayh backlog settle …`) and apply the plan edits they need
 5. Run `yayh id conflicts`. If an ID clashes with the base branch, renumber this branch's artifact with `yayh id next`, then update its `id:` and every reference to it.
-6. Commit: `docs(plan): start P-<n> <title>` with the trailer `Plan: P-<n>`. Include the settled notes and the carried notes.
+6. Commit: `docs(plan): start P-<n> <title>` with the trailer `Plan: P-<n>`. Include the settled notes, the carried notes and the roadmap files the status change touched (`git status -- docs/roadmap docs/roadmap.md`).
 
 Install dependencies if the worktree needs them: `yayh run install`, once.
 

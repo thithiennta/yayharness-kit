@@ -50,7 +50,7 @@ const READONLY = `STRICTLY READ-ONLY: do not create, edit or delete files, switc
 const ITEM = {
   type: 'object',
   properties: {
-    existing_id: { type: 'string', description: 'R-<n> when this is an item already in the plugin\'s docs/roadmap.md, else empty' },
+    existing_id: { type: 'string', description: 'R-<n> when this is an item already in the plugin\'s roadmap (docs/roadmap/ or docs/roadmap.md), else empty' },
     title: { type: 'string' },
     why: { type: 'string', description: 'one line on the customer value, with the evidence' },
     kind: { type: 'string', enum: ['feature', 'improvement', 'fix', 'compat', 'tech-debt', 'growth', 'integration'] },
@@ -126,7 +126,7 @@ ${READONLY}
 ${CAL}
 
 Research in this order:
-1. The repo: CLAUDE.md, docs/knowledge/ (known-issues, decisions), docs/roadmap.md (existing items: keep every unfinished one with its R id in existing_id; skip shipped and dropped), docs/backlog/, open docs/bugs/ (by severity), docs/plans/ that are ready or in progress, readme.txt (features, Requires/Tested up to, recent changelog), \`git log --since=90.days --oneline\`, unmerged branches.${p.harnessed ? ' `yayh roadmap status` and `yayh roadmap links` summarize the docs (run them from the repo root).' : ''}
+1. The repo: CLAUDE.md, docs/knowledge/ (known-issues, decisions), docs/roadmap/ (README.md and one file per sprint; older repos: docs/roadmap.md) (existing items: keep every unfinished one with its R id in existing_id; skip shipped and dropped), docs/backlog/, open docs/bugs/ (by severity), docs/plans/ that are ready or in progress, readme.txt (features, Requires/Tested up to, recent changelog), \`git log --since=90.days --oneline\`, unmerged branches.${p.harnessed ? ' `yayh roadmap status` and `yayh roadmap links` summarize the docs (run them from the repo root).' : ''}
 2. GitHub, if \`gh\` works${p.repo ? ` (-R ${p.repo})` : ''}: open issues and PRs.
 ${A.web ? `3. The web: the wordpress.org page (installs, rating, recent support threads, 1–3★ reviews), and 3–5 competitors (what they have that this plugin lacks).` : '3. Skip web research.'}
 

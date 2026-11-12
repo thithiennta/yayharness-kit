@@ -15,7 +15,7 @@
 |---|---|
 | Roadmap sprint `## Sprint <n> (<start> → <end>)` | A list with that exact name, created if missing (`trelloWriteList` `create`, `pos` in sprint order) |
 | `## Later` | A list named `Later` |
-| Roadmap item `R-<n>` | A card `R-<n> <title>` in its sprint's list. Description: `why`, `size`, `editions`, `from`, `status`, and `docs/roadmap.md`. Due date: the sprint's end, 09:00 in the Trello user's timezone (`trelloReadMember` `get_me`), sent as UTC |
+| Roadmap item `R-<n>` | A card `R-<n> <title>` in its sprint's list. Description: `why`, `size`, `editions`, `from`, `status`, and its sprint file (`docs/roadmap/sprint-<n>.md`). Due date: the sprint's end, 09:00 in the Trello user's timezone (`trelloReadMember` `get_me`), sent as UTC |
 | Item `shipped:<version>` | Card marked done (`mark_done`), left in its list |
 | Item `dropped` | Card archived (reversible in Trello) |
 | Plan `P-<n>` | A checklist `P-<n> <title>` on its roadmap item's card; with no item card, a card `P-<n> <title>` in `trello.list`, with a `Tasks` checklist. One check item per task: `T<n> <what>` |

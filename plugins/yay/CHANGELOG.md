@@ -3,6 +3,16 @@
 `/yay:harness-update` reads this file to tell a repo what changed between its recorded kit version and the installed one. Each entry lists new skills, config keys, template changes and behavior changes.
 
 ## Unreleased (0.5.0)
+- **Roadmap: one file per sprint, a list per version.** The roadmap is now the folder `docs/roadmap/`:
+  - `README.md` holds the front-matter, the title and a generated index.
+  - `sprint-<n>.md` holds `## Sprint <n> (…)` and its items. `later.md` holds `## Later`.
+  - `v<x.y.z>.md` is generated: the items targeting that version and the earliest sprint it can ship.
+
+  Old sprints no longer bloat one file, and Claude reads only the sprint it needs (`yayh artifact resolve R-<n>` names it).
+  - **Reading and writing.** `yayh roadmap` reads the files as one document (cached in the git dir, keyed on their checksum), so every command, `check` and `/yay:autopilot` work unchanged. Each `add`, `set` or `move` writes back to the right file and regenerates the index and the version lists. Errors name the file and line (`docs/roadmap/sprint-3.md:1: …`).
+  - **New commands.** `yayh roadmap split` converts a `docs/roadmap.md`, and `/yay:roadmap` runs it on its first write in a repo, in the same commit. `yayh roadmap render [--check]` regenerates the index and version lists after a hand edit (`check` warns when they're stale). `yayh roadmap layout` prints `split`, `single` or `none`, and `yayh roadmap file` names the front-matter file.
+  - **Hand edits.** The edit hook blocks hand edits to `docs/roadmap/v*.md`.
+  - **Installs.** New installs seed `docs/roadmap/README.md` in place of `docs/roadmap.md`. `/yay:harness-update` doesn't seed it in a repo that has `docs/roadmap.md`, so the existing roadmap isn't hidden; that repo keeps working until its first roadmap write. The managed `CLAUDE.md` block no longer names the roadmap's path.
 - **Roadmap: several items at once, and target versions.**
   - **Several items in one prompt.** `/yay:roadmap --add="A [S]; B [M]; C"` (or `--add` repeated, or "add A, B and C for 1.5.0" in plain words) adds one item per title in a single commit and PR. A `[S]`/`[M, sprint 2]` hint sets that item's size or sprint.
   - **Target version: `- target: x.y.z`** on a roadmap item names the plugin release it should ship in, separate from its sprint. `yayh roadmap add … target=1.5.0`, `yayh roadmap set R-n target 1.5.0|none`, `yayh roadmap list --target=1.5.0` and `yayh roadmap queue --target=1.5.0`. `yayh roadmap status` adds a per-version count table. `yayh roadmap check` rejects a target that isn't a version, and warns about an unshipped item whose target is already released (the version in `versionFiles`).

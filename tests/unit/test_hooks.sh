@@ -45,6 +45,10 @@ test_edit_generated_and_kit_owned_blocked() {
   assert_exit 0 _edit guard-edit.sh "$r/includes/Plugin.php"
   assert_exit 0 _edit guard-edit.sh "$r/.yay/config.json"
   assert_exit 0 _edit guard-edit.sh "$r/vendorish/file.php"
+  # roadmap: version lists are generated, sprint files are edited
+  assert_exit 2 _edit guard-edit.sh "$r/docs/roadmap/v1.5.0.md"
+  assert_exit 0 _edit guard-edit.sh "$r/docs/roadmap/sprint-2.md"
+  assert_exit 0 _edit guard-edit.sh "$r/docs/roadmap/README.md"
 }
 
 test_edit_in_worktree_is_guarded_too() {

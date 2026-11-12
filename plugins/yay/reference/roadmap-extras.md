@@ -4,7 +4,7 @@ Read by `/yay:roadmap` only when the run needs one of these. The main flow is in
 
 ## Legacy conversion
 
-- **Legacy roadmap.** If `docs/roadmap.md` has content but no front-matter or no `### R-<n>` items (milestones, checklists, prose from the old harness), this run converts it:
+- **Legacy roadmap.** If the roadmap (`docs/roadmap.md` in a repo from the old harness) has content but no front-matter or no `### R-<n>` items (milestones, checklists, prose from the old harness), this run converts it:
   - Read it as evidence. Unfinished milestones and unticked "done when" boxes become candidates (Plan step 3); finished ones are history and are dropped.
   - Lasting content that isn't a plan (scope rules, business rules, settled decisions) belongs in knowledge, not the roadmap. List those sections. By default, append them to `docs/knowledge/decisions.md` under `## From the old roadmap` in the same commit; the confirm round can change that. Never silently lose them. Old text often links docs the harness wipe removed: run `yayh knowledge check docs/knowledge/decisions.md` and repoint each dead path at its `docs/knowledge/` successor (or drop the link) before committing.
   - The new file replaces the old one entirely (the old version stays in git history). Say so in the confirm step.
@@ -33,7 +33,7 @@ One read-only owner agent per plugin researches its repo; the owners then read e
 ## Publish (`--publish`)
 
 1. Load the `artifact-design` skill, then build one HTML page from the committed roadmap(s): the current sprint first, then a timeline of sprints with item cards (id, title, size, status colour), Later, open critical and high bugs, and for multi-agent runs the shared initiatives and one tab per plugin. Write it to the session scratchpad, not the repo.
-2. If `docs/roadmap.md` has `published: <url>` (or `hub:` for a portfolio), republish to that URL with the Artifact tool. Otherwise publish a new private page and save its URL with `yayh fm set docs/roadmap.md published <url>` (`hub` in every plugin of a portfolio), committed with the roadmap.
+2. If the roadmap's front-matter (`yayh roadmap file`) has `published: <url>` (or `hub:` for a portfolio), republish to that URL with the Artifact tool. Otherwise publish a new private page and save its URL with `yayh fm set "$(yayh roadmap file)" published <url>` (`hub` in every plugin of a portfolio), committed with the roadmap.
 3. If the Artifact tool isn't available, say so and leave the HTML file's path.
 
 ## Trello (`--trello`)

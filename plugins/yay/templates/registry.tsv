@@ -7,7 +7,7 @@ rules/yay-git.md	.claude/rules/yay-git.md	file	rules
 rules/yay-wordpress.md	.claude/rules/yay-wordpress.md	file	rules
 settings.json	.claude/settings.json	json	settings
 github/pull_request_template.md	.github/pull_request_template.md	file	github
-docs/roadmap.md	docs/roadmap.md	seed	docs
+docs/roadmap/README.md	docs/roadmap/README.md	seed	docs
 docs/knowledge-readme.md	docs/knowledge/README.md	seed	docs
 docs/yay-workflow.md	docs/yay-workflow.md	file	docs
 -	docs/brainstorms/.gitkeep	seed	docs

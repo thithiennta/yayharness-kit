@@ -492,6 +492,9 @@ yay_sync() {
 
     if [ "$mode" = seed ]; then
       if [ -e "$root/$dest" ]; then continue; fi
+      # A repo with the one-file roadmap keeps it: an empty docs/roadmap/ would hide it.
+      # /yay:roadmap converts it (yayh roadmap split) on its first write.
+      if [ "$dest" = docs/roadmap/README.md ] && [ -e "$root/docs/roadmap.md" ]; then continue; fi
       action=seeded
       if [ "$check" = 0 ]; then
         mkdir -p "$(dirname "$root/$dest")"

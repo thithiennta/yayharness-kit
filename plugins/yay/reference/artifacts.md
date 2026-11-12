@@ -14,7 +14,7 @@ Every step of the workflow leaves a markdown file in the repo. Its front-matter 
 
 | Prefix | Artifact | Where |
 |---|---|---|
-| `R-<n>` | Roadmap item | `docs/roadmap.md`, one `### R-<n> Title` heading per item |
+| `R-<n>` | Roadmap item | `docs/roadmap/sprint-<n>.md` or `later.md` (older repos: `docs/roadmap.md`), one `### R-<n> Title` heading per item |
 | `BS-<n>` | Brainstorm | `docs/brainstorms/YYYY-MM-DD-<slug>.md` |
 | `P-<n>` | Plan | `docs/plans/<slug>.md` |
 | `B-<n>` | Bug report | `docs/bugs/YYYY-MM-DD-<slug>.md` |
@@ -33,7 +33,17 @@ When you're already on a non-base branch, a skill may commit its new artifact th
 
 ## Shapes
 
-### Roadmap: `docs/roadmap.md`
+### Roadmap: `docs/roadmap/`
+One file per section, read and written by `yayh roadmap` as one document:
+```
+docs/roadmap/
+  README.md      front-matter, title, then a generated index (sections and versions)
+  sprint-1.md    "## Sprint 1 (…)", its Goal: line and its items
+  sprint-2.md
+  later.md       "## Later" and its items
+  v1.5.0.md      generated: the items with "- target: 1.5.0"
+```
+Put together (README first, sprints by number, later last), the document reads:
 ```markdown
 ---
 horizon: 2026-12-31
@@ -65,7 +75,8 @@ Goal: checkout speed before BFCM.
 - Items are `### R-<n> Title` with `- key: value` bullets (no front-matter, because many items share one file). `status` and `size` are required. Optional: `why`, `editions`, `target` (the plugin version it should ship in, `x.y.z`; `yayh roadmap list --target=`, `/yay:autopilot --target=`), `from`, `note` (e.g. why it was dropped), `shared` and `depends` (cross-plugin work), and `trello` (its card URL, set by `/yay:roadmap --trello`).
 - `status` is one of `planned`, `brainstorming[:BS-<n>]`, `planned-in:P-<n>`, `in-progress`, `shipped:<version>`, `dropped`. `/yay:roadmap` syncs it from brainstorms and plans (`yayh roadmap links`), `/yay:implement` sets `in-progress`, and `/yay:release` sets `shipped:<version>`.
 - `size`: S (≤ 2 days), M (≤ 1 week), L (more).
-- Edit with `yayh roadmap add|set|move`, and validate with `yayh roadmap check`.
+- Edit with `yayh roadmap add|set|move`, and validate with `yayh roadmap check`. Each write regenerates the README index and the `v<x.y.z>.md` lists; after a hand edit of a sprint file, run `yayh roadmap render`. The generated files never start a line with `### R-`, so they never take an id.
+- Older repos keep the whole document in `docs/roadmap.md`. Every command reads it; `yayh roadmap split` (run by `/yay:roadmap` on its first write) converts it. `yayh roadmap layout` says which, and `yayh roadmap file` names the file with the front-matter.
 
 ### Brainstorm: `docs/brainstorms/YYYY-MM-DD-<slug>.md`
 ```

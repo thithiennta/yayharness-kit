@@ -1,6 +1,6 @@
 ---
 name: roadmap
-description: Plan, re-plan or report a Yay plugin roadmap (docs/roadmap.md). Use when the user says "roadmap", "plan the next sprints", "what should we build next", "sprint status", "where are we", "add to the roadmap". Schedules evidenced R-<n> items into dated sprints against capacity and freezes, and pins items to the plugin version they ship in ("for 1.5.0", "next minor"). --add takes several items at once; --target scopes adds, a plan or a status report to one version; --status reports read-only; --multi-agent co-plans several plugins; --publish shares a page; --trello (optional) mirrors the sprints and items to a Trello board.
+description: Plan, re-plan or report a Yay plugin roadmap (docs/roadmap/: one file per sprint, a generated list per version). Use when the user says "roadmap", "plan the next sprints", "what should we build next", "sprint status", "where are we", "add to the roadmap". Schedules evidenced R-<n> items into dated sprints against capacity and freezes, and pins items to the plugin version they ship in ("for 1.5.0", "next minor"). --add takes several items at once; --target scopes adds, a plan or a status report to one version; --status reports read-only; --multi-agent co-plans several plugins; --publish shares a page; --trello (optional) mirrors the sprints and items to a Trello board.
 argument-hint: "[--status] [--horizon=<YYYY-MM-DD|<n>sprints|eoq|eoy>] [--sprint-length=2w] [--start=YYYY-MM-DD] [--capacity=<dev-days/sprint>] [--freeze=YYYY-MM-DD..YYYY-MM-DD] [--focus=\"<theme>\"] [--web] [--add=\"<title>[; <title>…]\" [--sprint=<n|later>] [--size=S|M|L]] [--target=<x.y.z|patch|minor|major>] [--retarget=R-<n>:<x.y.z|none>] [--move=R-<n>:<n|later>] [--drop=R-<n>] [--multi-agent] [--plugins=<a,b|all>] [--rounds=1|2] [--publish] [--trello] [--dry-run] [--no-pr] [--draft]"
 allowed-tools: Bash(yayh *), Bash(git *), Bash(gh *), Read, Grep, Glob, Write, Edit, Agent, AskUserQuestion, WebSearch, WebFetch, Workflow, Skill, Artifact, mcp__trello__trelloReadBoard, mcp__trello__trelloReadList, mcp__trello__trelloReadCard, mcp__trello__trelloReadMember, mcp__trello__trelloWriteList, mcp__trello__trelloWriteCard
 ---
@@ -9,7 +9,12 @@ allowed-tools: Bash(yayh *), Bash(git *), Bash(gh *), Read, Grep, Glob, Write, E
 
 Arguments: `$ARGUMENTS`
 
-The roadmap is `docs/roadmap.md`: `### R-<n> Title` items with `- key: value` bullets, under `## Sprint <n> (<start> → <end>)` and `## Later` headings. The shape is in `${CLAUDE_PLUGIN_ROOT}/reference/artifacts.md` (Roadmap). Feature work flows **roadmap item → `/yay:brainstorm --from=R-<n>` → `/yay:plan` → `/yay:implement`**, and `/yay:release` marks items shipped.
+The roadmap is the folder `docs/roadmap/`: `### R-<n> Title` items with `- key: value` bullets, one file per section.
+- `README.md` holds the front-matter (horizon, sprint length), the title and a generated index.
+- `sprint-<n>.md` starts with `## Sprint <n> (<start> → <end>)` and holds that sprint's items. `later.md` starts with `## Later`.
+- `v<x.y.z>.md` is generated: the items targeting that version, with the earliest sprint it can ship.
+
+`yayh` reads all of them as one document and writes each change back to the right file, then regenerates the index and the version lists. An older repo has everything in one `docs/roadmap.md`: every command still reads it, and the first write converts it (**Where the edit happens**). The shape is in `${CLAUDE_PLUGIN_ROOT}/reference/artifacts.md` (Roadmap). Feature work flows **roadmap item → `/yay:brainstorm --from=R-<n>` → `/yay:plan` → `/yay:implement`**, and `/yay:release` marks items shipped.
 
 Always edit through `yayh roadmap` where a command exists (`add`, `set`, `move`), so the format stays parseable, and finish every write with `yayh roadmap check` (no errors allowed).
 
@@ -36,11 +41,13 @@ Always edit through `yayh roadmap` where a command exists (`add`, `set`, `move`)
 
 ## Where the edit happens
 
-`docs/roadmap.md` is tracked, so every write happens on a branch, never on the base:
+The roadmap is tracked, so every write happens on a branch, never on the base:
 - On a non-base branch already: edit there.
 - On the base: `branch="$(yayh git branch-name docs "roadmap $(date +%Y-%m-%d)")"`, `wt="$(yayh git worktree "$branch")"`, and work in `$wt`. Reuse it if it exists today.
 
-Commit by path with `docs(roadmap): <summary>` (the `roadmap` scope is always allowed): `git add -- docs/roadmap.md <promoted backlog files>`. Then push and `gh pr create --base <base> --assignee @me`, unless `--no-pr` (then print those commands). `--status` and `--dry-run` never push.
+**One file per sprint.** When `yayh roadmap layout` says `single`, run `yayh roadmap split` in the branch before the first edit. It writes `docs/roadmap/` and removes `docs/roadmap.md`, keeping every item and id. Say so in the report; the conversion rides in the same commit.
+
+Commit by path with `docs(roadmap): <summary>` (the `roadmap` scope is always allowed): `git add -- docs/roadmap docs/roadmap.md <promoted backlog files>` (naming `docs/roadmap.md` also stages its removal after a split; drop it when it never existed). Then push and `gh pr create --base <base> --assignee @me`, unless `--no-pr` (then print those commands). `--status` and `--dry-run` never push.
 
 ## Status (`--status`)
 
@@ -79,7 +86,7 @@ With `--trello`, sync only the item that changed (`reference/roadmap-extras.md`,
 ## Plan (default)
 
 1. **Where we are.**
-   - With no `docs/roadmap.md` at all, the harness isn't set up: suggest `/yay:harness-init` and stop.
+   - With no roadmap at all (`yayh roadmap layout` prints `none`), the harness isn't set up: suggest `/yay:harness-init` and stop.
    - `yayh roadmap status`, `yayh roadmap check` and `yayh roadmap links`. Keep every existing item and its id.
    - **Legacy roadmap or backlog** (content without front-matter or `### R-<n>` items, or backlog files without `id:`): read **Legacy conversion** in `${CLAUDE_PLUGIN_ROOT}/reference/roadmap-extras.md` before going on.
    - Settle horizon, sprint length, start, capacity and freezes from the options and the front-matter, and use the defaults for the rest. Don't ask yet: the defaults are shown in step 5's single round. Then `yayh roadmap sprints start=… length=… until=…|count=… first=<next sprint number>` gives the new sprint dates. Past and current sprints keep their headings and dates.
@@ -117,7 +124,7 @@ Plan one release instead of the whole horizon.
 4. **Write and commit** as in Plan steps 6–8 (`docs(roadmap): plan <v>`); every item in scope carries `target=<v>`.
 5. **Report** the version's table (id, title, size, sprint, status), its earliest release sprint, and **Next**: `/yay:autopilot --target=<v>` to build it all, or `/yay:brainstorm --from=R-<n>` for the first item.
 
-`--status --target=<v>` is read-only: the version's items with status and sprint (`yayh roadmap list --target=<v>`), what's left to build, the item whose sprint ends last (it holds the release back), and the target counts from `yayh roadmap status`.
+`--status --target=<v>` is read-only: the version's items with status and sprint (`docs/roadmap/v<v>.md`, or `yayh roadmap list --target=<v>`), what's left to build, the item whose sprint ends last (it holds the release back), and the target counts from `yayh roadmap status`.
 
 ## Multi-agent, publish and Trello
 
@@ -125,7 +132,8 @@ Plan one release instead of the whole horizon.
 
 ## Don'ts
 - Never renumber, reuse or delete an `R-<n>`. Dropped items stay with `status: dropped`.
-- Never edit `docs/roadmap.md` on the base branch, and never stage with `git add -A`.
+- Never edit the roadmap on the base branch, and never stage with `git add -A`.
+- Edit items with `yayh roadmap add|set|move`. A hand edit of a sprint file (a goal line, a note) is fine: run `yayh roadmap render` after it. Never edit `v<x.y.z>.md` or the README's index: they're regenerated.
 - Don't rewrite past sprints' dates or move shipped items.
 - Don't schedule past capacity or put feature work in a freeze sprint without the user agreeing.
 - Don't invent evidence: every new item's `why` points at something real (a user naming the item counts).

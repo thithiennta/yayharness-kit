@@ -110,9 +110,9 @@ test_carry_moves_untracked_into_worktree() {
   assert_eq "carried	$b
 carried	$p" "$("$YAYH" artifact carry "$wt" "$b" "$p")"
   assert_file "$wt/$p"; assert_no_file "$YAY_REPO/$p"
-  assert_eq "tracked	docs/roadmap.md" "$("$YAYH" artifact carry "$wt" docs/roadmap.md)"
-  echo x >> "$YAY_REPO/docs/roadmap.md"
-  assert_fails "$YAYH" artifact carry "$wt" docs/roadmap.md
+  assert_eq "tracked	docs/roadmap/README.md" "$("$YAYH" artifact carry "$wt" docs/roadmap/README.md)"
+  echo x >> "$YAY_REPO/docs/roadmap/README.md"
+  assert_fails "$YAYH" artifact carry "$wt" docs/roadmap/README.md
 }
 
 test_id_next_sees_base_branch_and_conflicts_found() {

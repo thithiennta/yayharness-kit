@@ -6,7 +6,7 @@ Three owners write into a plugin repo. Each skill writes only to what its owner 
 |---|---|---|
 | **kit** | `/yay:harness-init`, `/yay:harness-update` | `.claude/rules/yay-*.md`, `.claude/settings.json`, `.github/pull_request_template.md`, `.yay/manifest.json`, the managed block of `CLAUDE.md` |
 | **knowledge** | `/yay:knowledge-init`, `/yay:knowledge-update` | the project block of `CLAUDE.md`, `docs/knowledge/**` |
-| **workflow** | brainstorm, plan, implement, debug, fix, roadmap, changelog, release | `docs/roadmap.md`, `docs/brainstorms/**`, `docs/plans/**`, `docs/bugs/**`, `docs/backlog/**`, `docs/releases/**`, the `readme.txt` changelog |
+| **workflow** | brainstorm, plan, implement, debug, fix, roadmap, changelog, release | `docs/roadmap/**` (older repos: `docs/roadmap.md`), `docs/brainstorms/**`, `docs/plans/**`, `docs/bugs/**`, `docs/backlog/**`, `docs/releases/**`, the `readme.txt` changelog |
 | **team** | humans | `.yay/config.json` (kit seeds it once), `.yay/settings.extra.json`, `.claude/rules/*.md` not prefixed `yay-`, `CLAUDE.local.md`, `.claude/settings.local.json` |
 
 ## Shared settings

@@ -24,6 +24,8 @@ case "$rel" in
     hook_block ".yay/manifest.json is written only by yayh (harness sync / manifest record)." ;;
   .claude/settings.json)
     hook_block ".claude/settings.json is kit-owned. Put repo settings in .yay/settings.extra.json, then run 'yayh harness sync --only=settings'. Personal settings go in .claude/settings.local.json." ;;
+  docs/roadmap/v[0-9]*.md)
+    hook_block "$rel is generated from the sprint files by yayh roadmap. Change the items (yayh roadmap set R-<n> target …) and it follows." ;;
   .claude/rules/yay-*.md|.github/pull_request_template.md)
     hook_block "$rel is kit-owned. Run /yay:harness-update to change it, or add a repo rule in .claude/rules/ without the yay- prefix." ;;
 esac

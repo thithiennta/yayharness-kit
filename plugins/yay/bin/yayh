@@ -106,7 +106,12 @@ Artifacts (brainstorms, plans, bugs, backlog)
   backlog settle <BL-n> decided "<answer>" | planned <P-n> | done "<commit or PR>" | dropped "<why>"
                                    close a decision or deferred note (this checkout)
 
-Roadmap (docs/roadmap.md)
+Roadmap (docs/roadmap/: README.md + one file per sprint; or one docs/roadmap.md)
+  roadmap layout                   split | single | none
+  roadmap file                     the file with the front-matter (docs/roadmap/README.md or docs/roadmap.md)
+  roadmap split                    convert docs/roadmap.md into docs/roadmap/ (one file per sprint) and remove it
+  roadmap render [--check]         rewrite the generated README index and v<x.y.z>.md lists after hand
+                                   edits to the sprint files (add/set/move do it themselves)
   roadmap list [--status=s] [--sprint=n|later] [--target=x.y.z]
                                    id, status, size, section, title (TSV)
   roadmap get <R-n> <key>          one bullet's value
@@ -357,7 +362,11 @@ case "$cmd" in
       peers) yay_roadmap_peers ;;
       links) yay_roadmap_links ;;
       queue) yay_roadmap_queue "$@" ;;
-      *) yay_die "usage: yayh roadmap list|get|set|add|move|sprints|current|check|status|links|peers|queue" ;;
+      split) yay_roadmap_split ;;
+      render) yay_roadmap_render "$@" ;;
+      file) yay_roadmap_source ;;
+      layout) yay_roadmap_layout ;;
+      *) yay_die "usage: yayh roadmap list|get|set|add|move|sprints|current|check|status|links|peers|queue|split|render|file|layout" ;;
     esac ;;
   code)
     sub="${1:-}"; shift || true

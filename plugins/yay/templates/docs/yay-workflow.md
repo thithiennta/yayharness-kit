@@ -91,7 +91,7 @@ Send the `release/bundles/<slug>-<version>/` folder to QA or the store. It holds
 
 | ID | What | Where |
 |---|---|---|
-| `R-<n>` | Roadmap item | `docs/roadmap.md` |
+| `R-<n>` | Roadmap item | `docs/roadmap/sprint-<n>.md` (one file per sprint; `v<x.y.z>.md` lists each version) |
 | `BS-<n>` | Brainstorm | `docs/brainstorms/` |
 | `UX-<n>` | UI/UX design | `docs/designs/` |
 | `P-<n>` | Plan | `docs/plans/` |

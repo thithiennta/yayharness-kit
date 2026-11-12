@@ -137,15 +137,8 @@ import json,sys
 p=sys.argv[1]; c=json.load(open(p)); c["models"]={"steps":{"review":"balanced"}}
 json.dump(c,open(p,"w"))
 PY
-  mkdir -p "$YAY_REPO/docs"
-  cat > "$YAY_REPO/docs/roadmap.md" <<'EOF'
----
-horizon: 2026-12-07
-sprint_length: 2w
-updated: 2026-11-01
----
-# Roadmap: Fixture
-
+  # the install seeded docs/roadmap/: the item goes in its sprint file
+  cat > "$YAY_REPO/docs/roadmap/sprint-1.md" <<'EOF'
 ## Sprint 1 (2026-11-10 → 2026-11-23)
 
 ### R-1 Big thing

@@ -344,3 +344,86 @@ test_target_status_counts_and_check_warns_on_released() {
   printf '\n### R-9 Broken\n- status: planned\n- size: S\n- target: next\n' >> "$YAY_REPO/docs/roadmap.md"
   assert_contains "$("$YAYH" roadmap check --today=2026-11-12 || true)" "error: R-9 target 'next' must be a version"
 }
+
+# ---------- split layout: docs/roadmap/ ----------
+
+_rsplit() { # the fixture roadmap, split into docs/roadmap/
+  local r; r="$(_rrepo)"
+  YAY_REPO="$r" "$YAYH" roadmap split >/dev/null
+  printf '%s\n' "$r"
+}
+
+test_split_keeps_every_item_and_writes_one_file_per_section() {
+  export YAY_REPO; YAY_REPO="$(_rrepo)"
+  local before; before="$("$YAYH" roadmap list)"
+  assert_eq "single" "$("$YAYH" roadmap layout)"
+  assert_contains "$("$YAYH" roadmap split)" "removed	docs/roadmap.md"
+  assert_eq "split" "$("$YAYH" roadmap layout)"
+  assert_eq "docs/roadmap/README.md" "$("$YAYH" roadmap file)"
+  assert_eq "$before" "$("$YAYH" roadmap list)"
+  assert_exit 1 test -f "$YAY_REPO/docs/roadmap.md"
+  local d="$YAY_REPO/docs/roadmap"
+  assert_eq "later.md README.md sprint-1.md sprint-2.md" "$(ls "$d" | tr '\n' ' ' | sed 's/ $//')"
+  assert_eq "## Sprint 1 (2026-11-10 → 2026-11-23)" "$(sed -n 1p "$d/sprint-1.md")"
+  assert_contains "$(cat "$d/sprint-2.md")" '### R-0 Example inside a fence'
+  assert_eq "2026-12-07" "$("$YAYH" fm get "$d/README.md" horizon)"
+  assert_contains "$(cat "$d/README.md")" "| [Sprint 1](sprint-1.md) | 2026-11-10 → 2026-11-23 | checkout speed before BFCM. | 2 (1 shipped) | 5.5 |"
+  # ids: the sprint files still hold the headings, the index never claims one
+  assert_eq "R-5" "$("$YAYH" id next R)"
+  assert_eq "docs/roadmap/sprint-2.md" "$("$YAYH" artifact resolve R-3)"
+  assert_eq "" "$("$YAYH" roadmap check --today=2026-11-12 | grep -v 'points at P-2' || true)"
+  assert_exit 1 "$YAYH" roadmap split
+}
+
+test_split_writes_go_to_the_right_file_and_regenerate_versions() {
+  export YAY_REPO; YAY_REPO="$(_rsplit)"
+  local d="$YAY_REPO/docs/roadmap"
+  "$YAYH" roadmap set R-3 target 1.5.0 >/dev/null
+  assert_contains "$(cat "$d/sprint-2.md")" "- target: 1.5.0"
+  assert_eq "R-5" "$("$YAYH" roadmap add "Gift | wrap" sprint=1 size=S target=1.5.0)"
+  assert_contains "$(cat "$d/sprint-1.md")" "### R-5 Gift | wrap"
+  assert_contains "$(cat "$d/v1.5.0.md")" "2 items: 2 open, 0 in progress, 0 shipped, 0 dropped."
+  assert_contains "$(cat "$d/v1.5.0.md")" "| R-5 | Gift \| wrap | planned | S | [Sprint 1](sprint-1.md) |"
+  assert_contains "$(cat "$d/v1.5.0.md")" "The last open item is in [Sprint 2](sprint-2.md), ends 2026-12-07"
+  assert_contains "$(cat "$d/README.md")" "| [1.5.0](v1.5.0.md) | 2 items:"
+  "$YAYH" roadmap move R-4 1 >/dev/null
+  assert_contains "$(cat "$d/sprint-1.md")" "### R-4 Import from URL"
+  assert_not_contains "$(cat "$d/later.md")" "R-4"
+  # a version nobody targets any more loses its file; hand-written files stay
+  printf 'notes\n' > "$d/notes.md"
+  "$YAYH" roadmap set R-3 target none >/dev/null
+  "$YAYH" roadmap set R-5 target 1.6.0 >/dev/null
+  assert_exit 1 test -f "$d/v1.5.0.md"
+  assert_ok test -f "$d/v1.6.0.md"
+  assert_ok test -f "$d/notes.md"
+  assert_eq "$(date +%Y-%m-%d)" "$("$YAYH" fm get "$d/README.md" updated)"
+  assert_eq "" "$("$YAYH" roadmap check --today=2026-11-12 | grep -v 'points at P-2' || true)"
+}
+
+test_split_reads_hand_edits_and_render_refreshes_the_index() {
+  export YAY_REPO; YAY_REPO="$(_rsplit)"
+  local d="$YAY_REPO/docs/roadmap"
+  printf '\n### R-9 Hand added\n- status: planned\n- size: S\n- target: 2.0.0\n' >> "$d/later.md"
+  assert_eq "R-9	planned	S	later	Hand added" "$("$YAYH" roadmap list | tail -1)"
+  assert_contains "$("$YAYH" roadmap check --today=2026-11-12)" "warn: docs/roadmap/ index or version lists are out of date"
+  assert_exit 1 "$YAYH" roadmap render --check
+  assert_contains "$("$YAYH" roadmap render)" "write	docs/roadmap/v2.0.0.md"
+  assert_ok "$YAYH" roadmap render --check
+  assert_eq "unchanged	docs/roadmap/" "$("$YAYH" roadmap render)"
+  # errors name the sprint file and its line
+  printf '## Sprint 3 (2026-12-01 → 2026-12-14)\n\n### R-10 Bad\n- status: nope\n- size: S\n' > "$d/sprint-3.md"
+  local out; out="$("$YAYH" roadmap check --today=2026-11-12 || true)"
+  assert_contains "$out" "error: docs/roadmap/sprint-3.md:1: Sprint 3 overlaps the previous sprint"
+  assert_contains "$out" "error: R-10 status 'nope'"
+  # a leftover single file is reported, not read
+  printf -- '---\n---\n## Later\n\n### R-20 Ghost\n- status: planned\n- size: S\n' > "$YAY_REPO/docs/roadmap.md"
+  assert_contains "$("$YAYH" roadmap check --today=2026-11-12 || true)" "warn: docs/roadmap.md is ignored while docs/roadmap/ exists"
+  assert_not_contains "$("$YAYH" roadmap list)" "R-20"
+}
+
+test_split_status_and_queue_work() {
+  export YAY_REPO; YAY_REPO="$(_rsplit)"
+  assert_contains "$("$YAYH" roadmap status --today=2026-11-12)" "roadmap	docs/roadmap/README.md	horizon=2026-12-07"
+  assert_eq "R-3" "$("$YAYH" roadmap queue --sprint=2 | cut -f1)"
+  assert_contains "$("$YAYH" status --today=2026-11-12)" "R-1"
+}

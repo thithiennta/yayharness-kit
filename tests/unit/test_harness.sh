@@ -131,7 +131,7 @@ test_sync_installs_everything_then_is_idempotent() {
   export YAY_REPO; YAY_REPO="$(_fixture legacy-rich)"
   _init "$YAY_REPO"
   for f in CLAUDE.md .claude/rules/yay-git.md .claude/rules/yay-workflow.md .claude/rules/yay-wordpress.md \
-           .claude/settings.json .github/pull_request_template.md docs/roadmap.md docs/yay-workflow.md \
+           .claude/settings.json .github/pull_request_template.md docs/roadmap/README.md docs/yay-workflow.md \
            docs/plans/.gitkeep docs/bugs/.gitkeep; do
     assert_file "$YAY_REPO/$f"
   done
@@ -177,9 +177,30 @@ test_sync_restores_deleted_kit_files() {
 test_sync_does_not_reseed_workflow_files() {
   export YAY_REPO; YAY_REPO="$(_fixture bare)"
   _init "$YAY_REPO"
-  echo "### R-1 Real item" >> "$YAY_REPO/docs/roadmap.md"
+  printf '\n## Later\n\n### R-1 Real item\n- status: planned\n- size: S\n' >> "$YAY_REPO/docs/roadmap/README.md"
   "$YAYH" harness sync --force >/dev/null
-  assert_contains "$(cat "$YAY_REPO/docs/roadmap.md")" "R-1 Real item"
+  assert_contains "$(cat "$YAY_REPO/docs/roadmap/README.md")" "R-1 Real item"
+}
+
+test_sync_keeps_a_one_file_roadmap() {
+  export YAY_REPO; YAY_REPO="$(_fixture bare)"
+  mkdir -p "$YAY_REPO/docs"
+  printf -- '---\nsprint_length: 2w\n---\n# Roadmap\n\n## Later\n\n### R-1 Old item\n- status: planned\n- size: S\n' > "$YAY_REPO/docs/roadmap.md"
+  _init "$YAY_REPO"
+  assert_no_file "$YAY_REPO/docs/roadmap/README.md"
+  assert_eq "single" "$("$YAYH" roadmap layout)"
+  assert_eq "R-1" "$("$YAYH" roadmap list | cut -f1)"
+}
+
+test_seeded_roadmap_takes_items_in_split_files() {
+  export YAY_REPO; YAY_REPO="$(_fixture bare)"
+  _init "$YAY_REPO"
+  assert_eq "split" "$("$YAYH" roadmap layout)"
+  assert_eq "" "$("$YAYH" roadmap list)"
+  assert_eq "R-1" "$("$YAYH" roadmap add "First item" size=S)"
+  assert_contains "$(cat "$YAY_REPO/docs/roadmap/later.md")" "### R-1 First item"
+  assert_contains "$(cat "$YAY_REPO/docs/roadmap/README.md")" "| [Later](later.md) |"
+  assert_not_contains "$(cat "$YAY_REPO/docs/roadmap/README.md")" "### R-1"
 }
 
 test_sync_follows_config_changes() {

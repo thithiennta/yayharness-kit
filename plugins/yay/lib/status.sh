@@ -122,7 +122,8 @@ yay_status() {
   fi
 
   # 2. Roadmap items: in progress anywhere, slipped, and the current sprint.
-  local f="$root/docs/roadmap.md" cur="" ids="" secs=""
+  local f cur="" ids="" secs=""
+  f="$( (yay_roadmap_file) 2>/dev/null || true)"
   if [ -f "$f" ]; then
     cur="$(yay_roadmap_current "$today" 2>/dev/null | cut -f1 || true)"
     # Between sprints, or before the first one: the next sprint counts as current.
