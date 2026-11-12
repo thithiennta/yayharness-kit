@@ -92,7 +92,8 @@ Small changes, on a branch as above, then `yayh roadmap check`, **one** commit a
 - `--add="<title>"`: `yayh roadmap add "<title>" sprint=<n|later> size=<S|M|L> [target=<x.y.z>] "why=<one line>" "acceptance=<one line>"`. When the why, size or acceptance is missing, infer them from the title and the evidence, and say what you used. The acceptance is what a user can see or do when it's done ("a coupon applies in one click on cart and checkout"), not how it's built; `/yay:plan` turns it into its Goal and Verify. Default sprint: `later`. Warn if the sprint is now over capacity.
   - **Several items.** `--add` repeated, `--add="A; B; C"`, or a list in plain words ("add X, Y and Z for 1.5.0") all mean one `yayh roadmap add` per title, in the order given. A per-item hint in the title is honoured and stripped: `"Gift wrap [S]"`, `"Dark mode [L, sprint 2]"`. `--sprint`, `--size` and `--target` apply to the items without their own hint.
   - The user's request is the evidence for an item they name. When they gave no reason, the why is `requested <date>` plus anything the evidence adds (a `B-<n>`, `#issue`). Don't ask for one.
-  - Show the added items as one table (id, title, sprint, size, target).
+  - **Short or unclear titles** ("Reminders", "Bulk export"): before writing, check that you read each one the way the user means it. See **Unclear items** in `${CLAUDE_PLUGIN_ROOT}/reference/roadmap-extras.md`.
+  - Show the added items as one table (id, title, sprint, size, target, acceptance), so a misread item is visible.
 - `--target=<v>` with `--move` (no `--add`): also targets the moved item.
 - `--retarget=R-<n>:<x.y.z|none>`: `yayh roadmap set R-<n> target <x.y.z|none>`.
 - `--move=R-<n>:<n|later>`: `yayh roadmap move R-<n> <n|later>`. Warn about capacity, or when moving work into a freeze sprint.
@@ -139,7 +140,7 @@ With `--trello`, sync only the item that changed (`reference/roadmap-extras.md`,
 
 Plan one release instead of the whole horizon.
 1. Resolve `<v>` (**Target version**). Run Plan steps 1–2 as usual.
-2. **Scope.** The version's items are `yayh roadmap list --target=<v>`, plus any items the request names (added with `target=<v>`). When the request asks for suggestions ("what should go in 1.5.0"), propose evidenced candidates (Plan step 3) and say which you added.
+2. **Scope.** The version's items are `yayh roadmap list --target=<v>`, plus any items the request names (added with `target=<v>`; **Unclear items** applies to them as to `--add`). When the request asks for suggestions ("what should go in 1.5.0"), propose evidenced candidates (Plan step 3) and say which you added.
 3. **Fit.** Sum the sizes against capacity from the current sprint on. Schedule the version's items into the earliest sprints that fit, dependencies first, ahead of untargeted work. The sprint where the last one lands is the earliest the version can be released: say so. When that's past the horizon or in a freeze, name what to cut or retarget (a hard call for the step-5 question round). Even when it fits, name the **cut candidates**: the 1–3 items that go first if the work runs late (low value per day, nothing depends on them).
 4. **Brief.** `yayh roadmap brief <v>` creates `docs/roadmap/release-<v>.md` (or says it exists; then update it rather than rewrite it). It's hand-written and `yayh roadmap` never touches it. Fill it in plain words a leader or support can read:
    - **Goal:** what the release is for and who gets what.

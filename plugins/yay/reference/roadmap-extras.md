@@ -1,4 +1,4 @@
-# /yay:roadmap: vision, legacy conversion, multi-agent, publish and Trello
+# /yay:roadmap: vision, unclear items, legacy conversion, multi-agent, publish and Trello
 
 Read by `/yay:roadmap` only when the run needs one of these. The main flow is in `skills/roadmap/SKILL.md`.
 
@@ -18,6 +18,18 @@ A **vision** request names a direction or an outcome, not items ("make Giftly th
    ```
    A new vision replaces the old paragraph; git keeps the history. Later runs read it as evidence, and `/yay:brainstorm --from=R-<n>` can cite it.
 3. **Vision as evidence.** An item derived from the vision is evidenced by it: its why is `vision <date>: <the part it serves>`, plus any other evidence. Say which items came from the vision under **Decided**, so they're easy to overrule. Size and schedule them like any other item; the must-have goes first, and nothing marked out of scope is added.
+
+## Unclear items
+
+A named item is **unclear** when its title, read with the evidence (bugs, backlog, issues, `readme.txt`, the code), allows two readings that would be built differently: a different user (merchant or shopper), screen, edition, or size (S against L). "Reminders" in a gift plugin could be a shopper's reminder before a scheduled delivery, or a merchant's for unsent gifts. A title is **clear** when only one reasonable reading remains: "Character counter under the gift message field at checkout". When a reading is clear, don't ask; the acceptance column in the report is the check.
+
+1. **Restate, then ask once.** For each unclear item, write the acceptance you would use (what a user can see or do when it's done). Ask about all of them in one AskUserQuestion (`asking.md`), one question per item, at most 3:
+   - Question: "I read '<title>' as: <acceptance>. Is that it?"
+   - Options: that reading, marked "(Recommended)"; 1–2 other readings that would be built differently, each one line; the user can always type their own.
+   Pick the recommended reading from the evidence (a matching bug, issue or backlog idea wins), and say what it rests on.
+2. **More than 3 unclear items:** ask about the 3 whose readings differ the most in size or user. Write the rest with your reading, and add `yayh roadmap set R-<n> note "reading unconfirmed: <the alternative>"` to each, so `/yay:brainstorm --from=R-<n>` raises it again.
+3. **Wait** for the answers before writing those items. Clear items in the same request don't wait: write them in the same commit once the answers are in, so there's still one commit. With nobody to ask, use the recommended readings, list them under **Decided**, and add the `reading unconfirmed` note to each.
+4. **Write the answer in.** The chosen reading becomes the item's `acceptance`. When the answer changes the scope, adjust the title (keep the user's words where you can) and the size.
 
 ## Legacy conversion
 
