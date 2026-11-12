@@ -131,7 +131,7 @@ yay_status() {
     secs="$(yay_roadmap_parse "$f" | awk -F '\t' -v cur="$cur" -v today="$today" '
       $1 == "S" { end[$2] = $4 }
       $1 == "I" {
-        st = $3; sec = $5; done = (st ~ /^shipped/ || st == "dropped")
+        st = $3; sec = $5; done = (st ~ /^shipped/ || st == "dropped" || st == "done")
         if (done) next
         if (st == "in-progress") print $2 "\tactive"
         else if (sec ~ /^[0-9]+$/ && end[sec] != "-" && end[sec] < today) print $2 "\tslipped"

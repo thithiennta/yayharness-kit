@@ -100,7 +100,8 @@ Every mode uses this. It needs a version `v` (the version the zips carry) and a 
 5. **Versions.** `yayh version set "$new"`, then `yayh version check` must print `$new`. With `--wp-tested`/`--wc-tested`: `yayh version tested wp=… wc=…`.
 6. **Close the loop on artifacts.** These are the commits since `$last` (from the collect output):
    - **`Fixes: B-<n>`:** `yayh fm set <bug> fixed_in "$new"`, and `status fixed` if not already.
-   - **`Roadmap: R-<n>`:** `yayh roadmap set R-<n> status "shipped:$new"`. Also do this for the `roadmap:` item of every plan shipped in this release.
+   - **Merged items:** run `yayh roadmap sync` first. Every item it leaves `done` (`yayh roadmap list --status=done`) is merged into the base this release is cut from, so it ships now.
+   - **`Roadmap: R-<n>`:** `yayh roadmap set R-<n> status "shipped:$new"`. Also do this for the `roadmap:` item of every plan shipped in this release. Also do this for every `done` item.
    - **Items targeting `$new`** (`yayh roadmap list --target=$new`) that didn't ship: name them in the release notes' manual-check list and in step 9's question as "R-<n> targets $new but isn't in it". Retarget each to the next version (`yayh roadmap set R-<n> target <next>`) only when the developer says so; otherwise `roadmap check` keeps warning.
    - **Plans whose commits are all in:** make sure their `status` is `done`.
    - **Release brief** (`yayh roadmap brief $new --check`; exit 3 means the version has none, which is fine). For each `open criterion`, check it if you can from here (the release check, the tests, the e2e run, the shipped items' Verify results) and tick it in `docs/roadmap/release-$new.md` with where it was verified (`- [x] … (e2e run, <date>)`). The ones still open, and every `open question`, go in step 9's question. The brief is committed with the release.

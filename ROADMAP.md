@@ -152,7 +152,7 @@ Goal: measure quality, so every later change can show it helped. *(8 / 8)*
 - what: run them on a machine with the plugin's toolchain. Have `yayh doctor` (R-12) report a missing test database and a wrong Node version up front.
 
 ### R-20 Merged work counts as done for its sprint
-- status: planned
+- status: built on `feat/sprint-done-and-close` (not merged)
 - size: S · goal: 4 · target: 0.7.0
 - why: a roadmap item is only finished once `/yay:release` marks it `shipped:<v>` (`skills/release/SKILL.md:103`). Until then it stays `in-progress`, so an item whose PR merged mid-sprint shows as slipped once its sprint ends: `roadmap check` exempts only `shipped*|dropped` (`lib/roadmap.sh:466-467`), and `roadmap status` lists slipped items the same way. `built:` can't stand in for merged, because `/yay:implement` sets it at step 4.7, before the PR is opened or reviewed.
 - what:
@@ -164,7 +164,7 @@ Goal: measure quality, so every later change can show it helped. *(8 / 8)*
 - acceptance: an item whose PR merged inside its sprint is never listed as slipped. `roadmap status` shows it as `done`, and after the release it reads `shipped:<v>`.
 
 ### R-21 Close a sprint: review, retro and carry-over in one step
-- status: planned
+- status: built on `feat/sprint-done-and-close` (not merged). Items added mid-sprint aren't tracked yet: nothing records when an item joined a sprint
 - size: M · goal: 2 · target: 0.7.0 · depends: R-20
 - why: nothing ends a sprint today.
   - **Carry-over waits for a re-plan.** Slipped items move only when someone next runs `/yay:roadmap` (roadmap SKILL.md, Plan step 4: "Unfinished items in past sprints have slipped").

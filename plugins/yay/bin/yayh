@@ -135,6 +135,11 @@ Roadmap (docs/roadmap/: README.md + one file per sprint; or one docs/roadmap.md)
   roadmap check [--today=]         structure, statuses, overlaps, slipped items, past targets
   roadmap status [--today=]        sprint and target-version counts, slipped items, open bugs, active plans
   roadmap links                    items that brainstorms/plans point at: id, current, suggested status, via
+  roadmap sync [--dry-run]         apply every links suggestion: id, from, to [merged date]. An item turns done
+                                   once all its plans are done on the base branch (merged, not released)
+  roadmap close <n> [--dry-run]    close Sprint n: its items (done|open|dropped), planned vs done dev-days,
+                                   velocity and the lessons dated in it; writes a Closed: line and the velocity
+  roadmap velocity                 dev-days done per closed sprint: last, average of the last 3, count
   roadmap peers                    sibling plugin folders (dir, name, slug, harnessed, path)
   roadmap queue [R-n|P-n...] [--sprint=n|current|later] [--target=x.y.z] [--ready]
                                    build order for /yay:autopilot: id, stage, artifact, after, waits, title
@@ -374,6 +379,9 @@ case "$cmd" in
       status) yay_roadmap_status "$@" ;;
       peers) yay_roadmap_peers ;;
       links) yay_roadmap_links ;;
+      sync) yay_roadmap_sync "$@" ;;
+      close) yay_roadmap_close "$@" ;;
+      velocity) yay_roadmap_velocity ;;
       queue) yay_roadmap_queue "$@" ;;
       split) yay_roadmap_split ;;
       render) yay_roadmap_render "$@" ;;
@@ -381,7 +389,7 @@ case "$cmd" in
       pace) yay_roadmap_pace ;;
       file) yay_roadmap_source ;;
       layout) yay_roadmap_layout ;;
-      *) yay_die "usage: yayh roadmap list|get|set|add|move|sprints|current|check|status|links|peers|queue|split|render|brief|pace|file|layout" ;;
+      *) yay_die "usage: yayh roadmap list|get|set|add|move|sprints|current|check|status|links|sync|close|velocity|peers|queue|split|render|brief|pace|file|layout" ;;
     esac ;;
   code)
     sub="${1:-}"; shift || true
