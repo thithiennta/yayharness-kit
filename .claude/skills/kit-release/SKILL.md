@@ -14,7 +14,7 @@ Run every command from the repo root.
 
 ## 1. Preflight
 
-- On `main`, clean tree, `git pull --ff-only`. A dirty tree: stop and suggest `/kit-ship` for those changes first.
+- A clean tree and an up-to-date base: `git fetch origin`, then release from `origin/main`. On `main`: `git pull --ff-only`. In a worktree (where `main` may be checked out elsewhere): the branch in step 3 starts from `origin/main`. A dirty tree: stop and suggest `/kit-ship` for those changes first.
 - `cur` is `"version"` in `plugins/yay/.claude-plugin/plugin.json`. It must equal the `yay` entry's `"version"` in `.claude-plugin/marketplace.json` (not `metadata.version`). If they differ, stop and say which.
 - `plugins/yay/CHANGELOG.md` must start its entries with `## Unreleased (<next>)` and at least one bullet. Without it, nothing is waiting to ship: stop.
 - **Version** `v`: the argument (`x.y.z`, or a bump of `cur`), otherwise `<next>` from the heading. It must be newer than `cur`. An argument that disagrees with the heading wins, and the heading is renamed to it. A major bump (`1.0.0` or `x.0.0`) is the only thing you ask about, once, since every plugin repo is affected.
@@ -39,7 +39,7 @@ Run every command from the repo root.
 
 ## 3. Branch
 
-`git switch -c chore/release-<x-y-z>` (dots become dashes).
+`git switch -c chore/release-<x-y-z> origin/main` (dots become dashes).
 
 ## 4. Edit the release
 
@@ -61,7 +61,7 @@ Run every command from the repo root.
    - `## Changes in this PR`: the edited files.
    - `## Not verified`: the tests and evals lines, saying exactly what ran and what was skipped and why.
    - `## How to test`: `claude plugin marketplace update yayharness`, check that `yay` reports `<v>`, then one command per headline.
-3. Unless `--no-merge`: `gh pr merge <n> --merge`, then `git switch main && git pull --ff-only`. A failed merge stops with the PR URL and the reason.
+3. Unless `--no-merge`: `gh pr merge <n> --merge`, then update `main` where it's checked out, as `/kit-ship` step 6.4 says. A failed merge stops with the PR URL and the reason.
 
 ## 6. Report
 
