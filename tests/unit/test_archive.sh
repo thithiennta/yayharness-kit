@@ -34,7 +34,7 @@ Goal: ship the first thing.
 ## Later
 
 ### R-3 Someday
-- status: planned
+- status: todo
 - size: L
 MD
   mkdir -p "$r/docs"; mv "$r/docs-roadmap.tmp" "$r/docs/roadmap.md"
@@ -118,7 +118,7 @@ sprint_length: 2w
 ## Sprint 2 (2099-01-01 → 2099-01-14)
 
 ### R-2 Future thing
-- status: planned
+- status: todo
 - size: M
 - target: 2.0.0
 MD

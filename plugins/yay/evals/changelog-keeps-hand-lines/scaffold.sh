@@ -73,14 +73,14 @@ updated: 2026-10-20
 ## Sprint 2 (2026-11-03 → 2026-11-16)
 
 ### R-2 Gift message preview
-- status: planned
+- status: todo
 - size: S
 - why: shoppers can't see how the card will look
 
 ## Later
 
 ### R-3 Scheduled delivery date
-- status: planned
+- status: todo
 - size: L
 MD
 cat > docs/bugs/2026-11-05-checkout-crash-on-emoji.md <<'MD'

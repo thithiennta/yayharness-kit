@@ -27,7 +27,7 @@ Goal: checkout speed before BFCM.
 ## Sprint 2 (2026-11-24 → 2026-12-07)
 
 ### R-3 Coupon UX
-- status: planned
+- status: todo
 - size: L
 - why: support tickets
 - acceptance: a coupon applies in one click on cart and checkout
@@ -64,7 +64,7 @@ test_list_sections_and_filters() {
   export YAY_REPO; YAY_REPO="$(_rrepo)"
   assert_eq "R-1	in-progress	M	1	Express checkout buttons
 R-2	shipped:1.4.0	S	1	Faster cart fragments
-R-3	planned	L	2	Coupon UX
+R-3	todo	L	2	Coupon UX
 R-4	planned-in:P-2	M	later	Import from URL" "$("$YAYH" roadmap list)"
   assert_eq "R-2" "$("$YAYH" roadmap list --status=shipped | cut -f1)"
   assert_eq "R-4" "$("$YAYH" roadmap list --sprint=later | cut -f1)"
@@ -86,7 +86,7 @@ test_get_and_set() {
   assert_eq "$(date +%Y-%m-%d)" "$("$YAYH" fm get "$YAY_REPO/docs/roadmap.md" updated)"
   assert_exit 1 "$YAYH" roadmap set R-3 status maybe
   assert_exit 1 "$YAYH" roadmap set R-3 status shipped:soon
-  assert_exit 1 "$YAYH" roadmap set R-42 status planned
+  assert_exit 1 "$YAYH" roadmap set R-42 status todo
 }
 
 test_add_takes_next_id_and_lands_in_section() {
@@ -94,7 +94,7 @@ test_add_takes_next_id_and_lands_in_section() {
   assert_eq "R-5" "$("$YAYH" roadmap add "Gift messages" sprint=2 size=S "why=merchants asked")"
   assert_eq "R-6" "$("$YAYH" roadmap add "Dark mode")"
   assert_eq "R-1 R-2 R-3 R-5 R-4 R-6" "$("$YAYH" roadmap list | cut -f1 | tr '\n' ' ' | sed 's/ $//')"
-  assert_eq "2	planned	S" "$("$YAYH" roadmap list | awk -F '\t' '$1=="R-5"{print $4"\t"$2"\t"$3}')"
+  assert_eq "2	todo	S" "$("$YAYH" roadmap list | awk -F '\t' '$1=="R-5"{print $4"\t"$2"\t"$3}')"
   assert_exit 1 "$YAYH" roadmap add "Bad" size=XL
 }
 
@@ -227,7 +227,7 @@ test_links_suggest_status_from_brainstorms_and_plans() {
   printf -- '---\nid: BS-2\nstatus: open\nfrom: R-4\n---\n' > "$YAY_REPO/docs/brainstorms/b.md"
   printf -- '---\nid: P-3\nstatus: done\nroadmap: R-2\n---\n' > "$YAY_REPO/docs/plans/d.md"
   assert_eq "R-2	shipped:1.4.0	shipped:1.4.0	P-3
-R-3	planned	planned-in:P-2	P-2
+R-3	todo	planned-in:P-2	P-2
 R-4	planned-in:P-2	brainstorming:BS-2	BS-2" "$("$YAYH" roadmap links)"
 }
 
@@ -243,7 +243,7 @@ horizon: 2026-12-07
 ## Sprint 1 (2026-11-10 → 2026-11-23)
 
 ### R-1 Express checkout
-- status: planned
+- status: todo
 - size: M
 - depends: R-3
 
@@ -252,17 +252,17 @@ horizon: 2026-12-07
 - size: S
 
 ### R-3 Coupon UX
-- status: planned
+- status: todo
 - size: L
 - depends: R-2, yayreturns:R-9
 
 ### R-4 Import
-- status: planned
+- status: todo
 - size: M
 - depends: R-7
 
 ### R-5 Gift wrap
-- status: planned
+- status: todo
 - size: S
 
 ## Later
@@ -354,10 +354,10 @@ test_target_status_counts_and_check_warns_on_released() {
 1.5.0	1	0	1	0	0
 1.10.0	0	1	0	0	0"
   out="$("$YAYH" roadmap check --today=2026-11-12)"
-  assert_contains "$out" "warn: R-3 targets 1.5.0, but 1.5.0 is already out and it is still 'planned'"
+  assert_contains "$out" "warn: R-3 targets 1.5.0, but 1.5.0 is already out and it is still 'todo'"
   assert_not_contains "$out" "R-2 targets"
   assert_not_contains "$out" "R-1 targets"
-  printf '\n### R-9 Broken\n- status: planned\n- size: S\n- target: next\n' >> "$YAY_REPO/docs/roadmap.md"
+  printf '\n### R-9 Broken\n- status: todo\n- size: S\n- target: next\n' >> "$YAY_REPO/docs/roadmap.md"
   assert_contains "$("$YAYH" roadmap check --today=2026-11-12 || true)" "error: R-9 target 'next' must be a version"
 }
 
@@ -414,7 +414,7 @@ test_split_writes_go_to_the_right_file_and_regenerate_versions() {
   assert_eq "R-5" "$("$YAYH" roadmap add "Gift | wrap" sprint=1 size=S target=1.5.0 "acceptance=wrap shows at checkout")"
   assert_contains "$(cat "$d/sprint-1.md")" "### R-5 Gift | wrap"
   assert_contains "$(cat "$d/v1.5.0.md")" "2 items: 2 open, 0 in progress, 0 shipped, 0 dropped."
-  assert_contains "$(cat "$d/v1.5.0.md")" "| R-5 | Gift \| wrap | planned | S | [Sprint 1](sprint-1.md) |"
+  assert_contains "$(cat "$d/v1.5.0.md")" "| R-5 | Gift \| wrap | todo | S | [Sprint 1](sprint-1.md) |"
   assert_contains "$(cat "$d/v1.5.0.md")" "The last open item is in [Sprint 2](sprint-2.md), ends 2026-12-07"
   assert_contains "$(cat "$d/README.md")" "| [1.5.0](v1.5.0.md) | 2 items:"
   "$YAYH" roadmap move R-4 1 >/dev/null
@@ -434,8 +434,8 @@ test_split_writes_go_to_the_right_file_and_regenerate_versions() {
 test_split_reads_hand_edits_and_render_refreshes_the_index() {
   export YAY_REPO; YAY_REPO="$(_rsplit)"
   local d="$YAY_REPO/docs/roadmap"
-  printf '\n### R-9 Hand added\n- status: planned\n- size: S\n- target: 2.0.0\n' >> "$d/later.md"
-  assert_eq "R-9	planned	S	later	Hand added" "$("$YAYH" roadmap list | tail -1)"
+  printf '\n### R-9 Hand added\n- status: todo\n- size: S\n- target: 2.0.0\n' >> "$d/later.md"
+  assert_eq "R-9	todo	S	later	Hand added" "$("$YAYH" roadmap list | tail -1)"
   assert_contains "$("$YAYH" roadmap check --today=2026-11-12)" "warn: docs/roadmap/ index or version lists are out of date"
   assert_exit 1 "$YAYH" roadmap render --check
   assert_contains "$("$YAYH" roadmap render)" "write	docs/roadmap/v2.0.0.md"
@@ -447,7 +447,7 @@ test_split_reads_hand_edits_and_render_refreshes_the_index() {
   assert_contains "$out" "error: docs/roadmap/sprint-3.md:1: Sprint 3 overlaps the previous sprint"
   assert_contains "$out" "error: R-10 status 'nope'"
   # a leftover single file is reported, not read
-  printf -- '---\n---\n## Later\n\n### R-20 Ghost\n- status: planned\n- size: S\n' > "$YAY_REPO/docs/roadmap.md"
+  printf -- '---\n---\n## Later\n\n### R-20 Ghost\n- status: todo\n- size: S\n' > "$YAY_REPO/docs/roadmap.md"
   assert_contains "$("$YAYH" roadmap check --today=2026-11-12 || true)" "warn: docs/roadmap.md is ignored while docs/roadmap/ exists"
   assert_not_contains "$("$YAYH" roadmap list)" "R-20"
 }
@@ -495,7 +495,7 @@ test_pace_started_on_in_progress_and_suggested_capacity() {
   "$YAYH" roadmap set R-3 status in-progress >/dev/null
   assert_eq "$(date +%Y-%m-%d)" "$("$YAYH" roadmap get R-3 started)"
   "$YAYH" roadmap set R-3 started 2026-11-02 >/dev/null
-  "$YAYH" roadmap set R-3 status planned >/dev/null
+  "$YAYH" roadmap set R-3 status todo >/dev/null
   "$YAYH" roadmap set R-3 status in-progress >/dev/null
   assert_eq "2026-11-02" "$("$YAYH" roadmap get R-3 started)"   # kept, not restamped
   assert_eq "total	0	0	0	-" "$("$YAYH" roadmap pace)"

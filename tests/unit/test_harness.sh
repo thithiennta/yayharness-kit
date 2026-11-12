@@ -178,7 +178,7 @@ test_sync_restores_deleted_kit_files() {
 test_sync_does_not_reseed_workflow_files() {
   export YAY_REPO; YAY_REPO="$(_fixture bare)"
   _init "$YAY_REPO"
-  printf '\n## Later\n\n### R-1 Real item\n- status: planned\n- size: S\n' >> "$YAY_REPO/docs/roadmap/README.md"
+  printf '\n## Later\n\n### R-1 Real item\n- status: todo\n- size: S\n' >> "$YAY_REPO/docs/roadmap/README.md"
   "$YAYH" harness sync --force >/dev/null
   assert_contains "$(cat "$YAY_REPO/docs/roadmap/README.md")" "R-1 Real item"
 }
@@ -186,7 +186,7 @@ test_sync_does_not_reseed_workflow_files() {
 test_sync_keeps_a_one_file_roadmap() {
   export YAY_REPO; YAY_REPO="$(_fixture bare)"
   mkdir -p "$YAY_REPO/docs"
-  printf -- '---\nsprint_length: 2w\n---\n# Roadmap\n\n## Later\n\n### R-1 Old item\n- status: planned\n- size: S\n' > "$YAY_REPO/docs/roadmap.md"
+  printf -- '---\nsprint_length: 2w\n---\n# Roadmap\n\n## Later\n\n### R-1 Old item\n- status: todo\n- size: S\n' > "$YAY_REPO/docs/roadmap.md"
   _init "$YAY_REPO"
   assert_no_file "$YAY_REPO/docs/roadmap/README.md"
   assert_eq "single" "$("$YAYH" roadmap layout)"

@@ -142,7 +142,7 @@ PY
 ## Sprint 1 (2026-11-10 → 2026-11-23)
 
 ### R-1 Big thing
-- status: planned
+- status: todo
 - size: L
 EOF
   local p; p="$("$YAYH" artifact new plan "Routed plan" roadmap=R-1)"

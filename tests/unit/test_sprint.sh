@@ -30,7 +30,7 @@ Goal: the first things.
 ## Sprint 2 (2099-01-01 → 2099-01-14)
 
 ### R-4 Future thing
-- status: planned
+- status: todo
 - size: M
 MD
   printf -- '---\nid: P-1\ntitle: Merged\nstatus: done\nroadmap: R-1\n---\n' > "$r/docs/plans/merged.md"
