@@ -2,7 +2,8 @@
 
 `/yay:harness-update` reads this file to tell a repo what changed between its recorded kit version and the installed one. Each entry lists new skills, config keys, template changes and behavior changes.
 
-## Unreleased (0.5.0)
+## 0.5.0 (2026-11-12)
+- **`/yay:implement`'s report names each review.** The correctness review (`yay:bug-reviewer`, including risk-3 task reviews) and the reuse and comments review (`yay:code-reviewer`) are reported separately, each finding fixed or answered, or "clean".
 - **A release brief per version: `docs/roadmap/release-<x.y.z>.md`.** `yayh roadmap brief <v>` creates it from a template. It's hand-written and `yayh roadmap` never rewrites or removes it. It holds the goal, the `- [ ]` release criteria, what's out of scope (and what to cut first if the work runs late), the risks, and open questions, each with the proposal used until it's answered. The generated `v<x.y.z>.md` and the README's version table link to it.
   - `/yay:roadmap --target=<v>` writes it and names the cut candidates; `--status --target=<v>` reports what's still open in it.
   - `yayh roadmap brief <v> --check` lists unticked criteria and unanswered questions (exit 1). `/yay:release` ticks the criteria it can verify and asks about the rest in its sign-off question.
@@ -81,7 +82,7 @@
   `evals/README.md` gains a score log and a rule: a kit version whose eval mean drops, or whose case drops by more than 0.25, doesn't ship until the drop is fixed or explained. First smoke runs: 5 cases at 1.00, and `implement-roadmap-item` at 0.86.
 - **Words work as options.** A new asking rule: plain words in a `/yay:*` argument that name an option mean that option (`/yay:roadmap status`, `/yay:release dry run`).
 
-## Unreleased (0.4.0)
+## 0.4.0 (not released on its own: ships in 0.5.0)
 - **`yayh status` and `yayh next`: where you are and what's next.** `yayh status` lists every piece of work in flight, across all worktrees, most urgent first: this branch's work (`here`), work in progress (`active`), slipped roadmap items, critical and high bugs, the current sprint, then other bugs, plans not tied to a listed item, and brainstorms with no plan yet. Each row has its stage and the one command that moves it on (`/yay:implement P-4 --continue`, `/yay:plan --from=BS-3`, `/yay:fix B-7`; a finished branch gets its push and PR commands). `yayh next [ID]` prints only that command for one `R-`, `P-`, `BS-`, `B-` or `UX-<n>`. When that work is finished, it prints the most urgent other work. With no ID, it prints this branch's work or the top row. The managed CLAUDE.md block mentions both commands.
 - **Sessions start where the work stands.** The SessionStart hook adds one line when the branch belongs to a plan or bug: `yay: this branch is P-4 "<title> · 3/7 tasks" (in-progress). Next: /yay:implement P-4 --continue`. On any other branch, it lists the 3 most urgent items from `yayh status`, each with its command.
 - **Every skill ends with one next step.** A new asking rule (loaded at session start): a `/yay:*` report ends with `Next: <command>` from `yayh next <id>`, plus at most 2 alternatives. Replying "go", "next", "continue" or "yes" runs it. Brainstorm, debug, design, plan, implement, fix, roadmap, autopilot, test and e2e point their report at this rule.

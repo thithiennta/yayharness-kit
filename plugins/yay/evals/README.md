@@ -46,7 +46,7 @@ Every kit release runs the whole suite (`--runs 2`, Sonnet judge, plugin arm) an
 | Kit | Runs | Mean | Below 1.00 | Notes |
 |---|---|---|---|---|
 | 0.2.0 | 3 | 1.00 (9 cases) | none | before the task-quality cases |
-| 0.5.0 (unreleased) | 1 | smoke only, not a baseline | `implement-roadmap-item` 0.86 | First runs of the new cases, after their graders were fixed: `go-routes-symptom-to-debug` 1.00, `review-catches-missing-capability` 1.00, `implement-tiny-lane` 1.00, `fix-regression-test-first` 1.00, `test-finds-product-bug` 1.00. `implement-roadmap-item` 0.86 failed one grader on wording, since loosened. The first full run (2 runs per case) sets the baseline. |
+| 0.5.0 | 2 | 0.95 (15 cases; the 9 from 0.2.0: 1.00) | `fix-regression-test-first` 0.25 | Full run 2026-11-12, then re-runs. `plan-decides-without-stopping` (0.80) and `plan-from-request` (0.92) dropped in the full run because of sandbox trouble: `/usr/bin/git` is a broken Xcode stub and `mktemp` ignores the sandbox temp folder, so a run left no plan file or couldn't commit. Re-run: both 1.00. `implement-roadmap-item` (0.93, then 0.79) reported the two reviews as one list; implement's report now names each reviewer, re-run 1.00. `fix-regression-test-first` is new, so this is its baseline: the replies report the fix, the failing-first test and the status, but the judge fails them 3/3. Check its grader before 0.6.0. |
 
 ## Adding a case
 
