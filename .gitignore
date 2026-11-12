@@ -4,3 +4,4 @@ tests/.tmp/
 plugins/yay/evals/results/
 tests/.times
 tests/.passed
+.claude/worktrees/

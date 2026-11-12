@@ -20,7 +20,7 @@ Run every command from the repo root (`git rev-parse --show-toplevel`).
 
 ## 2. Branch
 
-On `main`: `git switch -c <type>/<slug>`. The slug is the summary in kebab case, at most 5 words. Already on a work branch: stay on it. Never commit on `main`.
+On `main`: `git switch -c <type>/<slug>`. The slug is the summary in kebab case, at most 5 words. Already on a work branch: stay on it, unless it's already merged (`git merge-base --is-ancestor HEAD origin/main` after `git fetch origin`): then `git switch -c <type>/<slug> origin/main`, which keeps the uncommitted changes. Never commit on `main`.
 
 ## 3. CHANGELOG
 
@@ -48,7 +48,7 @@ Stage by path, never `git add -A` or `git add .`. Commit with the header and a b
    - `## Not verified`: what no check proved (a skill's wording isn't covered by unit tests: say so when skills changed). Tests: either "Full suite, all engines: passed" or "Skipped: `<tested line>`".
    - `## How to test`: the commands, for example `claude plugin marketplace update yayharness`, then the skill or `yayh` command to try.
 3. Unless `--no-merge` or `--draft`: `gh pr merge <n> --merge`. Keep the remote branch (the kit has kept them so far). A merge that fails (conflict, a required check): stop and report the PR URL with the reason. Never force-push or rebase `main`.
-4. `git switch main && git pull --ff-only`.
+4. **Update `main`** where it's checked out (`git worktree list`). In this checkout: `git switch main && git pull --ff-only`. In another one (you shipped from a worktree, and git won't switch to a branch checked out elsewhere): `git -C <that path> pull --ff-only` when its tree is clean; otherwise leave it and say it's behind. A worktree under `.claude/worktrees/` whose branch is now merged: name `git worktree remove <path>` in the report, since the session may be running inside it.
 
 ## 7. Report
 
