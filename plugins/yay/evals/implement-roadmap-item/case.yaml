@@ -1,6 +1,6 @@
 schema_version: "1.1"
 name: implement-roadmap-item
-tags: [implement,review]
+tags: [implement,bug-reviewer,code-reviewer,review]
 runs: 2
 context:
   scaffold_script: scaffold.sh

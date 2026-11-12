@@ -1,6 +1,6 @@
 schema_version: "1.1"
 name: code-comments-settings-toggle
-tags: [code-quality]
+tags: [code-quality,implement]
 runs: 2
 context:
   scaffold_script: scaffold.sh

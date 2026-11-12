@@ -1,4 +1,3 @@
-# engine-independent
 # lessons: friction log per checkout
 
 test_lessons_add_list_and_count() {

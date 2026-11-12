@@ -1,6 +1,6 @@
 schema_version: "1.1"
 name: go-routes-symptom-to-debug
-tags: [go,trigger]
+tags: [go,debug,trigger]
 runs: 2
 context:
   scaffold_script: scaffold.sh

@@ -1,4 +1,3 @@
-# engine-independent
 # knowledge check / stale / stamp
 
 _krepo() { # initialized, committed bare fixture on dev with harness merged

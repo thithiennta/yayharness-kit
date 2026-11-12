@@ -1,4 +1,3 @@
-# engine-independent
 # code index/find/similar/new: symbol search for reuse
 
 _crepo() {

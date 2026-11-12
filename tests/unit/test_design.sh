@@ -1,4 +1,3 @@
-# engine-independent
 # designs: artifact new design, resolve/list, design check, plan design: field, notes reach the plan
 
 _drepo() { local d; d="$(fixture_repo bare merged)" || return 1; printf '%s\n' "$d"; }

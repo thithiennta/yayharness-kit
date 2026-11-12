@@ -1,6 +1,6 @@
 schema_version: "1.1"
 name: review-catches-missing-capability
-tags: [review,security]
+tags: [bug-reviewer,review,security]
 runs: 2
 context:
   scaffold_script: scaffold.sh

@@ -43,7 +43,9 @@ PATH="$PWD/plugins/yay/bin:$PATH" claude plugin eval plugins/yay --runs 3 -j 3 -
 
 ## Score log and the release rule
 
-Every kit release runs the whole suite (`--runs 2`, Sonnet judge, plugin arm) and adds one line here: the version, the mean score, and every case below 1.00. **A version whose mean drops, or whose case drops by more than 0.25 against the last line, doesn't ship** until the drop is fixed or explained in its CHANGELOG entry. A new case starts its own baseline.
+Each case's last score is in `scores.tsv` (one line per case per scored release). A kit release runs only the cases whose skill text changed since they were last scored: the case's directory, the skills and agents its `tags` name (so tag a case with every skill and agent it exercises), and the references those files mention. `/kit-release`'s `gate.sh` picks them and `evals.sh` runs each once (Sonnet judge, plugin arm), re-running a case that scored lower with 2 runs. **A case that drops by more than 0.25 against its last score doesn't ship** until the drop is fixed or explained in the CHANGELOG entry. A smaller drop is noted here. A new case starts its own baseline. The release adds one line here: the version, the mean of the cases it ran, and every case below 1.00.
+
+The whole suite (**Run** above) is for re-baselining by hand, not a release requirement. Until 0.8.0 every release had to run it; `scores.tsv` starts from 0.5.0, the last full run.
 
 | Kit | Runs | Mean | Below 1.00 | Notes |
 |---|---|---|---|---|

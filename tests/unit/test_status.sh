@@ -1,4 +1,3 @@
-# engine-independent
 # status / next: work in flight across roadmap, plans, brainstorms, bugs and worktrees
 
 _srepo() {
