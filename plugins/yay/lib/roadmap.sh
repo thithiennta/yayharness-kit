@@ -808,6 +808,9 @@ EOT
 
 # yay_roadmap_queue [R-n|P-n...] [--sprint=n|current|later] [--ready] [--today=YYYY-MM-DD]
 #   -> TSV in build order: id stage artifact after waits title
+# An item with two or more live plans (/yay:plan --split) gives one row per plan, id
+# R-<n>/P-<m>, in plan order: each one after the plan before it (stacked on its branch),
+# and an item that depends on R-<n> runs after all of them.
 # stage: brainstorm (nothing yet) | decide (open brainstorm) | plan (decided brainstorm)
 #        | implement (draft or ready plan) | continue (plan in progress)
 #        | review (autopilot built it, its reviews didn't run: `reviewed: pending`) | done | dropped
@@ -859,6 +862,29 @@ yay_roadmap_queue() {
         [ -n "$ti" ] || yay_die "no roadmap item $id"
         st="$(yay_roadmap_get "$id" status 2>/dev/null || echo planned)"
         deps="$(yay_roadmap_get "$id" depends 2>/dev/null || true)"
+        # A split item: one row per live plan (each copy counted once, at its most advanced status).
+        local plans np prev pid pst2 k
+        plans="$(printf '%s\n' "$arts" | awk -F '\t' -v i="$id" '
+          function rank(s) { return (s == "done" || s == "review") ? 4 : s == "in-progress" ? 3 : s == "ready" ? 2 : s == "draft" ? 1 : 0 }
+          $1 == "plan" && ($4 == i || $5 == i) && $3 != "dropped" { if (!($2 in st) || rank($3) > rank(st[$2])) st[$2] = $3 }
+          END { for (p in st) { n = p; sub(/^P-/, "", n); print n "\t" p "\t" st[p] } }' | sort -n | cut -f2,3)"
+        np="$(printf '%s' "$plans" | grep -c . || true)"
+        case "$st" in shipped*|dropped|done) np=1 ;; esac
+        if [ "$np" -ge 2 ]; then
+          prev=""; k=0
+          while IFS="$YAY_TAB" read -r pid pst2; do
+            [ -n "$pid" ] || continue
+            k=$((k + 1))
+            case "$pst2" in done) stage=done ;; review) stage=review ;; in-progress) stage=continue ;; *) stage=implement ;; esac
+            local d2; d2="$(printf '%s' "$deps${prev:+,$prev}" | tr ',' '\n' | sed 's/^[[:space:]]*//;s/[[:space:]]*$//' | { grep . || true; } | tr '\n' ',' | sed 's/,$//')"
+            rows="$rows$id/$pid	$stage	$pid	${d2:--}	-	$ti ($pid, plan $k of $np)
+"
+            prev="$id/$pid"
+          done <<EOP
+$plans
+EOP
+          continue
+        fi
         # the most advanced plan for the item, else its brainstorm
         pst="$(printf '%s\n' "$arts" | awk -F '\t' -v i="$id" '
           function rank(s) { return (s == "done" || s == "review") ? 4 : s == "in-progress" ? 3 : s == "ready" ? 2 : s == "draft" ? 1 : 0 }
@@ -895,15 +921,19 @@ yay_roadmap_queue() {
   local shipped
   shipped="$(yay_roadmap_list | awk -F '\t' '$2 ~ /^shipped/ || $2 == "dropped" || $2 == "done" { print $1 }' | tr '\n' ' ')"
   printf '%s' "$rows" | awk -F '\t' -v OFS='\t' -v shipped=" $shipped " '
-    { n++; id[n] = $1; stg[n] = $2; art[n] = $3; dep[n] = $4; ti[n] = $6; inrun[$1] = 1; idx[$1] = n }
+    function live(k) { return stg[k] != "done" && stg[k] != "dropped" }
+    function add(i, x) { after[i] = after[i] (after[i] == "" ? "" : ",") x }
+    { n++; id[n] = $1; stg[n] = $2; art[n] = $3; dep[n] = $4; ti[n] = $6; inrun[$1] = 1; idx[$1] = n
+      if ((p = index($1, "/")) > 0) { g = substr($1, 1, p - 1); grp[g] = grp[g] " " n } }
     END {
       for (i = 1; i <= n; i++) {
         after[i] = ""; waits[i] = ""
         if (dep[i] != "-") {
           m = split(dep[i], d, ",")
           for (j = 1; j <= m; j++) {
-            if (d[j] in inrun && stg[idx[d[j]]] != "done" && stg[idx[d[j]]] != "dropped") after[i] = after[i] (after[i] == "" ? "" : ",") d[j]
-            else if (!(d[j] in inrun) && index(shipped, " " d[j] " ") == 0) waits[i] = waits[i] (waits[i] == "" ? "" : ",") d[j]
+            if (d[j] in inrun) { if (live(idx[d[j]])) add(i, d[j]) }
+            else if (d[j] in grp) { q = split(grp[d[j]], mm, " "); for (r = 1; r <= q; r++) if (mm[r] != "" && live(mm[r])) add(i, id[mm[r]]) }
+            else if (index(shipped, " " d[j] " ") == 0) waits[i] = waits[i] (waits[i] == "" ? "" : ",") d[j]
           }
         }
       }

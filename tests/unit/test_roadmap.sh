@@ -498,3 +498,24 @@ total	1	8	10	0.80" "$("$YAYH" roadmap pace)"
   assert_contains "$out" "capacity	8	8"
   assert_contains "$("$YAYH" roadmap status --today=2026-11-12)" "pace	3 items	planned 13.5 dev-days, took 17 working days (0.79)	suggested capacity 8 (now 8)"
 }
+
+test_queue_builds_every_plan_of_a_split_item_in_order() {
+  export YAY_REPO; YAY_REPO="$(_qrepo)"
+  # R-5 split into P-1 (ready) and P-7 (draft); R-1 depends on R-5 too
+  printf -- '---\nid: P-7\ntitle: Gift wrap, part 2\nstatus: draft\nroadmap: R-5\n---\n' > "$YAY_REPO/docs/plans/gift-wrap-2.md"
+  "$YAYH" roadmap set R-1 depends "R-5" >/dev/null
+  local out; out="$("$YAYH" roadmap queue R-5 R-1)"
+  assert_eq "R-5/P-1	implement	P-1	-	-	Gift wrap (P-1, plan 1 of 2)
+R-5/P-7	implement	P-7	R-5/P-1	-	Gift wrap (P-7, plan 2 of 2)" "$(printf '%s\n' "$out" | sed -n 1,2p)"
+  assert_contains "$out" "R-1	brainstorm	-	R-5/P-1,R-5/P-7	-	Express checkout"
+  # once P-1 is done, P-7 no longer waits for it, and R-1 waits only for P-7
+  python3 -I - "$YAY_REPO/docs/plans/gift-wrap.md" <<'PY'
+import sys; p=sys.argv[1]; s=open(p).read().replace("status: ready","status: done"); open(p,"w").write(s)
+PY
+  out="$("$YAYH" roadmap queue R-5 R-1)"
+  assert_contains "$out" "R-5/P-1	done	P-1	-	-"
+  assert_contains "$out" "R-5/P-7	implement	P-7	-	-"
+  assert_contains "$out" "R-1	brainstorm	-	R-5/P-7	-"
+  # a plan id asked for directly still expands its whole item
+  assert_contains "$("$YAYH" roadmap queue P-7)" "R-5/P-1	done"
+}
