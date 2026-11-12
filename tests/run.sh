@@ -9,13 +9,15 @@
 #   -j N, --jobs=N   parallel jobs (default: CPU count)
 #   --changed[=ref]  only the files that cover what changed vs ref (default: the working tree vs HEAD)
 #   --quick          --changed on the first engine only: the edit loop. Run the full suite before committing.
+#   --tested         don't run anything: exit 0 when a full green run (no filter, no --changed) already
+#                    tested the kit code as it is now, 1 when not. Green full runs are stamped in tests/.passed.
 set -uo pipefail
 
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 export ROOT
 export YAYH="$ROOT/plugins/yay/bin/yayh"
 export KIT="$ROOT/plugins/yay"
-FILTERS=""; ENGINES=""; JOBS=""; CHANGED=""; CHANGED_REF=""; QUICK=""
+FILTERS=""; ENGINES=""; JOBS=""; CHANGED=""; CHANGED_REF=""; QUICK=""; TESTED=""
 while [ $# -gt 0 ]; do
   case "$1" in
     --engines=*) ENGINES="${1#--engines=}" ;;
@@ -25,6 +27,7 @@ while [ $# -gt 0 ]; do
     --changed) CHANGED=1 ;;
     --changed=*) CHANGED=1; CHANGED_REF="${1#--changed=}" ;;
     --quick) CHANGED=1; QUICK=1 ;;
+    --tested) TESTED=1 ;;
     -h|--help) sed -n '2,/^set /p' "$0" | sed '$d' | sed 's/^# \{0,1\}//'; exit 0 ;;
     -*) echo "unknown option $1 (see --help)" >&2; exit 2 ;;
     *) FILTERS="$FILTERS $1" ;;
@@ -56,6 +59,25 @@ _cover() { # path -> test file basenames, or ALL
     plugins/yay/templates/*) echo test_harness.sh ;;
   esac
 }
+
+# The kit code the suite covers, as one hash of the working tree's files: what a
+# green full run proves. Skills, docs, the changelog and the version files aren't in it.
+PASSED="$ROOT/tests/.passed"   # one line per green full run: <code hash> <date> <engines>
+_code_hash() {
+  local list; list="$(mktemp)"
+  git -C "$ROOT" ls-files -co --exclude-standard | while IFS= read -r p; do
+    [ -f "$ROOT/$p" ] && [ -n "$(_cover "$p")" ] && printf '%s\n' "$p"
+  done | sort > "$list"
+  (cd "$ROOT" && paste -d' ' "$list" <(git hash-object --stdin-paths < "$list")) | git hash-object --stdin
+  rm -f "$list"
+}
+FULL=""; [ -n "$FILTERS$CHANGED" ] || FULL=1
+CODE_HASH="$(_code_hash)"
+if [ -n "$TESTED" ]; then
+  hit="$(awk -v h="$CODE_HASH" '$1 == h' "$PASSED" 2>/dev/null | tail -1)"
+  if [ -n "$hit" ]; then echo "tested $hit"; exit 0; fi
+  echo "untested $CODE_HASH"; exit 1
+fi
 if [ -n "$CHANGED" ]; then
   paths="$( { git -C "$ROOT" status --porcelain --untracked-files=all | cut -c4- | sed 's/.* -> //'
               [ -z "$CHANGED_REF" ] || git -C "$ROOT" diff --name-only "$CHANGED_REF"...HEAD; } | sort -u)"
@@ -159,3 +181,7 @@ if [ "$(git -C "$ROOT" rev-parse HEAD 2>/dev/null || true)" != "$KIT_HEAD" ]; th
 fi
 if [ "$total_fail" -gt 0 ]; then echo "FAILED: $total_fail assertion(s)"; exit 1; fi
 echo "all tests passed"
+# Stamp a green full run, unless the code changed while it ran.
+if [ -n "$FULL" ] && [ "$(_code_hash)" = "$CODE_HASH" ]; then
+  printf '%s %s %s\n' "$CODE_HASH" "$(date +%Y-%m-%d)" "$ENGINES" >> "$PASSED"
+fi
