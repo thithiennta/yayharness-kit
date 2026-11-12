@@ -1,6 +1,23 @@
-# /yay:roadmap: legacy conversion, multi-agent, publish and Trello
+# /yay:roadmap: vision, legacy conversion, multi-agent, publish and Trello
 
 Read by `/yay:roadmap` only when the run needs one of these. The main flow is in `skills/roadmap/SKILL.md`.
+
+## Vision
+
+A **vision** request names a direction or an outcome, not items ("make Giftly the go-to gift plugin for B2B stores", "this quarter is about retention"). Items derived from it shape the whole plan, so the questions come before the candidates, not in the step-5 round.
+
+1. **Ask first, once.** Before Plan step 3, one AskUserQuestion (`asking.md`), at most 3 questions, each with your proposal first marked "(Recommended)". Skip any the request, the README's existing **Vision** paragraph or the evidence already answers. Ask nothing when all three are answered.
+   - **Who and which edition:** the merchants it's for, and whether it's Free, Pro or both (`yayh config get editions`).
+   - **Must-have and by when:** the one outcome that makes the vision true, and the horizon or target version it's due by.
+   - **Out of scope:** what people might expect that this vision doesn't cover.
+   Then stop and wait for the answers. The question message holds only where things stand (Plan step 1) and the questions: no candidate items, no schedule and no **Decided** list yet, since all of those depend on the answers. With nobody to ask, take your proposals, list them under **Decided**, and go on. This round replaces step 5's question round, unless scheduling raises a new hard call.
+2. **Record it** in `docs/roadmap/README.md` (`docs/roadmap.md` in a single-file roadmap), between the title and the generated index, as plain lines (no `##` heading, no `- key:` bullets, which `yayh roadmap` would read as a section or an item):
+   ```markdown
+   **Vision** (<YYYY-MM-DD>): <one sentence>.
+   For: <merchants>, <editions>. Must-have: <outcome> by <horizon|x.y.z>. Out of scope: <list>.
+   ```
+   A new vision replaces the old paragraph; git keeps the history. Later runs read it as evidence, and `/yay:brainstorm --from=R-<n>` can cite it.
+3. **Vision as evidence.** An item derived from the vision is evidenced by it: its why is `vision <date>: <the part it serves>`, plus any other evidence. Say which items came from the vision under **Decided**, so they're easy to overrule. Size and schedule them like any other item; the must-have goes first, and nothing marked out of scope is added.
 
 ## Legacy conversion
 
