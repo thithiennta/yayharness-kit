@@ -43,11 +43,12 @@ When a small plan turns out bigger than that, switch it to standard (`yayh fm se
    - **Brainstorm:** use its decision. If its `status` isn't `decided`, plan its recommended option, and make "plan option <X>?" a question in step 7's round.
    - **Bug:** use its root cause. If it isn't `root-caused`, suggest `/yay:debug` first.
    - **Design (`UX-<n>`):** plan from the design's own source (its `from:`), and set the plan's `design: UX-<n>`.
+   - **Acceptance:** whatever the source, when the work has a roadmap item, read its `acceptance` (`yayh roadmap get R-<n> acceptance`). It's what done means to whoever scheduled it: the Goal states it, and Verify checks each part of it. When it's missing, write the Goal's "done means…" yourself and say so in the report.
    - **Roadmap item:** if there's no brainstorm and the approach isn't obvious, plan the most likely approach, and say in the report that `/yay:brainstorm --from=R-<n>` would compare options.
    - **Open notes:** run `yayh backlog open --for=<source id>` (and `--for=P-<n>` when revising a plan). These are decisions and work an earlier step parked for later. Settle each one now if you can; see "Picking up notes" below.
 2. **Ground it.** Read the project block and the relevant `docs/knowledge/` docs. Read **every file the plan will touch**. A plan that names a file you haven't opened is a guess.
 3. **Design.**
-   - **Goal:** the user-visible outcome and "done means…".
+   - **Goal:** the user-visible outcome and "done means…", starting from the roadmap item's acceptance.
    - **Non-goals.**
    - **Approach:** hooks, storage and option keys, REST, UI, the edition split, compatibility, migration.
    - **Risks** with a rollback.

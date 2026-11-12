@@ -31,6 +31,7 @@ Goal: checkout speed before BFCM.
 - status: planned
 - size: L
 - why: support tickets
+- acceptance: a coupon applies in one click on cart and checkout
 
 ```markdown
 ### R-0 Example inside a fence
@@ -138,6 +139,22 @@ test_check_ok_then_warnings_for_slipped_and_horizon() {
   assert_contains "$out" "warn: R-3 slipped"
   assert_contains "$out" "warn: horizon 2026-12-07 has passed"
   case "$out" in *R-2*) _fail "shipped item reported as slipped" ;; *) _pass ;; esac
+}
+
+test_check_acceptance_and_pace_dates() {
+  export YAY_REPO; YAY_REPO="$(_rrepo)"
+  mkdir -p "$YAY_REPO/docs/plans"; printf -- '---\nid: P-2\n---\n' > "$YAY_REPO/docs/plans/import.md"
+  "$YAYH" roadmap add "Gift messages" sprint=2 size=S >/dev/null
+  "$YAYH" roadmap add "Dark mode" size=M >/dev/null
+  local out; out="$("$YAYH" roadmap check --today=2026-11-12)"
+  assert_contains "$out" "warn: R-5 is in Sprint 2 with no '- acceptance:' line"
+  # Later items, items already in progress and sprints that ended aren't asked for one
+  case "$out" in *"R-6 is in"*|*"R-1 is in"*) _fail "acceptance asked of the wrong item: $out" ;; *) _pass ;; esac
+  case "$("$YAYH" roadmap check --today=2026-12-10)" in *"R-5 is in"*) _fail "acceptance asked after the sprint ended" ;; *) _pass ;; esac
+  "$YAYH" roadmap set R-5 acceptance "a message prints on the packing slip" >/dev/null
+  assert_eq "" "$("$YAYH" roadmap check --today=2026-11-12)"
+  "$YAYH" roadmap set R-5 started soon >/dev/null
+  assert_contains "$("$YAYH" roadmap check --today=2026-11-12 || true)" "error: R-5 started 'soon' must be YYYY-MM-DD"
 }
 
 test_check_errors() {
@@ -380,7 +397,7 @@ test_split_writes_go_to_the_right_file_and_regenerate_versions() {
   local d="$YAY_REPO/docs/roadmap"
   "$YAYH" roadmap set R-3 target 1.5.0 >/dev/null
   assert_contains "$(cat "$d/sprint-2.md")" "- target: 1.5.0"
-  assert_eq "R-5" "$("$YAYH" roadmap add "Gift | wrap" sprint=1 size=S target=1.5.0)"
+  assert_eq "R-5" "$("$YAYH" roadmap add "Gift | wrap" sprint=1 size=S target=1.5.0 "acceptance=wrap shows at checkout")"
   assert_contains "$(cat "$d/sprint-1.md")" "### R-5 Gift | wrap"
   assert_contains "$(cat "$d/v1.5.0.md")" "2 items: 2 open, 0 in progress, 0 shipped, 0 dropped."
   assert_contains "$(cat "$d/v1.5.0.md")" "| R-5 | Gift \| wrap | planned | S | [Sprint 1](sprint-1.md) |"

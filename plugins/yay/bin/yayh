@@ -117,7 +117,7 @@ Roadmap (docs/roadmap/: README.md + one file per sprint; or one docs/roadmap.md)
   roadmap get <R-n> <key>          one bullet's value
   roadmap set <R-n> <key> <value>  replace or add a bullet (status and target are validated;
                                    target none removes it)
-  roadmap add "<title>" [sprint=n|later] [size=S|M|L] [target=x.y.z] [why=…] [key=value…]
+  roadmap add "<title>" [sprint=n|later] [size=S|M|L] [target=x.y.z] [why=…] [acceptance=…] [key=value…]
                                    append an item with the next R id; prints it
   roadmap move <R-n> <n|later>     move an item to another sprint or section
   roadmap sprints start=YYYY-MM-DD length=2w until=YYYY-MM-DD|count=N [first=n] [--md]

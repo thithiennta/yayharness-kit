@@ -25,7 +25,7 @@ Turn a topic into a recorded decision: a `BS-<n>` file that `/yay:plan` builds o
 
 ## Steps
 
-1. **Source.** With `--from`, run `yayh artifact resolve <id>` and read it. For a roadmap item, `resolve` gives its sprint file (`docs/roadmap/sprint-<n>.md`, or `docs/roadmap.md` in an older repo): read its `### R-<n>` entry. Look for an existing brainstorm on the same topic (`yayh artifact list brainstorm`) and offer to continue it rather than duplicating it.
+1. **Source.** With `--from`, run `yayh artifact resolve <id>` and read it. For a roadmap item, `resolve` gives its sprint file (`docs/roadmap/sprint-<n>.md`, or `docs/roadmap.md` in an older repo): read its `### R-<n>` entry. Its `acceptance` line is a constraint every option must meet. Look for an existing brainstorm on the same topic (`yayh artifact list brainstorm`) and offer to continue it rather than duplicating it.
 2. **Ground it.** Read the CLAUDE.md project block and the relevant `docs/knowledge/` docs (follow the "Read when…" links), then the code the topic touches. Note the constraints that really bind:
    - editions: what's Free and what's Pro (`yayh config get editions`)
    - the PHP floor

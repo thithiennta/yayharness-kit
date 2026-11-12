@@ -150,6 +150,7 @@ _yay_length_days() {
 #   S n start end line                 sprint heading
 #   I id status size section line title
 #   T id target                        the item's `- target:` version, right after its I record
+#   K id key value                     its `- acceptance:`, `- started:` and `- built:` bullets
 # Empty fields print as "-" (read with IFS=tab merges empty fields).
 # section is the sprint number, or the lowercased first word of another ## heading
 # (later, shipped, dropped…), or "unscheduled" before any ## heading.
@@ -161,8 +162,9 @@ yay_roadmap_parse() {
       if (id != "") {
         printf "I\t%s\t%s\t%s\t%s\t%d\t%s\n", id, nz(st), nz(sz), sec, iline, nz(title)
         if (tg != "") printf "T\t%s\t%s\n", id, tg
+        for (j = 1; j <= nk; j++) printf "K\t%s\t%s\t%s\n", id, kk[j], kv[j]
       }
-      id = ""
+      id = ""; nk = 0
     }
     NR == 1 && /^---[[:space:]]*$/ { fm = 1; next }
     fm && /^---[[:space:]]*$/ { fm = 0; next }
@@ -188,6 +190,7 @@ yay_roadmap_parse() {
     id != "" && /^- [a-z_]+:/ {
       k = $2; sub(/:$/, "", k); v = $0; sub(/^- [a-z_]+:[[:space:]]*/, "", v); sub(/[[:space:]]+$/, "", v)
       if (k == "status") st = v; else if (k == "size") sz = v; else if (k == "target") tg = v
+      else if (k == "acceptance" || k == "started" || k == "built") { kk[++nk] = k; kv[nk] = v }
     }
     END { flush() }
   ' "$f"
@@ -422,6 +425,8 @@ yay_roadmap_check() {
   local horizon="" have_len=0 last_st="" released
   # The version on the version files is the last one released (or being released).
   released="$( (yay_version_current) 2>/dev/null || true)"
+  # Items with a `- acceptance:` line: what "done" means, which the plan's Goal and Verify start from.
+  local accepted; accepted=" $(yay_roadmap_parse "$f" | awk -F '\t' '$1 == "K" && $3 == "acceptance" && $4 != "" { print $2 }' | tr '\n' ' ')"
   while IFS="$YAY_TAB" read -r rec x1 x2 x3 x4 x5 x6; do
     case "$rec" in
       F)
@@ -456,8 +461,16 @@ yay_roadmap_check() {
             local end; end="$(printf '%s' "$ends" | awk -v n="$x4" '$1 == n { print $2 }')"
             case "$x2" in shipped*|dropped) ;; *)
               if [ -n "$end" ] && [ "$end" \< "$today" ]; then _rw "$x1 slipped: Sprint $x4 ended $end and it is still '${x2:-no status}'"; fi ;;
+            esac
+            # Scheduled and not planned yet: the plan needs to know what done means.
+            case "$x2" in planned|brainstorming|brainstorming:*)
+              case "$accepted " in *" $x1 "*) ;; *)
+                if [ -z "$end" ] || [ ! "$end" \< "$today" ]; then _rw "$x1 is in Sprint $x4 with no '- acceptance:' line (what done means, checked by its plan's Verify)"; fi ;;
+              esac ;;
             esac ;;
         esac ;;
+      K)
+        case "$x2" in started|built) _yay_is_date "$x3" || _re "$x1 $x2 '$x3' must be YYYY-MM-DD" ;; esac ;;
       T)
         if ! _yay_target_ok "$x2"; then _re "$x1 target '$x2' must be a version like 1.4.0"
         else

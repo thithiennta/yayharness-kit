@@ -3,6 +3,7 @@
 `/yay:harness-update` reads this file to tell a repo what changed between its recorded kit version and the installed one. Each entry lists new skills, config keys, template changes and behavior changes.
 
 ## Unreleased (0.5.0)
+- **Roadmap items say what done means: `- acceptance:`.** One line on what a user can see or do when the item is done (`yayh roadmap add … "acceptance=…"`, `yayh roadmap set R-<n> acceptance "…"`). `/yay:plan` builds its Goal from it and covers each part in Verify; `/yay:brainstorm` treats it as a constraint. `yayh roadmap check` warns about an item in a current or future sprint that's still `planned` or `brainstorming` without one. `/yay:roadmap` writes it for every item it schedules.
 - **Published at `thithiennta/yayharness-kit`.** A repo's `.claude/settings.json` now names that GitHub marketplace (`yay@yayharness`, the same plugin id), so teammates install from it: `claude plugin marketplace add thithiennta/yayharness-kit`. When the machine running the sync added the kit from a local folder, its path is no longer copied into the repo's settings; only a github or git source is. Run `/yay:harness-update` to pick up the new source.
 - **Roadmap: one file per sprint, a list per version.** The roadmap is now the folder `docs/roadmap/`:
   - `README.md` holds the front-matter, the title and a generated index.
