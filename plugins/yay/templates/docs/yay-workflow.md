@@ -7,7 +7,7 @@ The skill table and the git rules are in the "How we work here" block of [`CLAUD
 
 ```
 /yay:roadmap --add="X; Y; Z" --target=1.0.0  →  /yay:roadmap --target=1.0.0  →  /yay:autopilot --target=1.0.0
-→ merge the PRs  →  /yay:release --bundle  →  /yay:release 1.0.0  →  merge  →  /yay:release --tag-only
+→ merge the PRs  →  /yay:release --bundle  →  /yay:release 1.0.0  →  merge  →  /yay:release --tag-only  →  /yay:archive
 ```
 
 Don't remember a command? Type `/yay:go` followed by what you want in plain words, and it runs the right skill.

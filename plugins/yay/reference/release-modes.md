@@ -22,7 +22,8 @@ A build for QA or a client to test before the release. It's built from HEAD of t
 4. Push the tag only with `--push-tag`. Otherwise print `git push origin "$tag"` in the report.
 5. **The final bundle, from the tag:** in a detached worktree of the tag (`git worktree add --detach <tmp> "$tag"`), **Build the bundle** with `v=<v>`, `b=<v>`, and `--replace`, but no UI check and no confirmation, since that build was confirmed in the release PR. If a zip's sha256 differs from the release PR's `MANIFEST.txt`, say so: the build isn't reproducible. Remove the temporary worktree when you're done.
 6. Tidy up: `yayh git merged-worktrees` lists the worktrees whose branches are now merged (the release branch, and the features and fixes it shipped). Offer to remove them with `git worktree remove <path>`. Keep the branches, which the remote may still need.
-7. **Report** the tag and the bundle path: this is what gets published.
+7. **Archive check:** run `yayh artifact archive --release="$tag"` (a dry run that changes nothing). When it lists `archive` lines, the report's **Next** line is `/yay:archive --release=<tag>` with their count. It cleans the shipped plans, notes and roadmap items out of `docs/` on its own PR.
+8. **Report** the tag and the bundle path: this is what gets published.
 
 ## `--hotfix`
 
