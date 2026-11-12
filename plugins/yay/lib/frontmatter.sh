@@ -45,7 +45,8 @@ yay_fm_set() {
 }
 
 # yay_id_next <PREFIX>  -> e.g. B-8. Scans every .md under docs/ for
-# `id: PREFIX-<n>` front-matter and `### PREFIX-<n>` roadmap headings.
+# `id: PREFIX-<n>` front-matter, `### PREFIX-<n>` roadmap headings and table rows
+# starting `| PREFIX-<n>`, which include docs/archive.md (archived ids stay taken).
 yay_id_next() {
   local prefix="$1" max wt m
   case "$prefix" in R|BS|P|B|BL|UX) ;; *) yay_die "unknown id prefix '$prefix' (R, BS, P, B, BL, UX)";; esac
@@ -55,7 +56,7 @@ yay_id_next() {
   while IFS= read -r wt; do
     [ -d "$wt/docs" ] || continue
     m="$(find "$wt/docs" -type f -name '*.md' -print0 2>/dev/null \
-      | { xargs -0 grep -hoE "^(id: |### )${prefix}-[0-9]+" 2>/dev/null || true; } \
+      | { xargs -0 grep -hoE "^(id: |### |\\| )${prefix}-[0-9]+" 2>/dev/null || true; } \
       | sed -E "s/.*${prefix}-//" \
       | sort -n | tail -1)"
     [ -n "$m" ] && [ "$m" -gt "$max" ] && max="$m"
@@ -67,7 +68,7 @@ EOF
   local base bmax
   base="$(yay_config_get git.baseBranch 2>/dev/null || true)"
   if [ -n "$base" ] && git -C "$(yay_repo_root)" rev-parse --verify --quiet "$base^{commit}" >/dev/null 2>&1; then
-    bmax="$( { git -C "$(yay_repo_root)" grep -h -oE "^(id: |### )${prefix}-[0-9]+" "$base" -- docs/ 2>/dev/null || true; } \
+    bmax="$( { git -C "$(yay_repo_root)" grep -h -oE "^(id: |### |\\| )${prefix}-[0-9]+" "$base" -- docs/ 2>/dev/null || true; } \
       | sed -E "s/.*${prefix}-//" | sort -n | tail -1)"
     [ -n "$bmax" ] && [ "$bmax" -gt "$max" ] && max="$bmax"
   fi

@@ -21,7 +21,7 @@ Every step of the workflow leaves a markdown file in the repo. Its front-matter 
 | `UX-<n>` | UI/UX design | `docs/designs/<slug>.md` |
 | `BL-<n>` | Backlog idea, or a note: a pending decision or work left for later | `docs/backlog/<slug>.md` |
 
-Get the next free ID with `yayh id next <PREFIX>`. It scans `docs/` and returns one more than the highest ID found. IDs never get reused, so when deleting an artifact, set its `status` to `dropped` instead. Two branches can claim the same ID. `/yay:implement` and `/yay:fix` check this before opening a PR, and the later branch renumbers.
+Get the next free ID with `yayh id next <PREFIX>`. It scans `docs/` and returns one more than the highest ID found. IDs never get reused, so when deleting an artifact, set its `status` to `dropped` instead. Shipped work leaves `docs/` only through `/yay:archive`, which keeps its id in `docs/archive.md` (see Archive below). Two branches can claim the same ID. `/yay:implement` and `/yay:fix` check this before opening a PR, and the later branch renumbers.
 
 Slugs are lowercase words joined by `-`, at most 50 characters (`yayh slug "<text>"`).
 
@@ -160,6 +160,19 @@ Three kinds share the folder and the `BL` ids:
 Body: the question and its options (decision), or what's left and where it would go (deferred), and why it waited.
 
 **Notes are picked up again.** Before working on a plan, `/yay:plan`, `/yay:implement`, `/yay:fix` and `/yay:autopilot` run `yayh backlog open --for=<id>`. It lists the open notes whose `from:` or `affects:` is that plan, its roadmap item or its source, from this checkout and every worktree. Each one is either settled into the plan (`yayh backlog settle BL-n decided "<answer>"`, or `planned P-n` when the plan takes the work as a task) or left open, on purpose, for later. Deferred work that lands without a plan, through `/yay:fix` or a tiny change, is closed with `yayh backlog settle BL-n done "<commit or PR>"`. `yayh plan check` warns about every open note that touches the plan. Settling a note edits its file, so it's committed on the branch that settles it, like any tracked artifact.
+
+### Archive: `docs/archive.md`
+```markdown
+| ID | Title | Status | Archived | File | Commit |
+|---|---|---|---|---|---|
+| P-4 | Express checkout buttons | done | 2026-11-12 | docs/plans/express-checkout-buttons.md | 1a2b3c4d5e6f |
+| R-12 | Express checkout buttons | shipped:1.5.0 | 2026-11-12 | docs/roadmap/sprint-3.md | 1a2b3c4d5e6f |
+```
+`yayh artifact archive --yes` (run by `/yay:archive`) deletes finished work a release has shipped, and appends one row per artifact. **Commit** is the last commit that had the file, so `git show <commit>:<file>` prints it.
+- **What goes:** artifacts whose status was final in the release tag's tree and still is. That means a plan `done` or `dropped`, a brainstorm `decided` or `dropped`, a bug `fixed`, `wontfix` or `duplicate`, a settled backlog note, a roadmap item `shipped:<v>` or `dropped`, a dropped design, or a ready one whose plans go. Each must have no uncommitted changes and no id link to anything that stays. A past sprint with no items left goes too, and so does a released version's brief once none of its items remain.
+- **IDs stay taken:** `yayh id next` counts the rows. `yayh artifact resolve <id>` of an archived id says so and gives its `git show` command.
+- **Pace history goes too:** archived roadmap items take their `started`/`built` dates with them, so `yayh roadmap pace` only counts what's still in the roadmap.
+- Rows are never edited or removed.
 
 ### Release notes: `docs/releases/<version>.md`
 ```

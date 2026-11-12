@@ -214,6 +214,7 @@ When a hook blocks something, its message says why and what to do instead. Claud
 | `/yay:fix` | `B-<n>`, `--hotfix`, `--test`, `--no-pr` |
 | `/yay:changelog` | `--dry-run`, `--since=<tag>` |
 | `/yay:release` | `--bundle`, `minor`, `--dry-run`, `--wc-tested=X.Y`, `--no-ui`, `--keep-site`, `--tag-only`, `--hotfix`, `--push-tag` |
+| `/yay:archive` | `--release=<tag>`, `--dry-run`, `--no-pr` |
 | `/yay:test-init` | `--adopt`, `--depth=quick`, `--max-tests=8`, `--js-runner=vitest`, `--no-integration`, `--no-run`, `--no-pr` |
 | `/yay:test` | `P-<n>`, `B-<n>`, `Class::method`, `"<behaviour>"`, `--layer=unit`, `--run=all`, `--triage` |
 | `/yay:e2e-init` | `--adopt`, `--depth=quick`, `--max-specs=6`, `--smoke-only`, `--no-ci`, `--no-run`, `--no-pr` |

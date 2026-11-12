@@ -94,6 +94,10 @@ yay_artifact_resolve() {
   n="$(printf '%s' "$hits" | grep -c . || true)"
   if [ "$n" = 1 ]; then printf '%s\n' "$hits"; return 0; fi
   if [ "$n" -gt 1 ]; then printf 'yayh: "%s" matches several artifacts:\n%s\n' "$q" "$hits" >&2; return 3; fi
+  local row
+  if row="$(yay_archive_find "$q" 2>/dev/null)"; then
+    printf 'yayh: %s is archived (%s): git show %s:%s\n' "$q" "$(printf '%s' "$row" | cut -f3)" "$(printf '%s' "$row" | cut -f6)" "$(printf '%s' "$row" | cut -f5)" >&2
+  fi
   return 3
 }
 

@@ -14,6 +14,7 @@ YAY_LIB_DIR="$YAY_KIT_ROOT/lib"
 . "$YAY_LIB_DIR/harness.sh"
 . "$YAY_LIB_DIR/knowledge.sh"
 . "$YAY_LIB_DIR/artifact.sh"
+. "$YAY_LIB_DIR/archive.sh"
 . "$YAY_LIB_DIR/backlog.sh"
 . "$YAY_LIB_DIR/release.sh"
 . "$YAY_LIB_DIR/bundle.sh"
@@ -94,6 +95,9 @@ Artifacts (brainstorms, plans, bugs, backlog)
                                    move new (untracked) artifacts from this checkout into a worktree
   artifact where <ID>              every copy of an artifact, in every worktree: worktree, branch, tracked|untracked|modified, path
   artifact tidy [--yes]            untracked artifacts here whose exact copy is committed in another worktree (leftovers); --yes removes them
+  artifact archive [--release=<tag>] [--yes]
+                                   finished artifacts the last release (or <tag>) shipped: archive|keep lines; --yes deletes
+                                   them and adds a row each to docs/archive.md (ids stay taken; git show <commit>:<file>)
   plan tasks <plan>                T<n>, done|open, text (TSV)
   plan tick <plan> <T<n>> [--undo] tick a task's checkbox
   plan check <plan>                structure errors and warnings (exit 1 on errors)
@@ -324,7 +328,8 @@ case "$cmd" in
       carry) [ $# -ge 2 ] || yay_die "usage: yayh artifact carry <worktree> <path>..."; yay_artifact_carry "$@" ;;
       where) [ $# -eq 1 ] || yay_die "usage: yayh artifact where <ID>"; yay_artifact_where "$1" ;;
       tidy) yay_artifact_tidy "$@" ;;
-      *) yay_die "usage: yayh artifact new|resolve|list|carry|where|tidy" ;;
+      archive) yay_artifact_archive "$@" ;;
+      *) yay_die "usage: yayh artifact new|resolve|list|carry|where|tidy|archive" ;;
     esac ;;
   plan)
     sub="${1:-}"; shift || true
