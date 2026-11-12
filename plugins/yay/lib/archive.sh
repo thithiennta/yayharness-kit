@@ -7,7 +7,8 @@
 #   - its status was already final in the release tag's tree, and still is (plan done
 #     or dropped, brainstorm decided or dropped, bug fixed, wontfix or duplicate, a
 #     settled backlog note, a roadmap item shipped or dropped, a dropped design);
-#   - it has no uncommitted changes;
+#   - it has no uncommitted changes, nor do its screenshots (docs/assets/<id>/, which
+#     go with it);
 #   - nothing that stays links to it, and it links to nothing that stays (ids in
 #     front-matter, or in a roadmap item's bullets). A ready design goes with the
 #     plans that built it, never before one does.
@@ -61,8 +62,10 @@ _yay_archive_items() {
     END { flush() }' "$1"
 }
 
-_yay_archive_clean() { # <rel path>: tracked and unchanged since HEAD
-  yay_git ls-files --error-unmatch -- "$1" >/dev/null 2>&1 && yay_git diff --quiet HEAD -- "$1" 2>/dev/null
+_yay_archive_clean() { # <rel path> [id]: tracked and unchanged since HEAD, and so are the id's screenshots
+  yay_git ls-files --error-unmatch -- "$1" >/dev/null 2>&1 && yay_git diff --quiet HEAD -- "$1" 2>/dev/null || return 1
+  [ -n "${2:-}" ] || return 0
+  [ -z "$(yay_git status --porcelain -- "$(yay_asset_dir "$2")" 2>/dev/null)" ]
 }
 
 # _yay_archive_records <tag> -> TSV: id type now at-tag clean(1|0) path line refs
@@ -77,7 +80,7 @@ _yay_archive_records() {
       id="$(yay_fm_get "$f" id 2>/dev/null || true)"; [ -n "$id" ] || continue
       now="$(_yay_archive_status_in "$f")"
       if yay_git show "$tag:$rel" > "$tmp" 2>/dev/null; then at="$(_yay_archive_status_in "$tmp")"; else at=""; fi
-      if _yay_archive_clean "$rel"; then clean=1; else clean=0; fi
+      if _yay_archive_clean "$rel" "$id"; then clean=1; else clean=0; fi
       refs="$(_yay_archive_fm "$f" | { grep -v '^id:' || true; } | _yay_archive_ids | { grep -vx "$id" || true; } | tr '\n' ' ')"
       printf '%s\t%s\t%s\t%s\t%s\t%s\t0\t%s\n' "$id" "$type" "${now:--}" "${at:--}" "$clean" "$rel" "$refs"
     done
@@ -92,7 +95,7 @@ _yay_archive_records() {
       if [ "$(yay_roadmap_layout)" = split ]; then
         rel="$(cd "$root" && grep -lE "^### $id([[:space:]]|\$)" docs/roadmap/*.md 2>/dev/null | sed -n 1p)" || true
       fi
-      if _yay_archive_clean "$rel"; then clean=1; else clean=0; fi
+      if _yay_archive_clean "$rel" "$id"; then clean=1; else clean=0; fi
       printf '%s\troadmap\t%s\t%s\t%s\t%s\t%s\t%s\n' "$id" "$now" "${at:--}" "$clean" "$rel" "$line" "$refs"
     done
     rm -f "$atdoc"
@@ -191,6 +194,7 @@ yay_artifact_archive() {
       brief) title="Release brief ${id#release-}"; rm -f "$root/$path" ;;
       *) title="$(yay_fm_get "$root/$path" title 2>/dev/null || true)"; rm -f "$root/$path" ;;
     esac
+    [ "$type" = brief ] || rm -rf "${root:?}/$(yay_asset_dir "$id")"
     _yay_archive_row "$id" "$title" "$st" "$path" "$sha" >> "$rows"
     printf 'archived\t%s\t%s\n' "$id" "$path"
   done < "$dec"

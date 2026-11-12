@@ -23,6 +23,7 @@ Behaviour checks for the `/yay:*` skills, run with `claude plugin eval`. Each ca
 | `fix-regression-test-first` | "Fix B-2" (the planted 200-character off-by-one): a regression test that fails first, a minimal fix, the bug marked fixed. |
 | `test-finds-product-bug` | "Add tests for trimming and capping": unit layer, boundary cases 199/200/201, and the off-by-one reported as a product bug rather than asserted. No product code edited. |
 | `plan-from-request` | A plan request fires `/yay:plan`, which writes `docs/plans/` with tasks and Verify checks, and no code. |
+| `plan-keeps-screenshot` | A plan request with a screenshot path (`shots/preview-overlap.png`): the image is copied to `docs/assets/P-1/` and linked from the plan, with a Seen-in-screenshot line and a Verify check for what it shows. No code. |
 
 ## Run
 

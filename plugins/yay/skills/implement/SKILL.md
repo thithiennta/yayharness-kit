@@ -86,7 +86,7 @@ For each unticked task in order (or only `--task`):
 4. **Tick the task:** `yayh plan tick <plan> T<n>`.
 5. **Commit** the code and the ticked plan together:
    ```
-   git add -- <files you changed> <plan file>
+   git add -- <files you changed> <plan file> [docs/assets/<id> of each carried artifact, on the first commit]
    git commit -m "<type>(<scope>): P-<n> <task summary>" -m "<why, if not obvious>" -m "Plan: P-<n>"
    ```
    Commit the backlog notes the task wrote along with it. Add `Roadmap: R-<n>` on the commit that completes the item. Stage by path. Never use `git add -A` (other people's untracked files, and the generated paths the hooks guard). If a hook rejects the commit, fix the cause; never use `--no-verify`.

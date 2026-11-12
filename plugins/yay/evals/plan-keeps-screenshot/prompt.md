@@ -1,0 +1,1 @@
+Write the implementation plan for the gift message preview on the roadmap (R-2). Here's a screenshot of what we want to avoid: shots/preview-overlap.png (on mobile checkout, the preview box overlaps the order total). Use your judgment on the details and skip automated tests for this one.

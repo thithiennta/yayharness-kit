@@ -31,6 +31,17 @@ Slugs are lowercase words joined by `-`, at most 50 characters (`yayh slug "<tex
 
 When you're already on a non-base branch, a skill may commit its new artifact there, if asked (`--commit`).
 
+## Screenshots
+
+Users often attach a screenshot when they ask for a roadmap item, a plan, a brainstorm, a design or a bug report: a UI to copy, a bug as it shows on screen, or a layout that's wrong. Every skill that writes one of those artifacts handles it the same way.
+
+1. **Read it first.** Open the image (a pasted image is already in the conversation; for a path, `Read` it) and treat it as evidence, like a log line.
+2. **Write down what it shows, in text.** The artifact must make sense without the image, because later steps and agents may never open it. Add one `**Seen in screenshot:**` line to the body (in Symptoms for a bug): the screen and where it is (wp-admin › WooCommerce › Settings › Gift, the checkout on mobile), what's wrong or wanted, and the exact text visible on screen (error messages, labels, prices). Fold what matters into the fields that drive the work: a bug's Symptoms and Environment, a roadmap item's `acceptance`, a design's Where and States, a plan's Goal and Verify.
+3. **Keep the file when there is one.** Once the artifact exists, run `yayh asset add <ID> <path> "<what it shows, a few words>"` for each image. It copies the file to `docs/assets/<ID>/<n>-<slug>.<ext>` (png, jpg, gif, webp) and prints the markdown link, which works from any `docs/<folder>/` file. Put the link under a `**Screenshots:**` line in the body, next to the Seen-in-screenshot line. For a roadmap item, use a bullet instead: `yayh roadmap set R-<n> screenshots "<link> <link>"`.
+4. **A pasted image has no file.** An image pasted straight into the chat reaches you as image data, with no path, so it can't be saved. Do steps 1 and 2, and say in the report: "The screenshot isn't saved in the repo. To keep it, drag the file into the terminal (that pastes its path) and ask again." Never make up a path.
+
+Screenshots follow their artifact. `yayh artifact carry` takes an artifact's untracked `docs/assets/<ID>/` into the worktree with it (pass `docs/assets/R-<n>` yourself for a roadmap item's screenshots). Stage them by path with the artifact (`git add -- <artifact> docs/assets/<ID>`). `yayh artifact archive` removes them with the artifact, and keeps the artifact while one of its screenshots has uncommitted changes. When an id is renumbered, `yayh asset move <old> <new>` moves the folder, and you fix the links. A later artifact may link to its source's screenshots (a plan to its `R-<n>`'s) instead of copying them.
+
 ## Shapes
 
 ### Roadmap: `docs/roadmap/`

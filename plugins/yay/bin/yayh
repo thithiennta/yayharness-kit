@@ -15,6 +15,7 @@ YAY_LIB_DIR="$YAY_KIT_ROOT/lib"
 . "$YAY_LIB_DIR/knowledge.sh"
 . "$YAY_LIB_DIR/artifact.sh"
 . "$YAY_LIB_DIR/archive.sh"
+. "$YAY_LIB_DIR/asset.sh"
 . "$YAY_LIB_DIR/backlog.sh"
 . "$YAY_LIB_DIR/release.sh"
 . "$YAY_LIB_DIR/bundle.sh"
@@ -92,11 +93,17 @@ Artifacts (brainstorms, plans, bugs, backlog)
   artifact resolve <ID|path|slug>  path of one artifact
   artifact list [type] [--status=s] id, status, title, path (TSV)
   artifact carry <worktree> <path>...
-                                   move new (untracked) artifacts from this checkout into a worktree
+                                   move new (untracked) artifacts, and their untracked screenshots,
+                                   from this checkout into a worktree (a path may be a folder)
   artifact where <ID>              every copy of an artifact, in every worktree: worktree, branch, tracked|untracked|modified, path
   artifact tidy [--yes]            untracked artifacts here whose exact copy is committed in another worktree (leftovers); --yes removes them
   artifact archive [--release=<tag>] [--yes]
                                    finished artifacts the last release (or <tag>) shipped: archive|keep lines; --yes deletes
+  asset add <ID> <file> ["caption"]
+                                   copy a screenshot to docs/assets/<ID>/<n>-<slug>.<ext>:
+                                   added, path, markdown link (from docs/<folder>/)
+  asset list <ID>                  the screenshots kept for an artifact
+  asset move <old ID> <new ID>     move them when an artifact is renumbered
                                    them and adds a row each to docs/archive.md (ids stay taken; git show <commit>:<file>)
   plan tasks <plan>                T<n>, done|open, text (TSV)
   plan tick <plan> <T<n>> [--undo] tick a task's checkbox
@@ -337,6 +344,14 @@ case "$cmd" in
       tidy) yay_artifact_tidy "$@" ;;
       archive) yay_artifact_archive "$@" ;;
       *) yay_die "usage: yayh artifact new|resolve|list|carry|where|tidy|archive" ;;
+    esac ;;
+  asset)
+    sub="${1:-}"; shift || true
+    case "$sub" in
+      add) [ $# -ge 2 ] && [ $# -le 3 ] || yay_die "usage: yayh asset add <ID> <file> [\"caption\"]"; yay_asset_add "$@" ;;
+      list) [ $# -eq 1 ] || yay_die "usage: yayh asset list <ID>"; yay_asset_list "$1" ;;
+      move) [ $# -eq 2 ] || yay_die "usage: yayh asset move <old ID> <new ID>"; yay_asset_move "$1" "$2" ;;
+      *) yay_die "usage: yayh asset add|list|move" ;;
     esac ;;
   plan)
     sub="${1:-}"; shift || true

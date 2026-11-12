@@ -23,7 +23,7 @@ A plan is the contract `/yay:implement` follows task by task. The format is in `
 | `--tests=auto\|none` | `auto` (default; `ask` is accepted as the same): pick the tests yourself, one per risk at the right layer, and ask only if the repo's rules require approval for tests. `none`: write `**Tests:** none` and verify by manual checks. |
 | `--edition=<e>` | Which editions the plan touches. Default: inferred from where the code lives. |
 | `--lane=small\|standard` | How much plan the work needs. Default: picked in step 2 (see **Lanes**). |
-| `--commit` | Commit the plan when you're on a non-base branch. |
+| `--commit` | Commit the plan when you're on a non-base branch (with its `docs/assets/P-<n>` screenshots, if any). |
 | `--trello` | Optional. After the plan is written, add its tasks to Trello as a checklist. Off unless given. See step 8. |
 
 ## Lanes
@@ -45,6 +45,7 @@ When a small plan turns out bigger than that, switch it to standard (`yayh fm se
    - **Design (`UX-<n>`):** plan from the design's own source (its `from:`), and set the plan's `design: UX-<n>`.
    - **Acceptance:** whatever the source, when the work has a roadmap item, read its `acceptance` (`yayh roadmap get R-<n> acceptance`). It's what done means to whoever scheduled it: the Goal states it, and Verify checks each part of it. When it's missing, write the Goal's "done means…" yourself and say so in the report.
    - **Roadmap item:** if there's no brainstorm and the approach isn't obvious, plan the most likely approach, and say in the report that `/yay:brainstorm --from=R-<n>` would compare options.
+   - **Screenshots:** a screenshot attached to the request (a UI, a bug, a layout) is evidence. Read it, and once the plan exists, record and keep it as in `${CLAUDE_PLUGIN_ROOT}/reference/artifacts.md` (Screenshots). The source's own screenshots (`yayh asset list <source id>`) are evidence too; read them and link to them rather than copying them.
    - **Open notes:** run `yayh backlog open --for=<source id>` (and `--for=P-<n>` when revising a plan). These are decisions and work an earlier step parked for later. Settle each one now if you can; see "Picking up notes" below.
 2. **Ground it.** Read the project block and the relevant `docs/knowledge/` docs. Read **every file the plan will touch**. A plan that names a file you haven't opened is a guess.
    - **Findings** (standard lane): write down what the reading changed. For each surprise that changes the source's approach or adds work, one numbered item with its evidence (`includes/Cart.php:212`, or the WooCommerce or WordPress source file and line) and what the plan does about it. A guard the brief missed, an API that behaves differently, an edge case in the data. Compare the plan with the knowledge docs, `CLAUDE.md` and the design: a place where the plan **differs** from what a doc says gets a task that updates that doc in the same branch. The section is the implementer's and the reviewer's starting point, so keep it to facts, not a diary. Write `none` when nothing surprised you.
