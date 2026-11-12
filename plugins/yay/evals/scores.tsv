@@ -30,3 +30,7 @@ review-catches-missing-capability	0.9.0	1.00	1	2026-11-12
 roadmap-status-readonly	0.9.0	1.00	1	2026-11-12
 roadmap-vision-asks-first	0.9.0	1.00	1	2026-11-12
 test-finds-product-bug	0.9.0	1.00	1	2026-11-12
+roadmap-add-clear-no-question	0.10.0	1.00	1	2026-11-12
+roadmap-add-unclear-asks	0.10.0	1.00	1	2026-11-12
+roadmap-status-readonly	0.10.0	1.00	1	2026-11-12
+roadmap-vision-asks-first	0.10.0	1.00	1	2026-11-12

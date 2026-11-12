@@ -2,7 +2,7 @@
 
 `/yay:harness-update` reads this file to tell a repo what changed between its recorded kit version and the installed one. Each entry lists new skills, config keys, template changes and behavior changes.
 
-## Unreleased (0.10.0)
+## 0.10.0 (2026-11-12)
 - **`/yay:roadmap` checks short, unclear items before adding them.** When an item's title could mean two things that would be built differently ("Reminders": the shopper's, before a scheduled delivery, or the merchant's, for unsent gifts), it now asks one question per unclear item (at most 3): "I read '<title>' as: <acceptance>. Is that it?", with its reading recommended and 1–2 alternatives. The answer becomes the item's acceptance. Clear titles are still added without a question, and every added-items table now shows the acceptance line, so a misread item is easy to spot. Nothing to run in a repo: the skill comes with the plugin update.
 
 ## 0.9.0 (2026-11-12)
