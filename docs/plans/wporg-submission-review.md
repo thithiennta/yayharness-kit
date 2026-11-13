@@ -8,7 +8,7 @@ design:
 trello:
 type: feat
 branch: feat/p-1-yay-wporg-wordpress-org-submission-review
-pr:
+pr: 31
 editions: [free]
 created: 2026-11-13
 reviewed: yes
