@@ -41,7 +41,7 @@ _path_without() { # name -> dir
   printf '%s\n' "$d"
 }
 
-test_doctor_python_for_wporg() { # P-1
+test_doctor_python_for_wporg() {
   export YAY_REPO; YAY_REPO="$(fixture_repo bare merged)"
   command -v python3 >/dev/null 2>&1 || { _pass; return; }
   _wporg_slug() { python3 -I -c 'import json,sys
