@@ -130,7 +130,7 @@ Done means:
   - Keep the local graders' assertions (the reply grader names `reply.md` in the report folder). Add one per case: the report names checklist IDs; in the email case, each fix commit names its ID.
   - Drop `yaycheckout-real-plugin` (Findings 6).
   - Reuse: the local `evals/*/graders/*.md` and `files/`, and `evals/implement-tiny-lane/scaffold.sh` for the git and config setup. [risk: 1]
-- [ ] T9 CHANGELOG entry — `plugins/yay/CHANGELOG.md`
+- [x] T9 CHANGELOG entry — `plugins/yay/CHANGELOG.md`
   - File: `plugins/yay/CHANGELOG.md`
   - Under `## Unreleased`: the new `/yay:wporg`, `yayh wporg site`, `/yay:release --wporg` and the doctor's `python3` check.
   - For each repo: set `plugin.wporgSlug` to opt in, and have `/yay:e2e-init` run for the site stage.
