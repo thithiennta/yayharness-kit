@@ -102,7 +102,7 @@ Done means:
   - The site stops afterwards unless `--keep`, and the mu-plugin and plugin-check leave nothing behind in the copied plugin folder.
   - Reuse: `_yay_ui_site_up`, `_yay_ui_log_scan` (T3), `yay_config_get`, and the `release` case in `yayh` as the dispatch pattern.
   - Callers: `yay_wporg_site` → `yayh wporg site` → `/yay:wporg` step 2 (T6).
-- [ ] T5 `yayh doctor` checks for `python3` when the repo ships to WordPress.org
+- [x] T5 `yayh doctor` checks for `python3` when the repo ships to WordPress.org
   - Files: `plugins/yay/lib/doctor.sh`, `tests/unit/test_doctor.sh`
   - If `plugin.wporgSlug` is set and there's no `python3`, report `warn python3 "needed by /yay:wporg"` with the fix `brew install python3`. Otherwise report `ok` with its version.
   - Reuse: `_yay_doc` and `yay_config_get` in the doctor's existing harness section (`doctor.sh:30-40`).

@@ -44,6 +44,11 @@ yay_doctor() {
     if [ -f "$root/CLAUDE.md" ] && grep -q 'yay:project:start' "$root/CLAUDE.md" 2>/dev/null \
       && ! grep -q 'has not been written yet' "$root/CLAUDE.md" 2>/dev/null; then _yay_doc ok knowledge "project block present"
     else _yay_doc warn knowledge "no project knowledge yet: Claude knows the workflow, not the plugin" "/yay:knowledge-init"; fi
+    # /yay:wporg's precheck is Python: needed only by repos that ship to WordPress.org.
+    if yay_config_get plugin.wporgSlug >/dev/null 2>&1; then
+      if command -v python3 >/dev/null 2>&1; then _yay_doc ok python3 "$(python3 --version 2>&1 | sed 's/^Python //') (for /yay:wporg)"
+      else _yay_doc warn python3 "needed by /yay:wporg" "brew install python3"; fi
+    fi
   else
     _yay_doc warn harness "not set up in this repo (no .yay/config.json)" "/yay:harness-init (one person, then merge the PR)"
   fi
