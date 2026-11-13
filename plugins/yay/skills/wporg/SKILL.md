@@ -77,7 +77,7 @@ Fix on a branch, never in the zip: `branch="fix/wporg-review-<n>"` (`<n>` one pa
 1. Parse each heading of the pasted email and map it to IDs with `checklist.md`'s heading table. A heading that isn't there: map it by its text, add the row to `checklist.md` in the fix branch, and say so.
 2. For each ID, search the **whole** plugin for the pattern (U4). The email's examples are a sample.
 3. Fix them as in step 5 (the user asked for the fixes, so only the behaviour decisions are asked), then run steps 1–4 on the fixed branch to catch what the next round would raise.
-4. Write `$dir/reply.md` (U3): 3–8 lines for the same thread, holding only what the reviewer can't see in the code: the new slug, stated explicitly, if the name changed; ownership context; a one-line reason for each public REST route or nopriv handler kept; a false positive answered with the line it's about; real questions. **No list of changes**, no thanks paragraph.
+4. Write `$dir/reply.md` (U3): 3–8 lines for the same thread, holding only what the reviewer can't see in the code: the new slug, stated explicitly, if the name changed; ownership context; a one-line reason for each public REST route or nopriv handler kept; a false positive answered with the line it's about; real questions. **No list of changes**, not even "all issues are fixed" or "I've uploaded a new version": they re-review the whole plugin. No thanks paragraph.
 5. Tell the user to upload the fixed zip on the "Add your plugin" page while logged in as the submitting account, then reply in that thread. Never resubmit it as a new plugin or from another account.
 
 ## 6. Wrap up
