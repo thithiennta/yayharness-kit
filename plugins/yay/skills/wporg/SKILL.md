@@ -53,7 +53,7 @@ Read `references/manual-review.md` and work through it against the unpacked zip,
 
 ## 4. Report
 
-Write `$dir/review.md` exactly as `references/report-template.md` says: the team's sections and order, their per-issue shape, only sections with findings, **the checklist ID on every issue**, and `[blocks upload]` or `[review]` on each. Every finding has a `file:line` and a fix. Call an area clean only when you checked all of it. Doubtful items go under "Other details" with a "✅ When this is fine" note, or under "Uncertain". Show the header, the blockers and the issue headings in the reply, with the path to the full report.
+Write `$dir/review.md` exactly as `references/report-template.md` says: the team's sections and order, their per-issue shape, only sections with findings, **the checklist ID on every issue**, and `[blocks upload]` or `[review]` on each. Every finding has a `file:line` and a fix. Call an area clean only when you checked all of it. Doubtful items go under "Other details" with a "✅ When this is fine" note, or under "Uncertain". Show the report in the reply too, in two groups, **Blocks the upload** and **Will be in the review email**: each issue with its ID, its `file:line` and its fix (the code fix itself for security issues, such as the `$wpdb->prepare()` call), then the path to the full report.
 
 Then check `git status --porcelain` against step 1. If the build rewrote tracked files, restore them (`git checkout -- <files>`) and say so.
 

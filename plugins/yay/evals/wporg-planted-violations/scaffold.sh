@@ -21,10 +21,10 @@ cat > bin/package.sh <<'SH'
 set -euo pipefail
 v="${1:?version}"; s=quick-share-buttons
 rm -rf release/stage; mkdir -p "release/stage/$s"
-tar --exclude=./release --exclude=./.git --exclude=./.yay --exclude=./bin --exclude=./node_modules --exclude=.DS_Store --exclude=./.gitignore -cf - . | tar -xf - -C "release/stage/$s"
+tar --exclude=./release --exclude=./.git --exclude=./.yay --exclude=./.claude --exclude=./bin --exclude=./node_modules --exclude=.DS_Store --exclude=./.gitignore -cf - . | tar -xf - -C "release/stage/$s"
 rm -f "release/$s-$v.zip"; (cd release/stage && zip -qr "../$s-$v.zip" "$s"); rm -rf release/stage
 SH
-printf 'release/\nnode_modules/\n.DS_Store\n' > .gitignore
+printf 'release/\nnode_modules/\n.DS_Store\n.claude/\n' > .gitignore
 cat > plugin.php <<'FILE'
 <?php
 /**
