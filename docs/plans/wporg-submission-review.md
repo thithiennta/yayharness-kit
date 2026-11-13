@@ -77,8 +77,8 @@ Done means:
   - Add the partner's missing lessons to `manual-review.md`: Q3 `admin_body_class` and CSS leaking into WordPress screens, Q9, Q12 with its method, Q13, S12 (`phpcs:ignore` doesn't pass review, and `wp_kses_post` strips `<input>`, `<svg>` and `srcset`), B1/B2 (logged-out link, default branch equals the zip, clean-clone rebuild), and U3/U4.
   - Tag each section with its IDs, and put the ID on each issue in `report-template.md`.
   - Reuse: the local skill's three reference files, and the partner checklist's S/G/B/Q/R/T/U IDs. [risk: 1]
-- [ ] T2 Port `precheck.py` and add the four missing static checks
-  - Files: `plugins/yay/skills/wporg/scripts/precheck.py` (new), `tests/fixtures/wporg/planted/` (new), `tests/unit/test_wporg.sh` (new)
+- [x] T2 Port `precheck.py` and add the four missing static checks
+  - Files: `plugins/yay/skills/wporg/scripts/precheck.py` (new), `tests/fixtures/wporg/planted/` (new), `tests/unit/test_wporg.sh` (new), `tests/run.sh` (`--changed` maps the script to `test_wporg.sh`)
   - Add the checks:
     - `post_type_key_length` (Q9)
     - `admin_body_class` and enqueue scope, as an inventory warning (Q3)
