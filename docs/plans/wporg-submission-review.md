@@ -88,7 +88,7 @@ Done means:
   - The fixture is a tiny plugin with one planted violation per new check, plus one clean file.
   - Reuse: `Report.add()` and the regex rule table in the local `precheck.py` (`:72-78`, `:145`).
   - Callers: `CHECK_IDS` → `Report.add()`; the new checks → `run()`.
-- [ ] T3 Pull the throwaway-site start and log scan out of `yay_release_ui` into shared helpers
+- [x] T3 Pull the throwaway-site start and log scan out of `yay_release_ui` into shared helpers
   - File: `plugins/yay/lib/bundle.sh`
   - New `_yay_ui_site_up <zip> <out>`: extract, map, start and wait. It sets `site`, `folder`, `main` and `url`, and returns 3 on a SKIP.
   - New `_yay_ui_log_scan <out> <folder>`: the `debug.log` PASS, WARN and FAIL lines.
