@@ -19,6 +19,7 @@ YAY_LIB_DIR="$YAY_KIT_ROOT/lib"
 . "$YAY_LIB_DIR/backlog.sh"
 . "$YAY_LIB_DIR/release.sh"
 . "$YAY_LIB_DIR/bundle.sh"
+. "$YAY_LIB_DIR/wporg.sh"
 . "$YAY_LIB_DIR/roadmap.sh"
 . "$YAY_LIB_DIR/code.sh"
 . "$YAY_LIB_DIR/review.sh"
@@ -214,6 +215,10 @@ Versions, changelog, build
                                    plugins-page check of the built zip in its own wp-env site, with screenshots
                                    (exit 1 on a FAIL, 3 when it can't run)
   release ui-stop                  stop that site
+  wporg site <zip> out=<dir> [--keep] [--no-pcp]
+                                   WordPress.org runtime checks on that site: Plugin Check (T1), clean activation
+                                   (Q11), lifecycle (Q7), debug.log (Q6), runtime requirements (Q10); writes site.tsv
+                                   (exit 1 on a FAIL, 3 when it can't run)
   build zip [edition=e] [version=v] newest zip matching package.output
   build check <zip> [edition=e] [version=v]
                                    PASS/WARN/FAIL per check; exit 1 on any FAIL
@@ -469,6 +474,12 @@ case "$cmd" in
       ui) yay_release_ui "$@" ;;
       ui-stop) yay_release_ui_stop ;;
       *) yay_die "usage: yayh release check|size|next-rc|bundle|ui|ui-stop" ;;
+    esac ;;
+  wporg)
+    sub="${1:-}"; shift || true
+    case "$sub" in
+      site) yay_wporg_site "$@" ;;
+      *) yay_die "usage: yayh wporg site <zip> out=<dir> [--keep] [--no-pcp]" ;;
     esac ;;
   build)
     sub="${1:-}"; shift || true

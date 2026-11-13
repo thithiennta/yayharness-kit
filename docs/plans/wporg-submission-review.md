@@ -95,7 +95,7 @@ Done means:
   - `yay_release_ui` calls both, and its output and exit codes don't change.
   - Reuse: the body of `yay_release_ui` (`bundle.sh:253-329`), `_yay_ui_site_dir`, `_yay_ui_port`, `_yay_ui_wpenv`.
   - Callers: `_yay_ui_site_up`, `_yay_ui_log_scan` → `yay_release_ui` (this task), `yay_wporg_site` (T4).
-- [ ] T4 `yayh wporg site`: Plugin Check, activation, lifecycle, runtime requirements and the debug log on the throwaway site
+- [x] T4 `yayh wporg site`: Plugin Check, activation, lifecycle, runtime requirements and the debug log on the throwaway site
   - Files: `plugins/yay/lib/wporg.sh` (new), `plugins/yay/bin/yayh` (dispatch and help text), `tests/unit/test_wporg.sh`
   - The checks and their IDs are as in Approach: T1, Q11, Q7 with `--skip-delete`, Q10 through a temporary mu-plugin, and Q6.
   - Flags: `--keep` and `--no-pcp`.
