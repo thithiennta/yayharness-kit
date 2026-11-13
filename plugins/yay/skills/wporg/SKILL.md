@@ -31,12 +31,12 @@ References (read when a step says so): `references/checklist.md` (IDs and the em
 
 ## 1. What ships
 
-- `slug="$(yayh config get plugin.wporgSlug)"`. Not set: use `plugin.slug`, and say in the report that `plugin.wporgSlug` opts the repo in. `v="$(yayh version current)"`. Note `git status --porcelain`: the review must leave the working tree as it found it.
+- `slug="$(yayh config get plugin.wporgSlug)"`. Not set: use `plugin.slug`, and say in the report that `plugin.wporgSlug` opts the repo in. `v="$(yayh version current)"`, or with `--zip` the `Version:` in the zip's main file (a release candidate carries its rc version). Note `git status --porcelain`: the review must leave the working tree as it found it.
 - The folder for everything this skill writes: `dir="$(yayh config get release.bundleDir release/bundles)/$(yayh config get plugin.slug)-wporg-$v"`. It's gitignored and outside the zip.
 - **The zip.** The repo's own package step builds exactly what ships, so never guess the build:
   - `--zip=<path>`: use it.
   - Otherwise, as `/yay:release` "Build the bundle" step 2: `yayh run build edition=<e>` (when `commands.build` is set), `yayh run package version=$v edition=<e>`, then `zip="$(yayh build zip edition=<e> version=$v)"`.
-  - Then `yayh build check "$zip" edition=<e> version=$v`. A FAIL in `zip`, `folder`, `dev-files`, `edition`, `main-file`, `php-syntax` or a repo `check` stops the review: the zip isn't what you'd upload, so say what to fix in the build (release step 2.4). A FAIL in `version` or `stable-tag` doesn't stop it: it's finding **R2** `[blocks upload]`.
+  - Then `yayh build check "$zip" edition=<e>`, with `version=$v` when this skill built the zip. A FAIL in `zip`, `folder`, `dev-files`, `edition`, `main-file`, `php-syntax` or a repo `check` stops the review: the zip isn't what you'd upload, so say what to fix in the build (release step 2.4). A FAIL in `version` or `stable-tag` doesn't stop it: it's finding **R2** `[blocks upload]`.
   - **No `commands.package`:** review the repo itself (precheck honours `.distignore`). Say "Reviewed: repo source, not built" in the header and list what could differ. Findings in paths the build would strip (`pro/`, `__premium_only` blocks) go under "Uncertain", not into the email: Pro code the build removes isn't trialware.
 
 ## 2. Automated pass

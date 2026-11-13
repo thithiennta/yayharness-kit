@@ -6,7 +6,7 @@ A Claude Code plugin that gives every Yay WordPress plugin the same harness and 
 /yay:go: what's next, or plain words → the right skill below
 /yay:roadmap ─► /yay:brainstorm ─► (/yay:design) ─► /yay:plan ─► /yay:implement ─┐
                └──────── /yay:autopilot (all of them, for a whole queue) ──────────┤
-/yay:debug ─► /yay:fix ──────────────────────────────────────────┼─► /yay:release --bundle (QA) ─► /yay:release
+/yay:debug ─► /yay:fix ──────────────────────────────────────────┼─► /yay:release --bundle (QA) ─► (/yay:wporg) ─► /yay:release
 /yay:harness-init · /yay:harness-update · /yay:knowledge-init · /yay:knowledge-update
 ```
 
@@ -37,3 +37,5 @@ Then open a plugin repo and run `/yay:harness-init`.
 ## Requirements
 
 git, bash, and one of `jq`, `node`, `php` or `python3` for reading JSON. macOS ships `jq` and every Yay dev has `php`.
+
+`/yay:wporg` (the WordPress.org pre-review) also needs `python3` for its precheck; `yayh doctor` checks it in repos that set `plugin.wporgSlug`. Its site stage uses the same wp-env setup as the e2e tests (`/yay:e2e-init`).

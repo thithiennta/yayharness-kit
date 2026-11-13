@@ -1,7 +1,7 @@
 ---
 name: release
 description: Build, check and release a Yay plugin, ending in a bundle to send. Use when the user says "release", "cut a release", "ship 1.4.0", "tag the release", "hotfix release", "build the zip", "package it", "make a build for QA", "send a test build", "check the zip". --bundle makes a test bundle (next version + rc) for QA without releasing. A release checks the Stable tag, versions and changelog, builds and checks every zip, compares the bundle size with the last release, runs the plugins page with the built zip, gets the developer's confirmation, and opens the release PR. --tag-only tags it after merge; --hotfix releases a patch.
-argument-hint: "[major|minor|patch|x.y.z] [--bundle] [--edition=<name>|all] [--wp-tested=X.Y] [--wc-tested=X.Y] [--hotfix] [--tag-only] [--date=YYYY-MM-DD] [--no-build] [--no-ui] [--keep-site] [--dry-run] [--no-pr] [--push-tag] [--draft]"
+argument-hint: "[major|minor|patch|x.y.z] [--bundle] [--edition=<name>|all] [--wp-tested=X.Y] [--wc-tested=X.Y] [--hotfix] [--tag-only] [--date=YYYY-MM-DD] [--no-build] [--no-ui] [--wporg] [--keep-site] [--dry-run] [--no-pr] [--push-tag] [--draft]"
 allowed-tools: Bash, Read, Write, Edit, AskUserQuestion
 ---
 
@@ -14,6 +14,7 @@ Every mode ends in a **bundle**: one folder, `release/bundles/<slug>-<version>/`
 - `MANIFEST.txt`: the commit, plus each zip's size, file count and sha256
 - `README.md`: what changed, the check results, the size compared with the last release, the UI check, and the manual checks left
 - `ui/<edition>/`: plugins-page screenshots and logs
+- `wporg/` (with `--wporg`): the WordPress.org pre-review of the free zip
 
 Four modes:
 - **Prepare** (the default): release `x.y.z` through a release PR from the base branch.
@@ -36,6 +37,7 @@ Git rules are in `${CLAUDE_PLUGIN_ROOT}/reference/git-conventions.md`. Only this
 | `--date=YYYY-MM-DD` | Changelog date (default today). |
 | `--no-build` | Skip `commands.build` (the assets are already built): only package and check. |
 | `--no-ui` | Skip the automatic plugins-page check. A release then asks you to confirm that you checked it by hand. |
+| `--wporg` | After the UI check, pre-review the WordPress.org zip with `/yay:wporg` and put the report in the bundle. An upload blocker stops the release. |
 | `--keep-site` | Leave the UI check's site running afterwards, to look around (`admin` / `password`). `yayh release ui-stop` stops it. |
 | `--dry-run` | Show the version, the changelog, the version-file changes, the release checks and the build plan. Change nothing. |
 | `--no-pr`, `--no-push`, `--draft` | As in `/yay:implement`: the release branch is pushed and its PR opened by default. `--no-pr` keeps it local and prints the commands. |
@@ -62,15 +64,17 @@ Every mode uses this. It needs a version `v` (the version the zips carry) and a 
    `ui/<e>/links.tsv` is the table the developer confirms: kind, text, URL, status, where it lands (page heading, or final URL after redirects), result.
 
    Exit 1 is a FAIL: stop, show the lines and the screenshot, and suggest `/yay:debug`. Exit 3 means it couldn't run (no e2e setup or no Docker): say why. The release then gets a manual check instead (Prepare step 9).
-5. **Bundle README.** Write `$bundle/README.md`:
+5. **WordPress.org review** (only with `--wporg`; when `plugin.wporgSlug` is set and the flag isn't given, mention it). Run `/yay:wporg --zip=<the free edition's zip> --report-only` (the edition `/yay:wporg` would pick), then copy its report folder into `$bundle/wporg/`. Any `[blocks upload]` finding stops the release with its ID and line, like a build-check FAIL: fix it on a branch first (`/yay:wporg` without `--report-only`). The `[review]` issues go into Prepare step 9's question.
+6. **Bundle README.** Write `$bundle/README.md`:
    - the plugin, the version and the commit
    - what changed: the changelog entry, or for an rc, a short merchant-language list from `yayh changelog collect --since=<last tag>`
    - the build-check results per edition
    - the size against the baseline, with every UNUSUAL line and the largest files
    - the plugin's links (`links.tsv`) and the other UI-check lines, naming each step's screenshot, so the tester can confirm each link goes where it should
+   - with `--wporg`: the review's verdict, its blockers and issues by ID, and the path to `wporg/review.md`
    - the manual checks left: the `## Verify` items needing a browser or a human, from the plans shipped since the last tag (`Plan:` trailers)
    - how to install it: upload the zip under Plugins → Add New → Upload, or `wp plugin install <zip> --force`
-6. **Tidy up.** Compare `git status` with step 1. If a package script rewrote tracked files that this mode doesn't commit, restore them (`git checkout -- <files>`) and say so.
+7. **Tidy up.** Compare `git status` with step 1. If a package script rewrote tracked files that this mode doesn't commit, restore them (`git checkout -- <files>`) and say so.
 
 ## Prepare (default)
 
@@ -116,6 +120,7 @@ Every mode uses this. It needs a version `v` (the version the zips carry) and a 
 9. **Confirm: the developer always signs off on a release.** One AskUserQuestion, asked even when nothing else is open:
    - **The plugin's links** (always first). Show `links.tsv` for each edition as a table: every action and meta link of the active plugin, with its URL, where it lands and its result, plus where activation lands. The question is whether **each link goes where it should** (the right settings tab, the right docs page, the right upgrade URL with its tracking parameters), not only whether it loads. Ask: "Are these the right links for `<plugin> $new`?" Options: "All correct, release it" / "A link is wrong, stop". A WARN link (blocked or unreachable from here) is named in the question so the developer opens it by hand. If the check didn't run, list the links from the plugin's `plugin_action_links_*` and `plugin_row_meta` filters in the code instead, ask the developer to activate the zip on a test site and click each one, and ask the same question.
    - **Size**, only when step 8 had UNUSUAL lines. Show them, with the largest new files. Ask: "Is this size change expected?" Options: "Expected" / "Not expected, stop".
+   - **WordPress.org review**, only with `--wporg` and `[review]` issues left. List them by ID. Ask: "Release with these open? The Plugins Team will raise them." Options: "Release, they're known" / "Stop and fix them".
    - **Release criteria**, only when the brief has some still open after step 6. List them and the unanswered questions with their proposals. Ask: "These release criteria aren't verified. Release anyway?" Options: "They're verified, release it" (tick them, noting "confirmed by the developer") / "Stop".
    - **Any hard question held from step 2.**
 
@@ -138,7 +143,7 @@ Each of these modes is in `${CLAUDE_PLUGIN_ROOT}/reference/release-modes.md`. Re
 
 ## Don'ts
 - Never tag without `YAY_RELEASE=1`, never tag an unmerged release branch (hotfixes excepted), and never move or delete a pushed tag.
-- Never release with a FAIL from `yayh release check`, `yayh build check` or the UI check, or without the developer's yes in Prepare step 9.
+- Never release with a FAIL from `yayh release check`, `yayh build check` or the UI check, or a `--wporg` upload blocker, or without the developer's yes in Prepare step 9.
 - Never hand-edit a zip, or delete files from it to pass a check. Fix the build.
 - Never commit a test bundle's rc version, and never send a bundle built with `--no-build` unless you know the assets are current.
 - Never publish to WordPress.org SVN or upload anywhere. That's out of scope; report where the bundle is.

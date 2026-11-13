@@ -118,7 +118,7 @@ Done means:
   - It ends with the kit's **Next** footer.
   - Reuse: the local skill's `SKILL.md` steps 3–5 and its email section; `yayh build zip`/`build check` (release SKILL step 2); `reference/asking.md`; `reference/git-conventions.md`.
   - Callers: `/yay:wporg` → the user, `/yay:go` (T7) and `/yay:release --wporg` (T7).
-- [ ] T7 Wire it into release, go and the README — `plugins/yay/skills/release/SKILL.md`, `plugins/yay/skills/go/SKILL.md`, `plugins/yay/README.md`
+- [x] T7 Wire it into release, go and the README — `plugins/yay/skills/release/SKILL.md`, `plugins/yay/skills/go/SKILL.md`, `plugins/yay/README.md`
   - Files: `plugins/yay/skills/release/SKILL.md`, `plugins/yay/skills/go/SKILL.md`, `plugins/yay/README.md`
   - Release: a `--wporg` option, and a step after the UI check that runs `/yay:wporg --zip=<free zip> --report-only` into the bundle. A blocker stops the release.
   - Go: a routing row for "submit to wp.org", "is it ready for wordpress.org" and "review email from plugins@wordpress.org" → `/yay:wporg` (`--email` when they paste one).
