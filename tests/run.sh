@@ -52,10 +52,11 @@ _cover() { # path -> test file basenames, or ALL
     plugins/yay/lib/artifact.sh) printf '%s\n' test_artifact.sh test_backlog.sh test_design.sh test_roadmap.sh test_model.sh ;;
     plugins/yay/lib/model.sh) printf '%s\n' test_model.sh test_artifact.sh ;;
     plugins/yay/lib/backlog.sh) printf '%s\n' test_backlog.sh test_artifact.sh ;;
-    plugins/yay/lib/bundle.sh) echo test_release.sh ;;
+    plugins/yay/lib/bundle.sh) printf '%s\n' test_release.sh test_wporg.sh ;;
     plugins/yay/lib/release.sh) printf '%s\n' test_release.sh test_json.sh ;;
     plugins/yay/lib/*.sh) echo "test_$(basename "$1")" ;;
     plugins/yay/hooks/*) echo test_hooks.sh ;;
+    plugins/yay/skills/wporg/scripts/*) echo test_wporg.sh ;;
     plugins/yay/templates/artifacts/*) printf '%s\n' test_artifact.sh test_backlog.sh test_design.sh ;;
     plugins/yay/templates/tests/*) echo test_tests.sh ;;
     plugins/yay/templates/e2e/*) echo test_e2e.sh ;;

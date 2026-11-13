@@ -1,6 +1,6 @@
 # yay eval suite
 
-Behaviour checks for the `/yay:*` skills, run with `claude plugin eval`. Each case builds a small "Giftly" plugin repo (git, `.yay/config.json`, a roadmap, a bug report, a planted off-by-one in `includes/GiftMessage.php`), asks the kind of thing a developer would type, and grades the outcome.
+Behaviour checks for the `/yay:*` skills, run with `claude plugin eval`. Each case builds a small plugin repo, usually "Giftly" (git, `.yay/config.json`, a roadmap, a bug report, a planted off-by-one in `includes/GiftMessage.php`), asks the kind of thing a developer would type, and grades the outcome.
 
 | Case | What it checks |
 |---|---|
@@ -24,6 +24,8 @@ Behaviour checks for the `/yay:*` skills, run with `claude plugin eval`. Each ca
 | `test-finds-product-bug` | "Add tests for trimming and capping": unit layer, boundary cases 199/200/201, and the off-by-one reported as a product bug rather than asserted. No product code edited. |
 | `plan-from-request` | A plan request fires `/yay:plan`, which writes `docs/plans/` with tasks and Verify checks, and no code. |
 | `plan-keeps-screenshot` | A plan request with a screenshot path (`shots/preview-overlap.png`): the image is copied to `docs/assets/P-1/` and linked from the plan, with a Seen-in-screenshot line and a Verify check for what it shows. No code. |
+| `wporg-planted-violations` | "Review it like the plugin team would, report only" on quick-share-buttons (the local skill's planted plugin, now harnessed with a package command): `/yay:wporg` builds and checks the zip, then reports the Text Domain, Stable tag, `Update URI`, trialware gate, activation ping, nonce-less and capability-less handler, unprepared SQL, CDN script, upsell notice and 3-letter prefix, blockers apart from review issues, with a checklist ID on each, and changes no plugin file. |
+| `wporg-fix-from-email` | A pasted review email for event-countdown-kit: every unescaped echo (not only the example), the generic function, option and transient names, and the external service in the readme are fixed on a `fix/` branch with one commit per checklist ID, and `reply.md` is a short reply that lists no changes. |
 
 ## Run
 

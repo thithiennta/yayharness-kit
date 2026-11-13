@@ -41,6 +41,7 @@ Route by what the user wants, not by keywords. Pass the user's own words on as t
 | a browser test for a flow | `/yay:e2e "<flow>"` |
 | a QA build | `/yay:release --bundle` |
 | to ship, "release it", "ship it" | `/yay:release` (after the PR merges: `--tag-only`) |
+| to submit to WordPress.org: "is it ready for wordpress.org", "review it like the plugin team", a review email from plugins@wordpress.org | `/yay:wporg` (`--email` when they paste one) |
 | what goes in the next release, the changelog | `/yay:changelog --dry-run` |
 | the docs brought up to date with the code | `/yay:knowledge-update` |
 | the harness updated, "harness is outdated" | `/yay:harness-update` |

@@ -1,0 +1,1 @@
+we're about to submit our new plugin quick-share-buttons to wordpress.org. can you review it like the plugin review team would so we don't get bounced back 5 times? just the report for now, don't change the code yet

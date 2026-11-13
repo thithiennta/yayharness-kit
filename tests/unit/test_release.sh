@@ -326,3 +326,19 @@ test_release_next_rc_and_bundle_manifest() {
   assert_ok "$YAYH" release bundle 1.3.0-rc.1 free="$z" --replace
   assert_fails "$YAYH" release next-rc 1.3
 }
+
+test_release_ui_skips_unchanged() {
+  export YAY_REPO; YAY_REPO="$(_rrepo)"
+  local z out rc; z="$(_zip "$YAY_REPO" fixture-plugin)"
+  out="$("$YAYH" release ui "$z" out="$T_TMP/ui.$RANDOM")"; rc=$?
+  assert_eq 3 "$rc" "exit without e2e setup"
+  assert_eq "SKIP	ui	no e2e setup with wp-env and Playwright installed (run /yay:e2e-init, then yayh run e2e-install)" "$out"
+  local p; p="$(_ui_no_docker "$YAY_REPO")"
+  rm "$YAY_REPO/tests/e2e/node_modules/.bin/playwright"
+  assert_contains "$(PATH="$p" "$YAYH" release ui "$z" out="$T_TMP/ui.$RANDOM")" "SKIP	ui	no e2e setup with wp-env and Playwright installed"
+  p="$(_ui_no_docker "$YAY_REPO")"
+  out="$(PATH="$p" "$YAYH" release ui "$z" out="$T_TMP/ui.$RANDOM")"; rc=$?
+  assert_eq 3 "$rc" "exit without Docker"
+  assert_eq "SKIP	ui	Docker is not running" "$out"
+  assert_no_file "$(git -C "$YAY_REPO" rev-parse --absolute-git-dir)/yay-release-site/.wp-env.json"
+}
