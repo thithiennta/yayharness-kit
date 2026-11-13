@@ -19,7 +19,7 @@ reviewed: pending
 A Yay developer types `/yay:wporg` in a plugin repo that ships to WordPress.org (`plugin.wporgSlug` is set). They get a pre-review of **the free zip the repo really builds**, run on a clean throwaway site, written as the Plugins Team's review email. Every finding has a stable ID (S/G/B/Q/R/T/U, as in the partner checklist), a `file:line` and a fix, and blockers are marked apart from review issues. `/yay:wporg --email` takes a pasted review email, maps its headings to IDs, fixes every occurrence on a branch, and drafts the short reply. `/yay:release --wporg` runs the review as a release step.
 
 Done means:
-- the three ported evals pass
+- the two ported evals pass
 - `yayh wporg site` reports Plugin Check, clean activation, lifecycle and runtime-requirement results on a real Yay plugin
 - `./tests/run.sh` is green
 
