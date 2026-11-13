@@ -74,6 +74,7 @@ For each host the plugin *contacts* (links in admin UI don't count):
 2. What data goes out? Site URL, admin email, IP, user data, content?
 3. Is there explicit opt-in before the first request? (Activation pings, "anonymous usage stats" enabled by default, and telemetry SDKs that send before consent are guideline 7 violations.)
 4. Is it in readme.txt? The team wants an `== External services ==` section with, per service: what it is and what it's used for, what data is sent and when, a link to the service, its Terms of Service and its Privacy Policy. Your own domain counts as a third party here.
+5. Your own service counts: a `wp_remote_get()` to your own domain (YayCheckout's `compatibility.json` from yaycommerce.com, 2026-11) needs the same section. URL constants (`define( 'X_URL', 'https://…' )`) are found too. The team says it *opens the Terms and Privacy links in the next review*, so they must exist and say something about this service.
 
 Also guideline 8: no JS/CSS from CDNs (fonts are OK), no remote JS execution, no installing or updating code from anywhere but WordPress.org (custom updaters, `Update URI`, downloading zips, "install our other plugins" without consent), no admin iframes to a service.
 
@@ -121,6 +122,7 @@ Look in `vendor/`, `lib/`, `libs/`, `includes/libraries/`, `assets/vendor/`, `no
 - it's the latest stable version and maintained (check the version string in the file header against what you know; say "verify" if unsure rather than guessing);
 - Composer `vendor/` ships with `composer.json`;
 - minified/compiled JS/CSS has human-readable source in the zip or a public repo linked **in the readme**, with build steps.
+- **B1: how to fix it (Yay's way).** Don't ship the uncompressed source in the zip. Link the public GitHub repo from a `== Source Code ==` section in `readme.txt`: the repo URL, which repo folder each built folder comes from (`assets/dist/blocks/` ← `src/blocks/`), and the build commands with tool versions. The scanner checks whether the link is *plausible* for each built file ("no corresponding bundled source or plausible public repository link"), so a bare repo URL with no folder mapping can still be reported.
 - **B1: the public source is really public.** Open every repo link from the readme in a logged-out browser: a private repo answers 404, and that's a blocker. Reviewers land on the default branch, so it must hold the same code as the zip, not a stale `master`. The public repo also exposes every branch and the history, so check that no paid code is in it.
 - **B2: the build steps work from nothing.** Clone the public repo into an empty folder with no login, run the readme's steps exactly (`npm ci && npm run build`), and compare the result with the zip's built folders. The readme names the tool versions (Node, npm/pnpm, Composer).
 - **B3:** each bundled library has its header comment, or is listed in the readme with name, version and URL.
@@ -158,7 +160,7 @@ IDs: N1, N2, N3, U2.
 ID: G8.
 
 Mention these up front if they apply, because no code fix helps:
-- lets users insert/execute arbitrary PHP/JS/CSS/HTML (code-snippet boxes, custom JS fields without `unfiltered_html` gating);
+- lets users insert/execute arbitrary PHP/JS/CSS/HTML (code-snippet boxes, custom JS fields without `unfiltered_html` gating). **A plain "Custom CSS" setting counts too**: YayCheckout's `custom_css` option was reported in 2026-11 as "Attempting to process custom CSS/JS/PHP / Allowing arbitrary script insertion". The fix is to remove the field and point users to Additional CSS in the Customizer or Site Editor, or to turn what they'd type into form fields (colours, spacing) whose values the plugin writes into CSS itself;
 - only installs other plugins, or is a framework/library/boilerplate with no end-user function;
 - duplicates core with no meaningful improvement, or copies an existing plugin;
 - storefront-only (a plugin whose only purpose is selling something);

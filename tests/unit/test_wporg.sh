@@ -16,6 +16,9 @@ test_precheck_new_checks() {
   assert_contains "$out" "Q3 enqueue_scope includes/planted.php:16"
   assert_contains "$out" "S11 inline_script_json_hex includes/planted.php:19"
   assert_contains "$out" "Q13 product_query_visibility includes/planted.php:24"
+  assert_contains "$out" "S6 json_unescaped_flags includes/planted.php:28"
+  assert_contains "$out" "S13 block_comment_markup includes/planted.php:29"
+  assert_contains "$out" "G8 custom_code_setting includes/planted.php:32"
   assert_not_contains "$out" "includes/clean.php" "the clean file stays quiet"
   # the text report names the ID next to the check
   assert_contains "$(python3 -I "$KIT/skills/wporg/scripts/precheck.py" "$fx" --slug wporg-planted --wp-version 6.9)" "## [ERROR] Q9 post_type_key_length (1)"

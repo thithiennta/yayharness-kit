@@ -34,3 +34,9 @@ function wporg_planted_visible_products() {
 		)
 	);
 }
+
+function wporg_planted_block( $attrs ) {
+	return get_comment_delimited_block_content( 'wporg-planted/column', $attrs, '' );
+}
+
+register_setting( 'wporg_planted', 'wporg_planted_custom_css_class', array( 'sanitize_callback' => 'sanitize_html_class' ) );

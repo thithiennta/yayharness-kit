@@ -23,3 +23,10 @@ add_action( 'admin_enqueue_scripts', 'wporg_planted_admin_assets' );
 function wporg_planted_products() {
 	return new WP_Query( array( 'post_type' => 'product', 'posts_per_page' => 10 ) );
 }
+
+function wporg_planted_block_markup( $slug, $attrs ) {
+	$json = wp_json_encode( $attrs, JSON_HEX_TAG | JSON_HEX_AMP | JSON_UNESCAPED_SLASHES );
+	?><!-- wp:wporg-planted/column-<?php echo $slug; ?> /--><?php
+}
+
+register_setting( 'wporg_planted', 'wporg_planted_custom_css' );

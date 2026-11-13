@@ -20,14 +20,14 @@ Every finding `/yay:wporg` reports, every fix commit it makes (`fix(security): S
 | S3 | Input sanitized early: `wp_unslash()` then a type sanitizer; only the keys you need | `precheck:unsanitized_input`, `whole_input`, `filter_*`, `setting_sanitization` | review | manual-review §1 |
 | S4 | Output escaped late, at the echo | `precheck:unescaped_output`, `unescaped_e`, `echo_gettext`, `printf_gettext`, `echo_sanitize`, `esc_url_raw_output`, `heredoc`, `short_*_tag` | review | rules §2.1 |
 | S5 | Shortcode, `render_callback` and content-filter callbacks escape what they return | manual (precheck inventory `output_callbacks`) | review | manual-review §1 |
-| S6 | No JSON flags that bypass escaping (`JSON_UNESCAPED_*` on echoed JSON) | `precheck:echo_json_flags`, `echo_json_encode` | review | rules §2.5 |
+| S6 | No JSON flags that bypass escaping (`JSON_UNESCAPED_*` on any JSON that reaches the page, even next to `JSON_HEX_*`) | `precheck:echo_json_flags`, `json_unescaped_flags`, `echo_json_encode` | review | rules §2.5 |
 | S7 | User values that go into markup (class names, block comments) are allow-listed | manual | review | manual-review §1 |
 | S8 | SQL goes through `$wpdb->prepare()`; no raw mysqli/PDO | `precheck:direct_db`, `mysql` | review | manual-review §1 |
 | S9 | `ABSPATH` guard in every PHP file that runs code at load | `precheck:direct_file_access` | review | manual-review §10 |
 | S10 | No forbidden or dangerous functions (`eval`, `exec`, `unserialize` on input, `move_uploaded_file`) | `precheck:eval`, `create_function`, `forbidden_exec`, `str_rot13`, `base64_decode`, `goto_backtick`, `unserialize`, `move_uploaded_file`, `unfiltered_uploads` | blocks upload | rules §2.4 |
 | S11 | JSON passed to an inline script uses `JSON_HEX_TAG \| JSON_HEX_AMP` | `precheck:inline_script_json_hex` | review | manual-review §1 |
 | S12 | HTML held in a variable is escaped when echoed; `phpcs:ignore` doesn't pass review | manual (`precheck:unescaped_output` finds the echoes) | review | manual-review §1 |
-| S13 | Block comment attributes built with `serialize_block_attributes()` | manual | review | manual-review §1 |
+| S13 | Block comment attributes built with `serialize_block_attributes()` | `precheck:block_comment_markup`; manual | review | manual-review §1 |
 | G1 | No updater, license client or `Update URI` in the free zip (vendor copies count) | `precheck:updater`, `plugin_updater_detected` | blocks upload | manual-review §3 |
 | G2 | No remote JS or CSS (fonts are fine), no remote code | `precheck:offloading_files` | blocks upload | manual-review §3 |
 | G3 | No tracking or external calls without opt-in; each service documented in the readme | `precheck:external_services`, `ai_provider`; manual | review | manual-review §3 |
@@ -35,7 +35,7 @@ Every finding `/yay:wporg` reports, every fix commit it makes (`fix(security): S
 | G5 | Notices limited to the plugin's own screens, and say how to fix what they report | manual (precheck inventory `admin_notices`) | review | manual-review §5 |
 | G6 | No front-end credit links unless opted in | manual | review | rules §1 |
 | G7 | Everything GPL-compatible: code, libraries, fonts, images | manual | review | manual-review §6 |
-| G8 | The purpose itself is allowed (no arbitrary code boxes, no installer-only or storefront-only plugin) | manual | review | manual-review §9 |
+| G8 | The purpose itself is allowed (no arbitrary code boxes, including a plain custom CSS setting, no installer-only or storefront-only plugin) | `precheck:custom_code_setting`; manual | review | manual-review §9 |
 | B1 | Every minified or built file has public source, and the link works logged out | `precheck:no_public_source`; manual | review | manual-review §6 |
 | B2 | Build steps documented; a clean clone rebuilds the same files | `precheck:no_build_instructions`, `missing_composer_json_file`; manual | review | manual-review §6 |
 | B3 | Bundled third-party libraries credited (name, version, URL) | manual | review | manual-review §6 |
@@ -63,7 +63,7 @@ Every finding `/yay:wporg` reports, every fix commit it makes (`fix(security): S
 | T1 | Plugin Check: no `plugin_repo` errors; read every warning | `site:T1` (`pcp`) | blocks upload | rules §3 |
 | T2 | PHPCS (WordPress standard) security sniffs pass | manual (skip when T1 ran: Plugin Check includes them) | review | rules §4 |
 | T3 | Works on a clean install of the latest WordPress (blocks `apiVersion` 3, React 19) | `site:` all; `precheck:block_api_version_too_low`, `react_removed` | blocks upload | rules §2.4 |
-| U1 | The real zip was installed and smoke-tested | `site:` all (it installs the built zip) | review | SKILL step 2 |
+| U1 | The real zip was installed and smoke-tested, and it also activates in WordPress Playground (the review email links a Playground blueprint for the submitted zip, and reviewers use it) | `site:` all (it installs the built zip) | review | SKILL step 2 |
 | U2 | Slug confirmed: it can't change after approval | manual | review | manual-review §8 |
 | U3 | The reply is short, in the same thread, and lists no changes; false positives answered with an example | manual (`--email`) | review | SKILL `--email` |
 | U4 | Every occurrence of each reported issue fixed, not only the examples | manual (`--email`) | review | SKILL `--email` |
@@ -88,6 +88,8 @@ Find each heading of the email, then check every ID listed, across the whole plu
 | Have you read the guidelines and this plugin complies with them? | the guideline bullets below |
 | Plugins must not restrict or lock functionality / Trialware / locked features | G4 |
 | Developers must provide public, maintained access to their source code / Guidelines 1, 4 | B1, B2, B3 |
+| The source code of your plugin should be publicly accessible | B1, B2, B3, R6 |
+| Attempting to process custom CSS/JS/PHP / Allowing arbitrary script insertion | G8 |
 | No publicly documented resource for your generated/compressed content | B1, B2, R6 |
 | Plugins should not hijack the admin dashboard / Guideline 11 | G5, Q3 |
 | Is the name of this plugin descriptive and distinctive…trademarks | N1, N2, U2 |

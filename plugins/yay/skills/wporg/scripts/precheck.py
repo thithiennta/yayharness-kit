@@ -58,7 +58,9 @@ CHECK_IDS = {
     "unsanitized_input": "S3", "whole_input": "S3", "filter_no_flag": "S3", "filter_unsafe_raw": "S3", "setting_sanitization": "S3",
     "unescaped_output": "S4", "unescaped_e": "S4", "echo_gettext": "S4", "printf_gettext": "S4", "echo_sanitize": "S4",
     "esc_url_raw_output": "S4", "heredoc": "S4", "short_open_tag": "S4", "short_echo_tag": "S4",
-    "echo_json_flags": "S6", "echo_json_encode": "S6",
+    "echo_json_flags": "S6", "echo_json_encode": "S6", "json_unescaped_flags": "S6",
+    "block_comment_markup": "S13",
+    "custom_code_setting": "G8",
     "direct_db": "S8", "mysql": "S8",
     "direct_file_access": "S9",
     "eval": "S10", "create_function": "S10", "forbidden_exec": "S10", "str_rot13": "S10", "base64_decode": "S10",
@@ -121,6 +123,9 @@ PATTERNS = [
     ("echo_gettext", "error", r"\becho\s+\(?\s*(__|_x|_n|_nx)\s*\(", "echo __() is unescaped; use esc_html__() / esc_attr__().", True),
     ("printf_gettext", "error", r"\b(printf|vprintf|print)\s*\(?\s*(__|_x|_n|_nx)\s*\(", "printf( __() ) is unescaped; use printf( esc_html__() ) (or wp_kses() when the string holds markup) and escape every argument too (esc_url( admin_url() ), esc_html( $x )).", True),
     ("echo_json_flags", "warning", r"\becho\s+\(?\s*wp_json_encode\s*\([^;]*JSON_(HEX|UNESCAPED)", "Echoed wp_json_encode() with flags gets flagged as escape-avoidance. For block markup use get_comment_delimited_block_content() / serialize_block_attributes(); for JS data use wp_add_inline_script() or wp_localize_script(); otherwise wrap in esc_attr()/esc_html().", True),
+    ("json_unescaped_flags", "warning", r"^(?!.*\becho\b).*\bwp_json_encode\s*\([^;]*JSON_UNESCAPED_", "wp_json_encode() with a JSON_UNESCAPED_* flag is reported as escape-avoidance even when JSON_HEX_TAG | JSON_HEX_AMP are also set and the result is echoed later. Drop the JSON_UNESCAPED_* flag; for block markup use serialize_block_attributes().", True),
+    ("block_comment_markup", "warning", r"<!--\s*/?wp:[^>]*<\?(php|=)", "Block comment markup printed by hand. Build it with get_comment_delimited_block_content() / serialize_block_attributes(), and allow-list any part of the block name that comes from attributes (sanitize_key() or in_array( $x, $allowed, true )).", True),
+    ("custom_code_setting", "warning", r"['\"][\w-]*custom[_-]?(css|js|javascript|script|code|php|html)['\"]", "A custom CSS/JS/PHP/HTML setting is reported as arbitrary code insertion (guideline-level, no code fix passes it). Remove it and point users to Appearance > Customize > Additional CSS or the Site Editor's Additional CSS, or replace it with form fields for the values that matter.", True),
     ("load_textdomain", "warning", r"\bload_plugin_textdomain\s*\(", "load_plugin_textdomain() is not needed for WordPress.org plugins since WP 4.6; remove it (or, if you support older WP, call it on 'init').", True),
     ("echo_json_encode", "error", r"\becho\s+json_encode\s*\(", "Use wp_json_encode() (and usually return/wp_send_json rather than echo).", True),
     ("json_encode", "warning", r"(?<![\w>])json_encode\s*\(", "Use wp_json_encode() instead of json_encode().", True),
@@ -807,7 +812,7 @@ def run(args, src, root, rep, inv, from_zip=False):
         src_dirs = [d for d in ("src", "assets/src", "resources", "source", "blocks/src") if any(f.startswith(d + os.sep) and f.endswith((".js", ".jsx", ".ts", ".tsx", ".scss", ".vue")) for f in all_files)]
         repo_link = re.search(r"(github\.com|gitlab\.com|bitbucket\.org)/[\w\-]+/[\w\-.]+", readme)
         if not src_dirs and not repo_link:
-            rep.add("error", "no_public_source", "%d minified/built files (%s%s) but no shipped source folder and no public repository link in readme.txt. Add a '== Source code ==' readme section with the repo URL and build steps." % (len(has_minified), ", ".join(has_minified[:3]), "..." if len(has_minified) > 3 else ""))
+            rep.add("error", "no_public_source", "%d minified/built files (%s%s) but no shipped source folder and no public repository link in readme.txt. Add a '== Source Code ==' readme section linking the public GitHub repo, mapping each built folder to its source folder in the repo, with the build steps; don't ship the uncompressed source in the zip." % (len(has_minified), ", ".join(has_minified[:3]), "..." if len(has_minified) > 3 else ""))
         elif src_dirs and not repo_link and not re.search(r"source code|src/", readme, re.I):
             rep.add("warning", "no_public_source", "Source ships in %s/ but readme.txt doesn't say so; the team asks you to document where the source of the built files is, plus build steps." % src_dirs[0])
         elif not repo_link and not re.search(r"npm (run )?build|npm install|yarn build|composer install|webpack|wp-scripts", readme, re.I):
