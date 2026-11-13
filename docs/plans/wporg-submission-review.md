@@ -11,7 +11,7 @@ branch: feat/p-1-yay-wporg-wordpress-org-submission-review
 pr:
 editions: [free]
 created: 2026-11-13
-reviewed: pending
+reviewed: yes
 ---
 # P-1 /yay:wporg WordPress.org submission review
 
