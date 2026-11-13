@@ -13,8 +13,16 @@ _yay_wporg_below() {
 
 # _yay_wporg_get <path> <body-file> [cookie-jar] -> HTTP status of $url<path>
 _yay_wporg_get() {
-  if [ -n "${3:-}" ]; then curl -s -o "$2" -w '%{http_code}' --max-time 30 -b "$3" "$url$1" 2>/dev/null || true
-  else curl -s -o "$2" -w '%{http_code}' --max-time 30 "$url$1" 2>/dev/null || true; fi
+  local j=() r
+  [ -z "${3:-}" ] || j=(-b "$3")
+  # Follow a redirect unless it goes to wp-login.php (a lost login), so an
+  # onboarding redirect after activation still lands on a real page.
+  r="$(curl -s -o "$2" -w '%{http_code} %{redirect_url}' --max-time 30 ${j[@]+"${j[@]}"} "$url$1" 2>/dev/null || true)"
+  case "$r" in
+    3??\ *wp-login.php*|3??\ ) ;;
+    3??\ *) r="$(curl -s -L -o "$2" -w '%{http_code}' --max-time 30 ${j[@]+"${j[@]}"} "$url$1" 2>/dev/null || true)" ;;
+  esac
+  printf '%s\n' "${r%% *}"
 }
 
 # _yay_wporg_page <status> <body-file> -> ok | fatal | output (bytes before the page) | empty
@@ -59,6 +67,11 @@ yay_wporg_site() {
   _yay_ui_site_up "$zip" "$out" site >"$out/.site-up" || rc=$?
   tee -a "$out/site.tsv" < "$out/.site-up"; rm -f "$out/.site-up"
   [ "$rc" -eq 0 ] || return "$rc"
+  # Start from a clean database: the release site keeps its DB between runs, and
+  # options left from an earlier run would hide Q7 leftovers.
+  (cd "$site" && "$wpenv" clean development >"$out/wp-env-clean.log" 2>&1) || true
+  local mu="yay-wporg-q10.php"
+  trap '_yay_ui_cli wp --skip-plugins --skip-themes eval "@unlink( WPMU_PLUGIN_DIR . \"/'"$mu"'\" );" >/dev/null' EXIT INT TERM
 
   local opts0 tabs0 jar="$out/.cookies" s
   opts0="$(_yay_ui_cli wp option list --field=option_name | sort -u)" || true
@@ -136,19 +149,29 @@ yay_wporg_site() {
   _yay_ui_log_scan "$out" "$folder" Q6 | tee -a "$out/site.tsv" || true
 
   # Q10: WordPress older than Requires at least, forced from a mu-plugin: no fatal, and a notice.
-  local req old mu="yay-wporg-q10.php"
-  req="$(sed -n 's/^[[:space:]/*#@]*Requires at least:[[:space:]]*//p' "$site/plugin/$folder/$main" | sed -n 1p | tr -d '\r ')" || true
+  local req old
+  req="$(_hdr "$site/plugin/$folder/$main" 'Requires at least')"
+  [ -n "$req" ] || req="$(_hdr "$site/plugin/$folder/readme.txt" 'Requires at least')"
   if [ -z "$req" ] || ! old="$(_yay_wporg_below "$req")"; then _w SKIP Q10 "no usable Requires at least header in $main"
   else
     _yay_ui_cli wp plugin activate "$folder/$main" >/dev/null || true
+    # A fresh baseline with the plugin active (after one warm-up load, which
+    # takes any activation redirect), so Q10 compares like with like.
+    _yay_wporg_get /wp-admin/ /dev/null "$jar" >/dev/null
+    _yay_wporg_get /wp-admin/ "$out/q10-base.html" "$jar" >/dev/null
     _yay_ui_cli wp eval 'wp_mkdir_p( WPMU_PLUGIN_DIR ); file_put_contents( WPMU_PLUGIN_DIR . "/'"$mu"'", "<?php " . chr( 36 ) . "GLOBALS[" . chr( 39 ) . "wp_version" . chr( 39 ) . "] = " . chr( 39 ) . "'"$old"'" . chr( 39 ) . ";" );' >/dev/null || true
     s="$(_yay_wporg_get /wp-admin/ "$out/q10-admin.html" "$jar")"; page="$(_yay_wporg_page "$s" "$out/q10-admin.html")"
     _yay_ui_cli wp --skip-plugins --skip-themes eval 'if ( file_exists( WPMU_PLUGIN_DIR . "/'"$mu"'" ) ) { unlink( WPMU_PLUGIN_DIR . "/'"$mu"'" ); }' >/dev/null || true
     if [ "$page" = fatal ]; then _w FAIL Q10 "wp-admin/ fatals when WordPress is $old (Requires at least $req): check the version at runtime and stop with a notice"
-    elif [ -n "$(comm -13 <(_yay_wporg_notices "$out/q11-admin.html") <(_yay_wporg_notices "$out/q10-admin.html"))" ]; then
+    elif [ -n "$(comm -13 <(_yay_wporg_notices "$out/q10-base.html") <(_yay_wporg_notices "$out/q10-admin.html"))" ]; then
       _w PASS Q10 "with WordPress $old (Requires at least $req) the admin loads and shows a notice"
     else _w WARN Q10 "no notice when WordPress is $old (Requires at least $req): check the version at runtime, show a notice and stop (see $out/q10-admin.html)"; fi
   fi
+
+  # Leave no state behind for the next run.
+  _yay_ui_cli wp plugin deactivate "$folder/$main" >/dev/null || true
+  _yay_ui_cli wp plugin uninstall "$folder/$main" --skip-delete >/dev/null || true
+  trap - EXIT INT TERM
 
   rm -f "$jar"
   if [ -n "$keep" ]; then _w INFO site "$url (admin / password), stop with: yayh release ui-stop"

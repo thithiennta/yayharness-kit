@@ -304,6 +304,8 @@ _yay_ui_site_up() {
   done
   _yay_ui_cli wp plugin deactivate "$folder/$main" >/dev/null || true
   _yay_ui_cli wp eval 'if ( file_exists( WP_CONTENT_DIR . "/debug.log" ) ) { unlink( WP_CONTENT_DIR . "/debug.log" ); }' >/dev/null || true
+  # A stray mu-plugin from an interrupted yayh wporg site run fakes $wp_version.
+  _yay_ui_cli wp --skip-plugins --skip-themes eval '@unlink( WPMU_PLUGIN_DIR . "/yay-wporg-q10.php" );' >/dev/null || true
   return 0
 }
 
