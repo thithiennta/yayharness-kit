@@ -106,7 +106,7 @@ Done means:
   - Files: `plugins/yay/lib/doctor.sh`, `tests/unit/test_doctor.sh`
   - If `plugin.wporgSlug` is set and there's no `python3`, report `warn python3 "needed by /yay:wporg"` with the fix `brew install python3`. Otherwise report `ok` with its version.
   - Reuse: `_yay_doc` and `yay_config_get` in the doctor's existing harness section (`doctor.sh:30-40`).
-- [ ] T6 Write `/yay:wporg`
+- [x] T6 Write `/yay:wporg`
   - File: `plugins/yay/skills/wporg/SKILL.md` (new)
   - Adapt the local `SKILL.md`:
     - Step 1 reads `plugin.wporgSlug`, picks the edition and builds and checks the zip (Findings 1), with the repo-scan fallback when there's no package command.
