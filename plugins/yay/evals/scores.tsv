@@ -72,3 +72,6 @@ roadmap-add-clear-no-question	0.13.0	1.00	1	2026-11-12
 roadmap-add-unclear-asks	0.13.0	1.00	1	2026-11-12
 roadmap-status-readonly	0.13.0	1.00	1	2026-11-12
 roadmap-vision-asks-first	0.13.0	1.00	1	2026-11-12
+go-routes-symptom-to-debug	0.14.0	1.00	1	2026-11-13
+wporg-fix-from-email	0.14.0	0.80	1	2026-11-13
+wporg-planted-violations	0.14.0	1.00	1	2026-11-13
