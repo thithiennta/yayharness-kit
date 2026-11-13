@@ -84,3 +84,15 @@ _fixture_build() { # kind state dest
     *) echo "fixture_repo: unknown state $2" >&2; return 1 ;;
   esac
 }
+
+# A fake docker that's installed but not running, first on PATH, and a fake e2e
+# setup (wp-env and Playwright "installed"), so the UI site gets past its first check.
+_ui_no_docker() { # repo -> PATH to use
+  local bin="$T_TMP/nodocker.$RANDOM"; mkdir -p "$bin"
+  printf '#!/bin/sh\nexit 1\n' > "$bin/docker"; chmod +x "$bin/docker"
+  mkdir -p "$1/tests/e2e/node_modules/.bin"; echo '{}' > "$1/tests/e2e/.wp-env.json"
+  printf '#!/bin/sh\nexit 0\n' > "$1/tests/e2e/node_modules/.bin/wp-env"
+  cp "$1/tests/e2e/node_modules/.bin/wp-env" "$1/tests/e2e/node_modules/.bin/playwright"
+  chmod +x "$1/tests/e2e/node_modules/.bin/"*
+  printf '%s:%s\n' "$bin" "$PATH"
+}
