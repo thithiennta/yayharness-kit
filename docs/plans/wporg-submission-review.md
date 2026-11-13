@@ -1,7 +1,7 @@
 ---
 id: P-1
 title: /yay:wporg WordPress.org submission review
-status: in-progress
+status: done
 from: BS-1
 roadmap:
 design:
@@ -11,6 +11,7 @@ branch: feat/p-1-yay-wporg-wordpress-org-submission-review
 pr:
 editions: [free]
 created: 2026-11-13
+reviewed: pending
 ---
 # P-1 /yay:wporg WordPress.org submission review
 
