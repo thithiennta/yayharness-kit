@@ -70,7 +70,7 @@ Done means:
 - **Wiring:** the `/yay:go` routing table, the README requirements and diagram, `yayh doctor` (python3, only when `plugin.wporgSlug` is set), the CHANGELOG and the evals README.
 
 ## Tasks
-- [ ] T1 Bring the skill's references into the kit, with IDs and the partner's lessons — `plugins/yay/skills/wporg/references/checklist.md` (new), `plugins/yay/skills/wporg/references/manual-review.md` (new)
+- [x] T1 Bring the skill's references into the kit, with IDs and the partner's lessons — `plugins/yay/skills/wporg/references/checklist.md` (new), `plugins/yay/skills/wporg/references/manual-review.md` (new)
   - Files: `plugins/yay/skills/wporg/references/wporg-rules.md` (new), `plugins/yay/skills/wporg/references/manual-review.md` (new), `plugins/yay/skills/wporg/references/report-template.md` (new), `plugins/yay/skills/wporg/references/checklist.md` (new)
   - Copy the three references from `~/.claude/skills/wporg-plugin-review/references/`.
   - Write `checklist.md` (ID index and the email heading → ID map).
