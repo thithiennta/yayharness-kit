@@ -124,10 +124,10 @@ Done means:
   - Go: a routing row for "submit to wp.org", "is it ready for wordpress.org" and "review email from plugins@wordpress.org" → `/yay:wporg` (`--email` when they paste one).
   - README: the diagram gets `/yay:wporg` before `/yay:release`, and Requirements gets `python3` for `/yay:wporg`.
   - Reuse: the release skill's options table and step 4 layout, and go's routing table rows (`go/SKILL.md:42-43`). [risk: 1]
-- [ ] T8 Port the two evals to the kit's format — `plugins/yay/evals/wporg-planted-violations/` (new), `plugins/yay/evals/wporg-fix-from-email/` (new)
+- [x] T8 Port the two evals to the kit's format — `plugins/yay/evals/wporg-planted-violations/` (new), `plugins/yay/evals/wporg-fix-from-email/` (new)
   - Files: `plugins/yay/evals/wporg-planted-violations/` (new: `case.yaml`, `prompt.md`, `scaffold.sh`, `graders/`), `plugins/yay/evals/wporg-fix-from-email/` (new, same layout), `plugins/yay/evals/README.md`
   - Each scaffold writes the local fixture files plus `.yay/config.json` with `wporgSlug` and a `commands.package` that zips the folder, so the skill reviews a built zip.
-  - Keep the local graders' assertions. Add one: the report names checklist IDs.
+  - Keep the local graders' assertions (the reply grader names `reply.md` in the report folder). Add one per case: the report names checklist IDs; in the email case, each fix commit names its ID.
   - Drop `yaycheckout-real-plugin` (Findings 6).
   - Reuse: the local `evals/*/graders/*.md` and `files/`, and `evals/implement-tiny-lane/scaffold.sh` for the git and config setup. [risk: 1]
 - [ ] T9 CHANGELOG entry — `plugins/yay/CHANGELOG.md`
