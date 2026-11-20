@@ -34,8 +34,10 @@ To work on the kit itself, add your clone instead (`claude plugin marketplace ad
 
 Then open a plugin repo and run `/yay:harness-init`.
 
+**Themes** (e.g. Brandy, WPShadcn) work too. Detection sees a `style.css` with a `Theme Name:` header and writes `plugin.kind: "theme"`, with `style.css` as the main file and the text domain as the slug. With that set, the e2e and test sites map the repo into `wp-content/themes/` and activate it with `wp theme activate`, the scaffolded tests check the theme header and the active theme, `yayh release ui` walks Appearance → Themes and the front end instead of the Plugins page, and `/yay:wporg-theme` replaces `/yay:wporg`. The workflow skills are the same; their wording still says "plugin".
+
 ## Requirements
 
 git, bash, and one of `jq`, `node`, `php` or `python3` for reading JSON. macOS ships `jq` and every Yay dev has `php`.
 
-`/yay:wporg` (the WordPress.org pre-review) also needs `python3` for its precheck; `yayh doctor` checks it in repos that set `plugin.wporgSlug`. Its site stage uses the same wp-env setup as the e2e tests (`/yay:e2e-init`).
+`/yay:wporg` (the WordPress.org pre-review) and `/yay:wporg-theme` (its Theme Directory counterpart, for theme repos) also need `python3` for their precheck; `yayh doctor` checks it in repos that set `plugin.wporgSlug`. Its site stage uses the same wp-env setup as the e2e tests (`/yay:e2e-init`).

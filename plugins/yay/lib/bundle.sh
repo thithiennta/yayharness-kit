@@ -63,7 +63,9 @@ yay_release_check() {
     _yay_release_status WARN newer "no release tag yet, so nothing to compare $v with"
   fi
 
-  if [ -f "$readme" ]; then
+  if [ "$(yay_kind)" = theme ] && ! grep -qi '^Stable tag:' "$readme" 2>/dev/null; then
+    _yay_release_status PASS stable-tag "none (a theme's version is its style.css Version)"
+  elif [ -f "$readme" ]; then
     st="$(sed -n 's/^Stable tag:[[:space:]]*//p' "$readme" | sed -n 1p | tr -d '\r ')"
     mode="$(yay_config_get release.stableTag 2>/dev/null || echo version)"
     if [ -n "$rc" ]; then
@@ -250,9 +252,9 @@ _yay_ui_wpenv() {
 _yay_ui_cli() { (cd "$site" && "$wpenv" run cli "$@" 2>/dev/null); }
 
 # _yay_ui_site_up <zip> <out> <label> [--playwright]
-# Start the release site with the extracted zip mapped as the plugin, wait for it,
-# deactivate the plugin and clear debug.log. Sets the caller's site, wpenv, url,
-# folder and main. Prints a SKIP or FAIL line under <label> when it can't:
+# Start the release site with the extracted zip mapped as the plugin (or the theme,
+# plugin.kind), wait for it, deactivate the plugin and clear debug.log. Sets the
+# caller's site, wpenv, url, folder and main. Prints a SKIP or FAIL line under <label> when it can't:
 # returns 3 for a SKIP (no e2e setup, no Docker, no node), 1 for a FAIL.
 _yay_ui_site_up() {
   local zip="$1" out="$2" label="$3" pw="${4:-}" root e2e port x top need
@@ -275,17 +277,24 @@ _yay_ui_site_up() {
   find "$site/plugin/$top" -mindepth 1 -delete
   cp -R "$x/$top/." "$site/plugin/$top/"
   rm -rf "$x"
-  main="$(cd "$site/plugin/$top" && grep -l -E '^[[:space:]/*#@]*Plugin Name:' ./*.php 2>/dev/null | sed -n 1p | sed 's|^\./||')"
-  [ -n "$main" ] || { printf 'FAIL\t%s\tno PHP file with a Plugin Name header at the top of %s/\n' "$label" "$top"; return 1; }
+  local dir; dir="$(yay_content_dir)"
+  if [ "$dir" = themes ]; then
+    main=style.css
+    grep -qE '^[[:space:]/*#@]*Theme Name:' "$site/plugin/$top/style.css" 2>/dev/null \
+      || { printf 'FAIL\t%s\tno style.css with a Theme Name header at the top of %s/\n' "$label" "$top"; return 1; }
+  else
+    main="$(cd "$site/plugin/$top" && grep -l -E '^[[:space:]/*#@]*Plugin Name:' ./*.php 2>/dev/null | sed -n 1p | sed 's|^\./||')"
+    [ -n "$main" ] || { printf 'FAIL\t%s\tno PHP file with a Plugin Name header at the top of %s/\n' "$label" "$top"; return 1; }
+  fi
   folder="$top"
 
   # The e2e site's .wp-env.json, with the source mapping swapped for the zip.
-  E2E_ENV="$e2e/.wp-env.json" SITE="$site" FOLDER="$folder" PORT="$port" node -e '
+  E2E_ENV="$e2e/.wp-env.json" SITE="$site" FOLDER="$folder" PORT="$port" DIR="$dir" node -e '
     const fs = require("fs"); const c = JSON.parse(fs.readFileSync(process.env.E2E_ENV, "utf8"));
-    const f = process.env.FOLDER, key = "wp-content/plugins/" + f;
-    c.mappings = Object.fromEntries(Object.entries(c.mappings || {}).filter(([k]) => !k.startsWith("wp-content/plugins/" + f)));
+    const f = process.env.FOLDER, key = "wp-content/" + process.env.DIR + "/" + f;
+    c.mappings = Object.fromEntries(Object.entries(c.mappings || {}).filter(([k]) => !k.startsWith(key)));
     c.mappings[key] = "./plugin/" + f;
-    c.plugins = (c.plugins || []).filter(p => !/^\.\.?(\/|$)/.test(p) && !String(p).endsWith("/" + f));
+    for (const k of ["plugins", "themes"]) c[k] = (c[k] || []).filter(p => !/^\.\.?(\/|$)/.test(p) && !String(p).endsWith("/" + f));
     delete c.lifecycleScripts; delete c.env;
     c.port = Number(process.env.PORT); c.testsEnvironment = false;
     c.config = Object.assign({}, c.config, { WP_DEBUG: true, WP_DEBUG_LOG: true, WP_DEBUG_DISPLAY: false });
@@ -302,7 +311,8 @@ _yay_ui_site_up() {
     i=$((i + 1)); [ "$i" -le 30 ] || { printf 'FAIL\t%s\tthe release site did not answer at %s\n' "$label" "$url"; return 1; }
     sleep 2
   done
-  _yay_ui_cli wp plugin deactivate "$folder/$main" >/dev/null || true
+  if [ "$dir" = themes ]; then _yay_ui_cli wp theme activate twentytwentyfive >/dev/null || true
+  else _yay_ui_cli wp plugin deactivate "$folder/$main" >/dev/null || true; fi
   _yay_ui_cli wp eval 'if ( file_exists( WP_CONTENT_DIR . "/debug.log" ) ) { unlink( WP_CONTENT_DIR . "/debug.log" ); }' >/dev/null || true
   # A stray mu-plugin from an interrupted yayh wporg site run fakes $wp_version.
   _yay_ui_cli wp --skip-plugins --skip-themes eval '@unlink( WPMU_PLUGIN_DIR . "/yay-wporg-q10.php" );' >/dev/null || true
@@ -327,6 +337,8 @@ _yay_ui_log_scan() {
 # yay_release_ui <zip> out=<dir> [edition=e] [--keep]
 # Start the site with the zip, drive the plugins page (activate, every row action
 # and meta link, deactivate), screenshot each step into <dir>, and scan debug.log.
+# A theme (plugin.kind) gets the themes page instead: activate, then the front-end
+# pages a theme renders, then back to the default theme.
 # Exit 0 = PASS lines only, 1 = a FAIL, 3 = can't run (no e2e setup, no Docker).
 yay_release_ui() {
   local zip="" out="" edition="" keep="" a root e2e site wpenv url folder main tmp rc=0 fatal=0
@@ -346,13 +358,14 @@ yay_release_ui() {
 
   tmp="$e2e/.yay-release"
   rm -rf "$tmp"; mkdir -p "$tmp"
-  cp "$YAY_KIT_ROOT/templates/release/playwright.config.ts" "$YAY_KIT_ROOT/templates/release/plugins-page.spec.ts" "$tmp/"
-  (cd "$e2e" && YAY_UI_URL="$url" YAY_UI_OUT="$out" YAY_PLUGIN_FILE="$folder/$main" \
+  local spec=plugins-page; [ "$(yay_kind)" = theme ] && spec=themes-page
+  cp "$YAY_KIT_ROOT/templates/release/playwright.config.ts" "$YAY_KIT_ROOT/templates/release/$spec.spec.ts" "$tmp/"
+  (cd "$e2e" && YAY_UI_URL="$url" YAY_UI_OUT="$out" YAY_PLUGIN_FILE="$folder/$main" YAY_THEME="$folder" \
      ./node_modules/.bin/playwright test -c .yay-release/playwright.config.ts >"$out/playwright.log" 2>&1) || rc=$?
   rm -rf "$tmp"
 
   if [ -f "$out/ui-check.tsv" ]; then cat "$out/ui-check.tsv"
-  else printf 'FAIL\tui\tthe plugins-page check produced no results (see %s)\n' "$out/playwright.log"; rc=1; fi
+  else printf 'FAIL\tui\tthe %s check produced no results (see %s)\n' "$spec" "$out/playwright.log"; rc=1; fi
   [ "$rc" -eq 0 ] || grep -q '^FAIL' "$out/ui-check.tsv" 2>/dev/null || printf 'FAIL\tui\tPlaywright failed (see %s)\n' "$out/playwright.log"
 
   _yay_ui_log_scan "$out" "$folder" || fatal=1

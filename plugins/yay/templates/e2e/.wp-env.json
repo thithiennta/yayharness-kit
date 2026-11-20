@@ -3,7 +3,7 @@
   "phpVersion": "8.2",
   "plugins": [{{e2e.plugins}}],
   "mappings": {
-    "wp-content/plugins/{{e2e.folder}}": "{{e2e.root}}"
+    "wp-content/{{e2e.contentDir}}/{{e2e.folder}}": "{{e2e.root}}"
   },
   "port": {{e2e.port}},
   "testsEnvironment": false,

@@ -14,20 +14,31 @@ yay_config_default() {
     changelog.readme) echo 'readme.txt' ;;
     changelog.notesDir) echo 'docs/releases' ;;
     requires.php)     echo '7.4' ;;
+    plugin.kind)      echo plugin ;;
     # Model tiers (lib/model.sh, reference/models.md). Step defaults live in lib/model.sh.
     models.tiers.veryfast.model) echo sonnet ;;  models.tiers.veryfast.effort) echo medium ;;
     models.tiers.fast.model)     echo opus ;;    models.tiers.fast.effort)     echo low ;;
     models.tiers.balanced.model) echo opus ;;    models.tiers.balanced.effort) echo medium ;;
     models.tiers.deep.model)     echo opus ;;    models.tiers.deep.effort)     echo high ;;
     models.sizeBump.S) echo -1 ;; models.sizeBump.M) echo 0 ;; models.sizeBump.L) echo 1 ;;
-    site.wpPath)      # a checkout inside <wp>/wp-content/plugins/ (worktrees included)
+    site.wpPath)      # a checkout inside <wp>/wp-content/plugins/ or themes/ (worktrees included)
       local r; r="$(yay_repo_root)"
-      case "$r" in */wp-content/plugins/*) printf '%s\n' "${r%%/wp-content/plugins/*}" ;; esac ;;
+      case "$r" in
+        */wp-content/plugins/*) printf '%s\n' "${r%%/wp-content/plugins/*}" ;;
+        */wp-content/themes/*) printf '%s\n' "${r%%/wp-content/themes/*}" ;;
+      esac ;;
     site.debugLog)
       local w; w="$(yay_config_get site.wpPath 2>/dev/null)" && [ -n "$w" ] && printf '%s/wp-content/debug.log\n' "$w" ;;
   esac
   return 0
 }
+
+# yay_kind -> plugin | theme (plugin.kind). A theme's mainFile is style.css.
+yay_kind() {
+  case "$(yay_config_get plugin.kind 2>/dev/null)" in theme) echo theme ;; *) echo plugin ;; esac
+}
+# yay_content_dir -> plugins | themes: where WordPress keeps this repo under wp-content/.
+yay_content_dir() { if [ "$(yay_kind)" = theme ]; then echo themes; else echo plugins; fi; }
 
 # yay_config_get <key> [fallback]  -> exit 3 if missing with no default/fallback.
 yay_config_get() {

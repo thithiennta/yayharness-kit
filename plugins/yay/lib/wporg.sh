@@ -58,6 +58,7 @@ yay_wporg_site() {
     esac
   done
   [ -n "$zip" ] && [ -n "$out" ] || yay_die "$usage"
+  [ "$(yay_kind)" = plugin ] || yay_die "this repo is a theme: the Plugins Team checks don't apply. Use /yay:wporg-theme (yayh release ui runs a theme on the throwaway site)."
   root="$(yay_repo_root)"; case "$zip" in /*) ;; *) zip="$root/$zip" ;; esac
   case "$out" in /*) ;; *) out="$root/$out" ;; esac
   [ -f "$zip" ] || yay_die "no zip at $zip"
@@ -174,6 +175,84 @@ yay_wporg_site() {
   trap - EXIT INT TERM
 
   rm -f "$jar"
+  if [ -n "$keep" ]; then _w INFO site "$url (admin / password), stop with: yayh release ui-stop"
+  else (cd "$site" && "$wpenv" stop >/dev/null 2>&1) || true; fi
+  ! grep -q '^FAIL' "$out/site.tsv"
+}
+
+# yay_wporg_theme_site <zip> out=<dir> [--keep] [--no-tc]
+# The Theme Directory's runtime checks, on the same throwaway site with the theme zip:
+# TC Theme Check (REQUIRED results block approval), F5 clean activation, C1 the pages a
+# theme renders and debug.log. IDs are skills/wporg-theme/references/checklist.md's.
+# Exit 0 = no FAIL, 1 = a FAIL, 3 = can't run (no e2e setup, no Docker).
+yay_wporg_theme_site() {
+  local zip="" out="" keep="" tc=1 a root site wpenv url folder main rc=0 usage
+  usage="usage: yayh wporg theme-site <zip> out=<dir> [--keep] [--no-tc]"
+  for a in "$@"; do
+    case "$a" in
+      out=*) out="${a#out=}" ;; --keep) keep=1 ;; --no-tc) tc="" ;;
+      -*|*=*) yay_die "$usage" ;;
+      *) zip="$a" ;;
+    esac
+  done
+  [ -n "$zip" ] && [ -n "$out" ] || yay_die "$usage"
+  [ "$(yay_kind)" = theme ] || yay_die "this repo is a plugin (plugin.kind): use yayh wporg site"
+  root="$(yay_repo_root)"; case "$zip" in /*) ;; *) zip="$root/$zip" ;; esac
+  case "$out" in /*) ;; *) out="$root/$out" ;; esac
+  [ -f "$zip" ] || yay_die "no zip at $zip"
+  mkdir -p "$out"; : > "$out/site.tsv"
+  _w() { printf '%s\t%s\t%s\n' "$1" "$2" "$3" | tee -a "$out/site.tsv"; }
+
+  _yay_ui_site_up "$zip" "$out" site >"$out/.site-up" || rc=$?
+  tee -a "$out/site.tsv" < "$out/.site-up"; rm -f "$out/.site-up"
+  [ "$rc" -eq 0 ] || return "$rc"
+  (cd "$site" && "$wpenv" clean development >"$out/wp-env-clean.log" 2>&1) || true
+
+  # TC: Theme Check from WordPress.org. Its CLI prints a table; REQUIRED rows block approval.
+  if [ -z "$tc" ]; then _w SKIP TC "--no-tc: Theme Check didn't run; run Appearance → Theme Check by hand"
+  elif ! _yay_ui_cli wp plugin install theme-check --activate >"$out/theme-check-install.log"; then
+    _w SKIP TC "Theme Check couldn't be installed from WordPress.org (offline?); run Appearance → Theme Check by hand"
+  else
+    _yay_ui_cli wp theme-check run "$folder" >"$out/theme-check.txt" 2>&1 || true
+    if ! grep -qiE 'REQUIRED|WARNING|RECOMMENDED|INFO|Success|passed' "$out/theme-check.txt"; then
+      _w SKIP TC "Theme Check produced nothing readable (see $out/theme-check.txt); run Appearance → Theme Check by hand"
+    else
+      local req warn n
+      req="$(grep -iE 'REQUIRED' "$out/theme-check.txt" | sed 's/[[:space:]]\{2,\}/ /g; s/^[|[:space:]]*//; s/[|[:space:]]*$//' || true)"
+      warn="$(grep -iE 'WARNING' "$out/theme-check.txt" | sed 's/[[:space:]]\{2,\}/ /g; s/^[|[:space:]]*//; s/[|[:space:]]*$//' || true)"
+      if [ -n "$req" ]; then
+        printf '%s\n' "$req" | sed -n '1,20p' | while IFS= read -r s; do _w FAIL TC "$(printf '%s' "$s" | cut -c1-300)"; done
+        n="$(printf '%s\n' "$req" | grep -c .)"; [ "$n" -le 20 ] || _w INFO TC "$n REQUIRED results in all, see $out/theme-check.txt"
+      else _w PASS TC "Theme Check: no REQUIRED results"; fi
+      [ -z "$warn" ] || printf '%s\n' "$warn" | sed -n '1,20p' | while IFS= read -r s; do _w WARN TC "$(printf '%s' "$s" | cut -c1-300)"; done
+      n="$(grep -ciE 'RECOMMENDED' "$out/theme-check.txt" || true)"; [ "${n:-0}" = 0 ] || _w INFO TC "$n RECOMMENDED results, see $out/theme-check.txt"
+    fi
+    _yay_ui_cli wp plugin deactivate theme-check >/dev/null || true
+    _yay_ui_cli wp plugin delete theme-check >/dev/null || true
+  fi
+
+  # F5: activation prints nothing and doesn't redirect or fail.
+  local act extra page ok=1 s p
+  act="$( (cd "$site" && "$wpenv" run cli wp theme activate "$folder") 2>&1 )" || ok=""
+  extra="$(printf '%s\n' "$act" | { grep -vE "^Success: |^(ℹ|✔|✖) |^Command failed with exit code|^[[:space:]]*$" || true; } | tr '\n' ' ' | cut -c1-240)"
+  if [ -n "$ok" ] && [ -z "$extra" ]; then _w PASS F5 "wp theme activate printed nothing"
+  elif [ "$(_yay_ui_cli wp option get stylesheet | tr -d '\r')" = "$folder" ]; then _w FAIL F5 "activation printed output: $extra"
+  else _w FAIL F5 "wp theme activate $folder failed, so the checks below ran on another theme: $extra"; fi
+
+  # C1: the pages every theme renders, with the theme active.
+  for p in "/ front" "/?p=1 post" "/?page_id=2 page" "/?s=hello search" "/?p=999999 404"; do
+    s="$(_yay_wporg_get "${p%% *}" "$out/c1-${p##* }.html")"; page="$(_yay_wporg_page "$s" "$out/c1-${p##* }.html")"
+    case "${p##* }:$s:$page" in
+      404:404:ok|*:2??:ok) _w PASS C1 "${p#* } ${p%% *} answers $s" ;;
+      *:*:fatal) _w FAIL C1 "${p#* } ${p%% *} fatals ($s, see $out/c1-${p##* }.html)" ;;
+      *:*:ok) _w WARN C1 "${p#* } ${p%% *} answers $s" ;;
+      *) _w FAIL C1 "${p#* } ${p%% *}: $page before the page markup ($s, see $out/c1-${p##* }.html)" ;;
+    esac
+  done
+  _yay_ui_log_scan "$out" "$folder" C1 | tee -a "$out/site.tsv" || true
+
+  # Leave the default theme active for the next run.
+  _yay_ui_cli wp theme activate twentytwentyfive >/dev/null || true
   if [ -n "$keep" ]; then _w INFO site "$url (admin / password), stop with: yayh release ui-stop"
   else (cd "$site" && "$wpenv" stop >/dev/null 2>&1) || true; fi
   ! grep -q '^FAIL' "$out/site.tsv"

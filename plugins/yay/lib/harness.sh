@@ -70,7 +70,7 @@ print(json.dumps(m(json.load(open(sys.argv[1])),json.load(open(sys.argv[2]))),in
 
 # ---------- detect ----------
 
-_hdr() { # _hdr <file> <Header Name> -> value from a WP plugin/readme header
+_hdr() { # _hdr <file> <Header Name> -> value from a WP plugin/theme/readme header
   [ -f "$1" ] || return 0
   sed -n "s/^[[:space:]*#@]*$2:[[:space:]]*//p" "$1" | sed -n 1p | sed 's/[[:space:]]*$//' | tr -d '\r'
 }
@@ -94,6 +94,8 @@ yay_detect_main_file() {
     [ -f "$f" ] || continue
     case "$(head -40 "$f")" in *'Plugin Name:'*) basename "$f"; return 0 ;; esac
   done
+  # A theme declares itself in style.css.
+  case "$(head -40 "$root/style.css" 2>/dev/null)" in *'Theme Name:'*) echo style.css; return 0 ;; esac
   return 3
 }
 
@@ -108,18 +110,28 @@ yay_detect_pm() {
 # Print a proposed .yay/config.json for the current repo. Every guess is a
 # draft; /yay:harness-init shows it to the user before writing.
 yay_detect() {
-  local root main name ver slug td rphp rwp rwc twp twc editions wporg base tagfmt pm
+  local root main kind name ver slug td rphp rwp rwc twp twc editions wporg base tagfmt pm
   root="$(yay_repo_root)"
   main="$(yay_detect_main_file)" || main=""
-  name="$(_hdr "$root/$main" 'Plugin Name')"; [ -n "$name" ] || name="$(basename "$root")"
+  kind=plugin; [ "$main" = style.css ] && kind=theme
+  if [ "$kind" = theme ]; then
+    # A theme's slug is its folder, which worktrees rename: the text domain is the stable guess.
+    name="$(_hdr "$root/$main" 'Theme Name')"
+    td="$(_hdr "$root/$main" 'Text Domain')"
+    slug="$(yay_slugify "${td:-$(basename "$root")}")"
+  else
+    name="$(_hdr "$root/$main" 'Plugin Name')"
+    slug="${main%.php}"; [ -n "$slug" ] || slug="$(basename "$root")"
+    slug="$(yay_slugify "$slug")"
+    td="$(_hdr "$root/$main" 'Text Domain')"
+  fi
+  [ -n "$name" ] || name="$(basename "$root")"
+  [ -n "$td" ] || td="$slug"
   ver="$(_hdr "$root/$main" 'Version')"
-  slug="${main%.php}"; [ -n "$slug" ] || slug="$(yay_slugify "$(basename "$root")")"
-  slug="$(yay_slugify "$slug")"
-  td="$(_hdr "$root/$main" 'Text Domain')"; [ -n "$td" ] || td="$slug"
   rphp="$(_hdr "$root/$main" 'Requires PHP')"; [ -n "$rphp" ] || rphp="$(_hdr "$root/readme.txt" 'Requires PHP')"; [ -n "$rphp" ] || rphp="7.4"
   rwp="$(_hdr "$root/$main" 'Requires at least')"; [ -n "$rwp" ] || rwp="$(_hdr "$root/readme.txt" 'Requires at least')"
   rwc="$(_hdr "$root/$main" 'WC requires at least')"
-  twp="$(_hdr "$root/readme.txt" 'Tested up to')"
+  twp="$(_hdr "$root/readme.txt" 'Tested up to')"; [ -n "$twp" ] || twp="$(_hdr "$root/$main" 'Tested up to')"
   twc="$(_hdr "$root/$main" 'WC tested up to')"
 
   if [ -d "$root/includes/Pro" ] || [ -d "$root/src/Pro" ] || [ -d "$root/pro" ] || [ -d "$root/editions" ]; then
@@ -132,6 +144,9 @@ yay_detect() {
     editions='["free"]'
     if [ -f "$root/readme.txt" ] && grep -qi '^Stable tag:' "$root/readme.txt"; then wporg="$(yay_json_str "$slug")"; else wporg='null'; fi
   fi
+
+  # The Theme Directory has no Stable tag to detect from; the team sets wporgSlug by hand.
+  [ "$kind" = theme ] && wporg='null'
 
   base=""
   for b in dev develop main master; do
@@ -168,10 +183,15 @@ yay_detect() {
   local vf=""
   if [ -n "$main" ]; then
     vf="{\"file\":$(yay_json_str "$main"),\"pattern\":$(yay_json_str '^[[:space:]*]*Version:[[:space:]]*([0-9][^[:space:]]*)')}"
-    local const; const="$(grep -oE "define\([[:space:]]*'[A-Z0-9_]+_VERSION'" "$root/$main" 2>/dev/null | sed -n 1p | grep -oE "[A-Z0-9_]+_VERSION" || true)"
-    [ -n "$const" ] && vf="$vf,{\"file\":$(yay_json_str "$main"),\"pattern\":$(yay_json_str "define\\([[:space:]]*'$const',[[:space:]]*'([^']+)'")}"
+    # A theme defines its version constant in functions.php, a plugin in its main file.
+    local cf="$main" const; [ "$kind" = theme ] && cf=functions.php
+    const="$(grep -oE "define\([[:space:]]*'[A-Z0-9_]+_VERSION'" "$root/$cf" 2>/dev/null | sed -n 1p | grep -oE "[A-Z0-9_]+_VERSION" || true)"
+    [ -n "$const" ] && vf="$vf,{\"file\":$(yay_json_str "$cf"),\"pattern\":$(yay_json_str "define\\([[:space:]]*'$const',[[:space:]]*'([^']+)'")}"
   fi
-  [ -f "$root/readme.txt" ] && vf="$vf${vf:+,}{\"file\":\"readme.txt\",\"pattern\":$(yay_json_str '^Stable tag:[[:space:]]*([0-9][^[:space:]]*)')}"
+  # A theme's readme.txt usually has no Stable tag, and a pattern that matches nothing fails `version set`.
+  if [ -f "$root/readme.txt" ] && { [ "$kind" = plugin ] || grep -qi '^Stable tag:' "$root/readme.txt"; }; then
+    vf="$vf${vf:+,}{\"file\":\"readme.txt\",\"pattern\":$(yay_json_str '^Stable tag:[[:space:]]*([0-9][^[:space:]]*)')}"
+  fi
 
   # Generated paths: present on disk or ignored by git.
   local gp="" p
@@ -207,7 +227,8 @@ yay_detect() {
   {
     printf '{'
     printf '"schemaVersion":1,'
-    printf '"plugin":{"name":%s,"slug":%s,"mainFile":%s,"textDomain":%s,"wporgSlug":%s},' \
+    printf '"plugin":{%s"name":%s,"slug":%s,"mainFile":%s,"textDomain":%s,"wporgSlug":%s},' \
+      "$( [ "$kind" = theme ] && printf '"kind":"theme",' )" \
       "$(yay_json_str "$name")" "$(yay_json_str "$slug")" "$(yay_json_str "$main")" "$(yay_json_str "$td")" "$wporg"
     printf '"editions":%s,' "$editions"
     printf '"requires":{"php":%s,"wp":%s,"wc":%s},' "$(yay_json_str "$rphp")" "$(yay_json_str "${rwp:-6.5}")" \
@@ -241,6 +262,12 @@ yay_config_validate() {
   printf '%s' "$v" | grep -Eq '^[a-z0-9-]+$' || { echo "config: plugin.slug must be lowercase kebab-case" >&2; errs=$((errs+1)); }
   v="$(yay_json_get "$f" plugin.mainFile 2>/dev/null)" || v=""
   [ -z "$v" ] || [ -f "$(yay_repo_root)/$v" ] || { echo "config: plugin.mainFile '$v' does not exist" >&2; errs=$((errs+1)); }
+  local kind; kind="$(yay_json_get "$f" plugin.kind 2>/dev/null)" || kind=plugin
+  case "$kind" in
+    plugin) ;;
+    theme) [ -z "$v" ] || [ "$v" = style.css ] || { echo "config: a theme's plugin.mainFile must be style.css (it holds the Theme Name header)" >&2; errs=$((errs+1)); } ;;
+    *) echo "config: plugin.kind must be plugin or theme" >&2; errs=$((errs+1)) ;;
+  esac
   v="$(yay_json_get "$f" git.tagFormat 2>/dev/null)" || v="{version}"
   case "$v" in *'{version}'*) ;; *) echo "config: git.tagFormat must contain {version}" >&2; errs=$((errs+1));; esac
   yay_json_get "$f" commands >/dev/null 2>&1 || { echo "config: commands is required (use {} when none apply)" >&2; errs=$((errs+1)); }

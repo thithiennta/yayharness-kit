@@ -690,7 +690,7 @@ EOF
 # yay_roadmap_peers -> TSV: dir name slug harnessed(yes|no) path
 # Sibling plugin folders of this repo (e.g. the other wp-content/plugins/ entries).
 yay_roadmap_peers() {
-  local root parent d name slug h main
+  local root parent d name slug h main hdr
   root="$(yay_repo_root)"; parent="$(dirname "$root")"
   for d in "$parent"/*/; do
     d="${d%/}"; [ -d "$d" ] || continue
@@ -701,8 +701,10 @@ yay_roadmap_peers() {
     else
       h=no
       main="$( { grep -l -E '^[[:space:]*#@]*Plugin Name:' "$d"/*.php 2>/dev/null || true; } | sed -n 1p)"
+      hdr="Plugin Name"
+      if [ -z "$main" ] && grep -qE '^[[:space:]*#@]*Theme Name:' "$d/style.css" 2>/dev/null; then main="$d/style.css"; hdr='Theme Name'; fi
       [ -n "$main" ] || continue
-      name="$(sed -n -E 's/^[[:space:]*#@]*Plugin Name:[[:space:]]*(.*[^[:space:]])[[:space:]]*$/\1/p' "$main" | sed -n 1p)"
+      name="$(sed -n -E "s/^[[:space:]*#@]*$hdr:[[:space:]]*(.*[^[:space:]])[[:space:]]*\$/\\1/p" "$main" | sed -n 1p)"
       slug="$(basename "$d")"
     fi
     printf '%s\t%s\t%s\t%s\t%s\n' "$(basename "$d")" "$name" "$slug" "$h" "$d"

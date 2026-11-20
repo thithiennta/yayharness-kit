@@ -221,7 +221,7 @@ yay_e2e_scaffold() {
     *) pm=npm; install="npm install"; ci_install="npm ci" ;;
   esac
   wc="$(yay_config_get requires.wc 2>/dev/null || true)"
-  flags="$pm"; case "$wc" in ''|null) ;; *) flags="$flags,woo" ;; esac
+  flags="$pm,$(yay_kind)"; case "$wc" in ''|null) ;; *) flags="$flags,woo" ;; esac
   port="$(yay_e2e_base_port)"
   folder="$(yay_config_get plugin.slug)"
   up="$(printf '%s' "$dir" | awk -F/ '{ s = ""; for (i = 1; i <= NF; i++) if ($i != "" && $i != ".") s = s (s ? "/" : "") ".."; print s }')"
@@ -246,6 +246,7 @@ yay_e2e_scaffold() {
     if [ -e "$root/$dest" ]; then printf 'exists\t%s\n' "$dest"; continue; fi
     mkdir -p "$(dirname "$root/$dest")"
     _e2e_render "$src" "$flags" "port=$port" "dir=$dir" "root=$up" "folder=$folder" "plugins=$plugins" \
+      "kind=$(yay_kind)" "contentDir=$(yay_content_dir)" \
       "node=$node" "ciInstall=$ci_install" "prepare=$prepare" > "$root/$dest"
     case "$dest" in *.sh) chmod +x "$root/$dest" ;; esac
     printf 'created\t%s\n' "$dest"
