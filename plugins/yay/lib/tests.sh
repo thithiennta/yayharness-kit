@@ -99,7 +99,7 @@ yay_tests_scaffold() {
   [ -n "$runner" ] || runner="$(_tests_js_runner)"
   case "$runner" in vitest|jest|wp-scripts|none) ;; *) yay_die "js-runner must be vitest, jest, wp-scripts or none" ;; esac
 
-  local pm wc flags levels jsroot e2e node jsinstall prepare v unitcmd jscmd="" integcmd extra slug
+  local pm wc flags levels jsroot e2e node jsinstall prepare v unitcmd jscmd="" integcmd extra slug kind
   pm="$(yay_detect_pm 2>/dev/null || echo npm)"
   case "$pm" in
     pnpm) jsinstall="pnpm install --frozen-lockfile" ;;
@@ -110,6 +110,7 @@ yay_tests_scaffold() {
   flags="$pm"; case "$wc" in ''|null) ;; *) flags="$flags,woo" ;; esac
   [ "$runner" = none ] || flags="$flags,js"
   [ "$integ" = 1 ] && flags="$flags,integration"
+  kind="$(yay_kind)"; flags="$flags,$kind"
   levels="$(( $(printf '%s' "$php" | awk -F/ '{ n = 0; for (i = 1; i <= NF; i++) if ($i != "" && $i != ".") n++; print n }') + 1 ))"
   jsroot="$(_tests_up "$js")/"
   e2e="$(yay_e2e_dir)"
@@ -124,7 +125,7 @@ yay_tests_scaffold() {
   case "$prepare" in *composer*) ;; *) prepare="composer install --no-interaction${prepare:+ && $prepare}" ;; esac
 
   unitcmd="vendor/bin/phpunit -c $php/unit.xml.dist"
-  integcmd="cd $e2e && ./node_modules/.bin/wp-env run ${extra:+$extra }tests-cli --env-cwd=wp-content/plugins/$slug vendor/bin/phpunit -c $php/integration.xml.dist"
+  integcmd="cd $e2e && ./node_modules/.bin/wp-env run ${extra:+$extra }tests-cli --env-cwd=wp-content/$(yay_content_dir)/$slug vendor/bin/phpunit -c $php/integration.xml.dist"
   local own_vitest=0
   case "$runner" in
     vitest)
@@ -146,6 +147,11 @@ yay_tests_scaffold() {
   local rel dest
   while IFS= read -r rel; do
     [ -n "$rel" ] || continue
+    # The header and loads tests come in a plugin and a theme version.
+    case "$rel" in
+      */Plugin*Test.php) [ "$kind" = plugin ] || continue ;;
+      */Theme*Test.php) [ "$kind" = theme ] || continue ;;
+    esac
     case "$rel" in
       ci/tests.yml) [ "$ci" = 1 ] || continue; dest=".github/workflows/tests.yml" ;;
       php/integration*|php/integration/*) [ "$integ" = 1 ] || continue; dest="$php/${rel#php/}" ;;

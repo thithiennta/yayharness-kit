@@ -2,7 +2,7 @@ import { defineConfig, devices } from '@playwright/test';
 
 export default defineConfig( {
 	testDir: '.',
-	testMatch: /plugins-page\.spec\.ts/,
+	testMatch: /(plugins|themes)-page\.spec\.ts/,
 	outputDir: process.env.YAY_UI_OUT ? `${ process.env.YAY_UI_OUT }/test-results` : './test-results',
 	timeout: 180_000,
 	expect: { timeout: 15_000 },

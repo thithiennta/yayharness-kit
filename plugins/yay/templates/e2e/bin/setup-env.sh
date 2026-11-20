@@ -5,7 +5,7 @@ set -euo pipefail
 cd "$(dirname "$0")/.."
 wp() { ./node_modules/.bin/wp-env run cli wp "$@"; }
 
-wp plugin activate {{e2e.folder}}
+wp {{e2e.kind}} activate {{e2e.folder}}
 wp rewrite structure '/%postname%/' --hard
 wp option update blogname '{{plugin.name}} E2E'
 wp user get customer >/dev/null 2>&1 || wp user create customer customer@example.com \

@@ -22,9 +22,17 @@ tests_add_filter(
 #if-woo
 		require_once WP_PLUGIN_DIR . '/woocommerce/woocommerce.php';
 #end-woo
+#if-plugin
 		require_once $yay_tests_root . '/{{plugin.mainFile}}';
+#end-plugin
 	}
 );
+#if-theme
+
+// wp-env maps the theme into wp-content/themes/; make it the active theme (a child theme keeps its parent).
+tests_add_filter( 'pre_option_stylesheet', static fn() => '{{plugin.slug}}' );
+tests_add_filter( 'pre_option_template', static fn() => wp_get_theme( '{{plugin.slug}}' )->get_template() );
+#end-theme
 #if-woo
 
 tests_add_filter(

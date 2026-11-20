@@ -219,6 +219,9 @@ Versions, changelog, build
                                    WordPress.org runtime checks on that site: Plugin Check (T1), clean activation
                                    (Q11), lifecycle (Q7), debug.log (Q6), runtime requirements (Q10); writes site.tsv
                                    (exit 1 on a FAIL, 3 when it can't run)
+  wporg theme-site <zip> out=<dir> [--keep] [--no-tc]
+                                   the Theme Directory's runtime checks for a theme: Theme Check (TC), clean
+                                   activation (F5), the pages a theme renders and debug.log (C1); writes site.tsv
   build zip [edition=e] [version=v] newest zip matching package.output
   build check <zip> [edition=e] [version=v]
                                    PASS/WARN/FAIL per check; exit 1 on any FAIL
@@ -479,7 +482,8 @@ case "$cmd" in
     sub="${1:-}"; shift || true
     case "$sub" in
       site) yay_wporg_site "$@" ;;
-      *) yay_die "usage: yayh wporg site <zip> out=<dir> [--keep] [--no-pcp]" ;;
+      theme-site) yay_wporg_theme_site "$@" ;;
+      *) yay_die "usage: yayh wporg site|theme-site <zip> out=<dir> [--keep] [--no-pcp|--no-tc]" ;;
     esac ;;
   build)
     sub="${1:-}"; shift || true

@@ -11,7 +11,8 @@ JSON, not YAML, so hooks can read it with `jq`, `node` or `php` and nothing to i
 | `schemaVersion` | int | Config format version. Currently `1`. |
 | `plugin.name` | string | Display name, e.g. `YayCheckout`. |
 | `plugin.slug` | string | Folder and zip slug, e.g. `yaycheckout`. |
-| `plugin.mainFile` | string | The PHP file with the plugin header. |
+| `plugin.kind` | `plugin` \| `theme` | What the repo ships. Default `plugin`. A theme maps into `wp-content/themes/`, activates with `wp theme activate`, and gets `/yay:wporg-theme` instead of `/yay:wporg`. Detection sets it when `style.css` has a `Theme Name:` header and no PHP file has a `Plugin Name:` one. |
+| `plugin.mainFile` | string | The PHP file with the plugin header. For a theme, `style.css`. |
 | `plugin.textDomain` | string | i18n text domain. |
 | `plugin.wporgSlug` | string \| null | WordPress.org slug when a Free build ships there. |
 | `editions` | string[] | Builds from this branch, e.g. `["free","pro"]` or `["free"]`. The first is the default. |

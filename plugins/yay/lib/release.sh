@@ -71,6 +71,8 @@ yay_tested_set() {
   root="$(yay_repo_root)"; main="$(yay_config_get plugin.mainFile)"; readme="$(yay_config_get changelog.readme)"
   if [ -n "$wp" ]; then
     [ -f "$root/$readme" ] && V="$wp" perl -i -pe 's/^(Tested up to:[ \t]*)\S+/$1$ENV{V}/' "$root/$readme"
+    # A theme also carries Tested up to in its style.css header.
+    [ "$(yay_kind)" = theme ] && V="$wp" perl -i -pe 's/^([ \t*#@]*Tested up to:[ \t]*)\S+/$1$ENV{V}/' "$root/$main"
     yay_json_set "$(yay_config_file)" tested.wp "$wp"; printf 'tested\twp\t%s\n' "$wp"
   fi
   if [ -n "$wc" ]; then

@@ -31,6 +31,7 @@ References (read when a step says so): `references/checklist.md` (IDs and the em
 
 ## 1. What ships
 
+- In a theme repo (`yayh config get plugin.kind` is `theme`), stop: the Themes Team's rules differ, so run `/yay:wporg-theme`.
 - `slug="$(yayh config get plugin.wporgSlug)"`. Not set: use `plugin.slug`, and say in the report that `plugin.wporgSlug` opts the repo in. `v="$(yayh version current)"`, or with `--zip` the `Version:` in the zip's main file (a release candidate carries its rc version). Note `git status --porcelain`: the review must leave the working tree as it found it.
 - The folder for everything this skill writes: `dir="$(yayh config get release.bundleDir release/bundles)/$(yayh config get plugin.slug)-wporg-$v"`, then `mkdir -p "$dir"`. It's gitignored and outside the zip.
 - **The zip.** The repo's own package step builds exactly what ships, so never guess the build:
