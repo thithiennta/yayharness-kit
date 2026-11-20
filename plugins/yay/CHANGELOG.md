@@ -2,7 +2,7 @@
 
 `/yay:harness-update` reads this file to tell a repo what changed between its recorded kit version and the installed one. Each entry lists new skills, config keys, template changes and behavior changes.
 
-## Unreleased (0.15.0)
+## 0.15.0 (2026-11-20)
 - **Themes are supported (`plugin.kind: "theme"`).** Brandy- and WPShadcn-style theme repos can now run the whole workflow. `/yay:harness-init` detects a theme from `style.css` (`Theme Name:`, and no PHP file with `Plugin Name:`): `mainFile` is `style.css`, the slug is the text domain (a theme's slug is its folder, which worktrees rename), the version files are `style.css` and a `*_VERSION` constant in `functions.php`, and a readme without a Stable tag gets no readme version file. `yayh config validate` checks `plugin.kind` and that a theme's `mainFile` is `style.css`.
   - e2e and tests: the wp-env site maps the repo into `wp-content/themes/<slug>` and `bin/setup-env.sh` runs `wp theme activate`. The smoke spec checks the active theme on Appearance → Themes. `yayh test scaffold` writes `ThemeHeaderTest` and `ThemeLoadsTest` instead of the plugin ones, the integration bootstrap makes the theme the active one, and `commands.test-integration` runs from `wp-content/themes/<slug>`. `site.wpPath` is derived inside `wp-content/themes/` too.
   - Release: `yayh release check` doesn't ask a theme for a Stable tag, `yayh version tested wp=` also updates `style.css`'s `Tested up to`, and `yayh release ui` installs a theme zip into `wp-content/themes/`, activates it from Appearance → Themes, screenshots the front page, a post, a page, search, a 404 and the Site Editor (or the Customizer), then switches back. `yayh roadmap peers` lists sibling themes.
