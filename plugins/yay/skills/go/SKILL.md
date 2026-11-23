@@ -30,6 +30,7 @@ Route by what the user wants, not by keywords. Pass the user's own words on as t
 | to know where things stand, the sprint's progress | `/yay:roadmap --status` |
 | to plan or re-plan sprints, add (one or several), move or drop roadmap items | `/yay:roadmap` (`--add="…; …"`, `--move=R-<n>:<n>`, `--drop=R-<n>`) |
 | what goes in a version, "plan 1.5.0", "add X and Y for the next release" | `/yay:roadmap --target=<x.y.z\|minor\|patch>` (with `--add="…; …"` when they name items) |
+| what a roadmap item is, spelled out for the developers: "write a brief/spec for R-5", "describe this feature for the team" | `/yay:roadmap --brief=R-<n> "<their notes>"` (`--brief "<idea>"` when there's no item yet) |
 | options for an idea, "how should we…" | `/yay:brainstorm "<topic>"` (`--from=R-<n>` when it names an item) |
 | a design for a screen, modal or email | `/yay:design "<topic>"` |
 | to share an idea, a summary of what they did, or a feature pitch with the lead or team: "write this up for the lead", "report" | `/yay:report <idea\|done\|feature> "<their notes>"` (`--from=<id\|branch>` when it names one) |

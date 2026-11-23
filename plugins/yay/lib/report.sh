@@ -55,7 +55,7 @@ _report_slug() {
 _report_dir() { printf '%s/.yay/reports\n' "$(yay_repo_root)"; }
 
 # yay_report_new <kind> "<title>" [--lang=en|vi] [--for=team|devs] -> path of the new markdown file.
-# The language defaults to report.lang in .yay/config.json (or .yay/local.json), then en.
+# The language defaults to language in .yay/config.json (or .yay/local.json), then en.
 # --for is for guides: team (default) keeps every plain-language rule, devs allows code.
 yay_report_new() {
   local kind="" title="" lang="" aud="" a dir slug f author tpl
@@ -64,7 +64,7 @@ yay_report_new() {
       *) if [ -z "$kind" ]; then kind="$a"; elif [ -z "$title" ]; then title="$a"; else yay_die "one title only (quote it)"; fi ;; esac
   done
   [ -n "$kind" ] && [ -n "$title" ] || yay_die "usage: yayh report new <idea|done|feature|guide> \"<title>\" [--lang=en|vi] [--for=team|devs]"
-  [ -n "$lang" ] || lang="$(yay_config_get report.lang en 2>/dev/null || echo en)"
+  [ -n "$lang" ] || lang="$(yay_config_get language en 2>/dev/null || echo en)"
   _report_kind_ok "$kind"; _report_lang_ok "$lang"
   if [ "$kind" = guide ]; then
     case "${aud:=team}" in team|devs) ;; *) yay_die "--for must be team or devs" ;; esac
@@ -114,7 +114,7 @@ yay_report_list() {
 
 # yay_report_check <report> [--max-words=N] -> "error: …" / "warn: …" lines; exit 1 on any error.
 yay_report_check() {
-  local q="" max="" a f kind lang lim aud="" out emoji rc
+  local q="" max="" a f kind lang lim aud=""
   for a in "$@"; do case "$a" in --max-words=*) max="${a#--max-words=}" ;; *) q="$a" ;; esac; done
   [ -n "$q" ] || yay_die "usage: yayh report check <report> [--max-words=N]"
   f="$(_report_file "$q")"
@@ -129,13 +129,23 @@ yay_report_check() {
   lim="$(_report_limits "$lang" "$kind")"
   [ -n "$max" ] || max="${lim%% *}"
   case "$max" in *[!0-9]*) yay_die "--max-words must be a number" ;; esac
+  _plain_check "$f" "$kind" "$max" "$lim" "$(_report_dev "$lang")" "$([ "$aud" = devs ] && echo 1 || echo 0)" \
+    "$([ "$kind" = guide ] && _report_steps "$lang")" 12 6 "" "" < <(_report_sections "$kind" "$lang")
+}
+
+# _plain_check <file> <label> <max words> "<limits>" <dev heading> <devs 0|1> <steps heading> <steps max>
+#   <bullets max> <checklist heading> <out-of-scope heading>, the required ## sections on stdin (the first
+#   is the one-line summary) -> "error: …" / "warn: …" lines; exit 1 on any error. Shared by reports and
+#   item briefs: plain words, no code outside the developer section (or in backticks when devs is 1).
+_plain_check() {
+  local f="$1" label="$2" max="$3" lim="$4" devh="$5" devs="$6" stepsh="$7" stepsmax="$8" bulletsmax="$9" checkh="${10}" outh="${11}" emoji out rc
   # Emoji and pictographs: the symbol blocks (U+2600-27BF, U+2B00-2BFF), U+1F000+, and the emoji variation selector.
   emoji="$(LC_ALL=C grep -nE "$(printf '\360\237|\342[\230-\236]|\342[\254\255]|\357\270\217')" "$f" | cut -d: -f1 | paste -sd, - || true)"
   # shellcheck disable=SC2086
   set -- $lim
-  out="$(_report_sections "$kind" "$lang" | awk -v max="$max" -v leadmax="$2" -v sentmax="$3" -v paramax="$4" \
-    -v title="$(yay_fm_get "$f" title 2>/dev/null || true)" -v emoji="$emoji" -v kind="$kind" -v devh="$(_report_dev "$lang")" \
-    -v devs="$([ "$aud" = devs ] && echo 1 || echo 0)" -v stepsh="$([ "$kind" = guide ] && _report_steps "$lang")" '
+  out="$(awk -v max="$max" -v leadmax="$2" -v sentmax="$3" -v paramax="$4" \
+    -v title="$(yay_fm_get "$f" title 2>/dev/null || true)" -v emoji="$emoji" -v label="$label" -v devh="$devh" \
+    -v devs="$devs" -v stepsh="$stepsh" -v stepsmax="$stepsmax" -v bulletsmax="$bulletsmax" -v checkh="$checkh" -v outh="$outh" '
     function err(m) { print "error: " m; errs++ }
     function warn(m) { if (!(m in seenw)) { print "warn: " m; seenw[m] = 1 } }
     function words(s,   n, t) { t = s; gsub(/\*\*|\[|\]\([^)]*\)/, " ", t); n = split(t, _w, /[ \t]+/); if (_w[1] == "") n--; if (n > 0 && _w[n] == "") n--; return n }
@@ -144,7 +154,7 @@ yay_report_check() {
       for (i = 1; i <= n; i++) if (words(parts[i]) > sentmax) warn("a sentence in " where " has " words(parts[i]) " words: split it")
     }
     function endpara() { if (para != "") { if (words(para) > paramax) warn("a paragraph in " where() " has " words(para) " words: use 2-4 bullets"); para = "" } }
-    function bmax(s) { return (s == stepsh && stepsh != "") ? 12 : 6 }
+    function bmax(s) { return (s == stepsh && stepsh != "") ? stepsmax : bulletsmax }
     function where() { return sec == "" ? "the top" : "'\''## " sec "'\''" }
     function plain(s, n,   t, w, k) {
       t = s
@@ -186,10 +196,11 @@ yay_report_check() {
       if (sec == devh) { dev = 1; next }
       if (sec in have) err("'\''## " sec "'\'' appears twice")
       have[sec] = 1; order[++nsec] = sec
-      if (!(sec in need)) warn("'\''## " sec "'\'' is not a " kind " section: fold it into one or drop it")
+      if (!(sec in need)) warn("'\''## " sec "'\'' is not a " label " section: fold it into one or drop it")
       next
     }
     /^[ \t]*$/ { endpara(); next }
+    /^[ \t]*([-*+]|[0-9]+[.)])([ \t]+\[[ xX]\])?[ \t]*$/ { next }
     dev { devwords += words($0); next }
     {
       line = $0
@@ -198,6 +209,8 @@ yay_report_check() {
       if (line ~ /^[ \t]*\|/) err("table on line " FNR ": use a short list")
       filled[sec] = 1
       total += words(line)
+      if (sec == checkh && checkh != "") { if (line ~ /^[ \t]*[-*] \[[ xX]\][ \t]/) checks++; else warn("line " FNR " in '\''## " checkh "'\'': write each check as - [ ] so a tester can tick it") }
+      if (sec == outh && outh != "") { o = tolower(line); sub(/^[ \t]*[-*][ \t]*/, "", o); sub(/[ \t.]+$/, "", o); if (o !~ /^(none|n\/a|nothing|không|không có)$/) outreal = 1 }
       if (sec == leadh) lead += words(line)
       pl = line; if (devs && sec != leadh) gsub(/`[^`]*`/, " ", pl)
       plain(pl, FNR)
@@ -217,9 +230,14 @@ yay_report_check() {
       }
       if (lead > leadmax) err("'\''## " leadh "'\'' has " lead " words: say what this is and what you want from the reader in under " leadmax)
       if (order[1] != "" && order[1] != leadh) warn("start with ## " leadh ", so the reader knows the point first")
-      if (total > max) err("the report is " total " words (limit " max ", ## " devh " not counted): cut it down")
+      if (total > max) err("the " label " is " total " words (limit " max ", ## " devh " not counted): cut it down")
       if (devwords > 200) warn("## " devh " has " devwords " words: keep it under 200, link the PR or plan for the rest")
       if (bold > 4) warn(bold " bold phrases: bold only the one thing the reader must not miss")
+      if (checkh != "" && (checkh in have)) {
+        if (checks < 3) err("'\''## " checkh "'\'' has " checks + 0 " checks: write 3-7 things a tester can tick")
+        else if (checks > 7) warn("'\''## " checkh "'\'' has " checks " checks: keep the 7 that matter, or split the item")
+      }
+      if (outh != "" && (outh in filled) && !outreal) warn("'\''## " outh "'\'' says nothing is out of scope: name at least one thing this does not do")
       if (emoji != "") err("emoji or symbols on line " emoji ": plain words only")
       exit errs > 0
     }' - "$f")" && rc=0 || rc=$?
@@ -269,7 +287,9 @@ _report_md2html() {
       if (list != want) { close_list(); n = $0; sub(/^[ \t]*/, "", n); n = n + 0
         print "<" want (want == "ol" && n > 1 ? " start=\"" n "\"" : "") ">"; list = want }
       else if (li) print "</li>"
-      t = $0; sub(/^[ \t]*([-*+]|[0-9]+[.)])[ \t]+/, "", t); printf "<li>%s", inl(t); li = 1; next
+      t = $0; sub(/^[ \t]*([-*+]|[0-9]+[.)])[ \t]+/, "", t); box = ""
+      if (t ~ /^\[[ xX]\][ \t]/) { box = "<input type=\"checkbox\" disabled" (t ~ /^\[ \]/ ? "" : " checked") "> "; sub(/^\[[ xX]\][ \t]+/, "", t) }
+      printf "<li>%s%s", box, inl(t); li = 1; next
     }
     list != "" && /^[ \t]/ { t = $0; sub(/^[ \t]+/, "", t); print ""; print "<p>" inl(t) "</p>"; next }
     { close_list(); t = $0; sub(/^[ \t]+/, "", t); para = (para == "" ? t : para " " t) }
@@ -300,26 +320,39 @@ _report_md2text() {
 # yay_report_render <report> [--text] [--max-words=N]: check, then write the page
 # next to it (prints its path), or print the plain text. Refuses on check errors.
 yay_report_render() {
-  local q="" text="" a f title author date by html body max_arg="" lang leadh devh
+  local q="" text="" a f html max_arg="" lang
   for a in "$@"; do case "$a" in --text) text=1 ;; --max-words=*) max_arg="$a" ;; *) q="$a" ;; esac; done
   [ -n "$q" ] || yay_die "usage: yayh report render <report> [--text] [--max-words=N]"
   f="$(_report_file "$q")"
   # shellcheck disable=SC2086
   yay_report_check "$f" $max_arg >&2 || yay_die "fix the errors above first (yayh report check)"
-  title="$(yay_fm_get "$f" title)"; author="$(yay_fm_get "$f" author 2>/dev/null || true)"; date="$(yay_fm_get "$f" date 2>/dev/null || true)"
+  lang="$(_report_lang_of "$f")"
+  if [ -n "$text" ]; then
+    _plain_render "$f" "$lang" "$(_report_sections "$(yay_fm_get "$f" kind)" "$lang" | sed -n 1p)" "$(_report_dev "$lang")"
+  else
+    html="${f%.md}.html"
+    _plain_render "$f" "$lang" "$(_report_sections "$(yay_fm_get "$f" kind)" "$lang" | sed -n 1p)" "$(_report_dev "$lang")" "$html"
+    printf '%s\n' "${html#"$(yay_repo_root)"/}"
+  fi
+}
+
+# _plain_render <file> <lang> <summary heading> <dev heading> [<html out>]: the kit's one plain
+# page at <html out>, or paste-ready text on stdout. Shared by reports and item briefs.
+_plain_render() {
+  local f="$1" lang="$2" leadh="$3" devh="$4" html="${5:-}" title author date by body
+  title="$(yay_fm_get "$f" title)"; author="$(yay_fm_get "$f" author 2>/dev/null || true)"
+  date="$(yay_fm_get "$f" date 2>/dev/null || yay_fm_get "$f" created 2>/dev/null || true)"
   by="$author${author:+${date:+ · }}$date"
-  lang="$(_report_lang_of "$f")"; leadh="$(_report_sections "$(yay_fm_get "$f" kind)" "$lang" | sed -n 1p)"; devh="$(_report_dev "$lang")"
-  if [ -n "$text" ]; then _report_md2text "$f" "$title" "$by" "$leadh" "$devh"; return; fi
-  html="${f%.md}.html"; body="$(mktemp)"
+  if [ -z "$html" ]; then _report_md2text "$f" "$title" "$by" "$leadh" "$devh"; return; fi
+  body="$(mktemp)"; mkdir -p "$(dirname "$html")"
   _report_md2html "$f" "$leadh" "$devh" > "$body"
   T="$title" BY="$by" L="$lang" awk -v body="$body" '
     function esc(s) { gsub(/&/, "\\&amp;", s); gsub(/</, "\\&lt;", s); gsub(/>/, "\\&gt;", s); gsub(/"/, "\\&quot;", s); return s }
-    BEGIN { t = esc(ENVIRON["T"]); b = esc(ENVIRON["BY"]); l = ENVIRON["L"] }
-    $0 == "{{body}}" { while ((getline l < body) > 0) print l; next }
+    BEGIN { t = esc(ENVIRON["T"]); b = esc(ENVIRON["BY"]); lg = ENVIRON["L"] }
+    $0 == "{{body}}" { while ((getline bl < body) > 0) print bl; next }
     { while ((i = index($0, "{{title}}")) > 0)  $0 = substr($0, 1, i-1) t substr($0, i+9)
       while ((i = index($0, "{{byline}}")) > 0) $0 = substr($0, 1, i-1) b substr($0, i+10)
-      while ((i = index($0, "{{lang}}")) > 0)   $0 = substr($0, 1, i-1) l substr($0, i+8)
+      while ((i = index($0, "{{lang}}")) > 0)   $0 = substr($0, 1, i-1) lg substr($0, i+8)
       print }' "$YAY_TEMPLATES/report/page.html" > "$html"
   rm -f "$body"
-  printf '%s\n' "${html#"$(yay_repo_root)"/}"
 }

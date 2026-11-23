@@ -393,14 +393,7 @@
         }
       }
     },
-    "report": {
-      "type": "object",
-      "additionalProperties": false,
-      "description": "Optional. /yay:report settings.",
-      "properties": {
-        "lang": { "type": "string", "enum": ["en", "vi"], "default": "en", "description": "language reports are written in: headings, limits and the cold reader" }
-      }
-    },
+    "language": { "type": "string", "enum": ["en", "vi"], "default": "en", "description": "Optional. The language /yay:report reports and roadmap item briefs are written in: headings, limits and the cold reader" },
     "models": {
       "type": "object",
       "additionalProperties": false,

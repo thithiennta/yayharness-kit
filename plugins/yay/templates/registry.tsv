@@ -15,5 +15,6 @@ docs/yay-workflow.md	docs/yay-workflow.md	file	docs
 -	docs/bugs/.gitkeep	seed	docs
 -	docs/backlog/.gitkeep	seed	docs
 -	docs/designs/.gitkeep	seed	docs
+-	docs/briefs/.gitkeep	seed	docs
 -	docs/releases/.gitkeep	seed	docs
 gitignore.lines	.gitignore	lines	git

@@ -177,6 +177,16 @@ yay_artifact_archive() {
     else printf 'keep\trelease-%s\thas uncommitted changes\n' "$v" >> "$dec"; fi
   done
 
+  # Item briefs (lib/brief.sh) go with their roadmap item, never on their own.
+  local item
+  for b in "$root"/docs/briefs/*.md; do
+    [ -f "$b" ] || continue
+    item="$(yay_fm_get "$b" item 2>/dev/null || true)"
+    grep -q "^archive	$item	roadmap	" "$dec" || continue
+    if _yay_archive_clean "${b#"$root"/}"; then printf 'archive\t%s brief\titembrief\t%s\t%s\t0\n' "$item" "$(yay_fm_get "$b" status 2>/dev/null || echo draft)" "${b#"$root"/}" >> "$dec"
+    else printf 'keep\t%s brief\thas uncommitted changes\n' "$item" >> "$dec"; fi
+  done
+
   if [ "$yes" = 0 ]; then
     awk -F '\t' '$1 == "archive" { printf "archive\t%s\t%s\t%s\n", $2, $4, $5; next } { print }' "$dec"
     rm -f "$rec" "$dec"; return 0
@@ -192,9 +202,10 @@ yay_artifact_archive() {
                title="$(awk -v n="$line" 'NR == n { sub(/^### R-[0-9]+[[:space:]]*/, ""); print; exit }' "$doc")"
                _yay_item_range "$doc" "$id" >> "$ranges" ;;
       brief) title="Release brief ${id#release-}"; rm -f "$root/$path" ;;
+      itembrief) title="Brief: $(yay_fm_get "$root/$path" title 2>/dev/null || true)"; rm -f "$root/$path" ;;
       *) title="$(yay_fm_get "$root/$path" title 2>/dev/null || true)"; rm -f "$root/$path" ;;
     esac
-    [ "$type" = brief ] || rm -rf "${root:?}/$(yay_asset_dir "$id")"
+    [ "$type" = brief ] || [ "$type" = itembrief ] || rm -rf "${root:?}/$(yay_asset_dir "$id")"
     _yay_archive_row "$id" "$title" "$st" "$path" "$sha" >> "$rows"
     printf 'archived\t%s\t%s\n' "$id" "$path"
   done < "$dec"

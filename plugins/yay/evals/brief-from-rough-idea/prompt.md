@@ -1,0 +1,1 @@
+I'm the product manager. Write a brief for R-3 so the devs know exactly what it is before they start. My notes: shoppers want to pick the day the gift arrives, mostly for birthdays. The store owner has to be able to block days they don't ship, like holidays. Not sure yet about time slots.

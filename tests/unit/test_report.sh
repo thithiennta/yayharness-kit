@@ -185,7 +185,7 @@ MD
 
 test_language_defaults_to_config_and_rejects_unknown() {
   export YAY_REPO; YAY_REPO="$(mk_repo)"
-  mkdir -p "$YAY_REPO/.yay"; printf '{"report":{"lang":"vi"}}\n' > "$YAY_REPO/.yay/local.json"
+  mkdir -p "$YAY_REPO/.yay"; printf '{"language":"vi"}\n' > "$YAY_REPO/.yay/local.json"
   local f; f="$("$YAYH" report new idea "Ý tưởng mới")"
   assert_eq "vi" "$("$YAYH" fm get "$YAY_REPO/$f" lang)"
   f="$("$YAYH" report new idea "Another idea" --lang=en)"
@@ -206,15 +206,15 @@ test_config_validate_checks_report_lang() {
   export YAY_REPO; YAY_REPO="$(fixture_repo bare merged)"
   python3 -I - "$YAY_REPO/.yay/config.json" vi <<'PY'
 import json,sys
-p=sys.argv[1]; c=json.load(open(p)); c["report"]={"lang":sys.argv[2]}; json.dump(c,open(p,"w"))
+p=sys.argv[1]; c=json.load(open(p)); c["language"]=sys.argv[2]; json.dump(c,open(p,"w"))
 PY
   assert_ok "$YAYH" config validate
   python3 -I - "$YAY_REPO/.yay/config.json" fr <<'PY'
 import json,sys
-p=sys.argv[1]; c=json.load(open(p)); c["report"]={"lang":sys.argv[2]}; json.dump(c,open(p,"w"))
+p=sys.argv[1]; c=json.load(open(p)); c["language"]=sys.argv[2]; json.dump(c,open(p,"w"))
 PY
   local out; out="$("$YAYH" config validate 2>&1 || true)"
-  assert_contains "$out" "config: report.lang must be en or vi (got 'fr')"
+  assert_contains "$out" "config: language must be en or vi (got 'fr')"
 }
 
 _rguide() { # report file, audience: a guide with a command under step 1

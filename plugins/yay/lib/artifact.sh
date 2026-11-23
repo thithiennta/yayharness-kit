@@ -248,6 +248,16 @@ EOF
       esac
     done ;;
   esac
+  # The item's brief (reference/briefs.md): every Done when check should become a Verify check.
+  local item want have
+  item="$(yay_fm_get "$f" roadmap 2>/dev/null || true)"
+  case "$st:$item" in draft:R-*|ready:R-*|in-progress:R-*)
+    if yay_brief_path "$item" >/dev/null 2>&1; then
+      want="$(yay_brief_checks "$item")"
+      have="$(awk '/^## Verify/{on=1; next} /^## /{on=0} on && /^[[:space:]]*([-*]|[0-9]+\.)[[:space:]]+[^[:space:]]/{n++} END{print n+0}' "$f")"
+      [ "$have" -ge "$want" ] || _pw "the brief for $item has $want Done when checks but Verify has $have: add a check for each ($(yay_brief_path "$item"))"
+    fi ;;
+  esac
   [ "$lane" = small ] || grep -Eq '^\*\*Tests:\*\*[[:space:]]*[^[:space:]]' "$f" || _pe "no '**Tests:** <tests or none>' line"
   # Each test names the layer it runs at (reference/testing.md): [unit], [integration], [js] or [manual].
   sed -nE 's/^\*\*Tests:\*\*[[:space:]]*//p' "$f" | sed -n 1p | tr ';' '\n' | sed -E 's/^[[:space:]]+//; s/[[:space:]]+$//' \

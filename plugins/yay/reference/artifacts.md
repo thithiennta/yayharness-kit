@@ -94,6 +94,19 @@ Goal: checkout speed before BFCM.
 - Edit with `yayh roadmap add|set|move`, and validate with `yayh roadmap check`. Each write regenerates the README index and the `v<x.y.z>.md` lists; after a hand edit of a sprint file, run `yayh roadmap render`. The generated files never start a line with `### R-`, so they never take an id.
 - Older repos keep the whole document in `docs/roadmap.md`. Every command reads it; `yayh roadmap split` (run by `/yay:roadmap` on its first write) converts it. `yayh roadmap layout` says which, and `yayh roadmap file` names the file with the front-matter.
 
+### Item brief: `docs/briefs/R-<n>-<slug>.md`
+```
+item: R-12                      # the roadmap item it describes (never id:, so R-12 still resolves to the roadmap)
+title: Express checkout buttons
+status: draft | ready
+lang: en                        # en | vi (config language, or --lang)
+author: Lan
+created: 2026-11-10
+```
+Body: In one line, Problem, What the user sees (numbered), Rules and edge cases, Out of scope, Done when (3-7 `- [ ]` checks), Open questions, and an optional, last For developers (known constraints only). Vietnamese briefs use Tóm tắt, Vấn đề, Người dùng thấy gì, Quy tắc và trường hợp đặc biệt, Ngoài phạm vi, Xong khi, Câu hỏi mở, Dành cho lập trình viên.
+
+What one roadmap item **is**, written by the product manager (`/yay:roadmap --brief`, `reference/briefs.md`) in plain words; how it's built stays in the brainstorm, design and plan. `yayh brief new R-<n>` creates it and sets the item's `- brief:` bullet; the item keeps its one-line `acceptance` as the summary. `yayh brief check` validates it (the report checker: plain words, no code outside For developers, plus 3-7 Done when checks and a real Out of scope), `yayh brief path R-<n>` finds it, and `yayh brief render` shares it as a page (`.yay/briefs/`, gitignored). Skills that start from an item read its brief first, and every Done when check becomes a Verify check in the plan. `/yay:archive` removes it with its item. An item without a brief works as before. Not the release brief (`docs/roadmap/release-<v>.md`, one per version).
+
 ### Brainstorm: `docs/brainstorms/YYYY-MM-DD-<slug>.md`
 ```
 id: BS-3
