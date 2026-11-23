@@ -46,7 +46,7 @@ Where am I (all work in flight, every worktree)
                                    this branch's work or the most urgent item; exit 3 when nothing is left
 
   doctor                           is this machine and repo ready? status, check, detail, fix (TSV; exit 1 on a fail)
-  lessons add "<what>" [kind=hook|review|blocked|env|plan|retry|kit] [from=<id>]
+  lessons add "<what>" [kind=hook|review|blocked|env|plan|retry|kit|correction] [from=<id>]
                                    log friction a run hit to .yay/runs/lessons.md (gitignored)
   lessons list [--kind=] [--since=] [--counts]
                                    date, kind, from, text (TSV), then count lines per kind

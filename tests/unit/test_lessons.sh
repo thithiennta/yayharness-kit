@@ -11,6 +11,8 @@ test_lessons_add_list_and_count() {
   assert_eq "3" "$("$YAYH" lessons list | grep -vc '^count')"
   assert_contains "$("$YAYH" lessons list --counts)" "count	env	2"
   assert_eq "1" "$("$YAYH" lessons list --kind=hook | grep -vc '^count')"
+  "$YAYH" lessons add "used get_option instead of Settings::get" kind=correction >/dev/null
+  assert_contains "$("$YAYH" lessons list --kind=correction)" "correction	-	used get_option instead of Settings::get"
   assert_exit 1 "$YAYH" lessons add "x" kind=nope
   assert_exit 1 "$YAYH" lessons add ""
 }

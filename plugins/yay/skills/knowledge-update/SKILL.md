@@ -51,7 +51,8 @@ When several docs are stale with large diffs, spawn `yay:knowledge-scout` agents
 
 ### 3b. Promote repeated lessons
 `yayh lessons list --counts` and `yayh lessons list` show the friction this checkout's runs logged (`.yay/runs/lessons.md`).
-- A lesson that repeats (the same problem twice or more, in different runs or items) and is about **this plugin** becomes knowledge: a trap goes in `known-issues.md`, a rule in the project block's hard rules or `conventions.md`, and a missing setup step in the project block's commands. Write it as a verifiable fact with its evidence, like any knowledge.
+- A `correction` or `review` lesson that repeats (the same wrong move twice or more) becomes a **check** before it becomes prose: go down the ladder in `${CLAUDE_PLUGIN_ROOT}/reference/corrections.md` and stop at the first rung that can express it. A lint rule, a test or a code change is a deferred note with the exact snippet; a command check goes in `conventions.md`'s **Checks** list; prose only for the last rung.
+- Any other lesson that repeats (the same problem twice or more, in different runs or items) and is about **this plugin** becomes knowledge: a trap goes in `known-issues.md`, a rule in the project block's hard rules or `conventions.md`, and a missing setup step in the project block's commands. Write it as a verifiable fact with its evidence, like any knowledge.
 - A lesson about **the kit itself** (kind `kit`, or a hook or skill behaving wrongly) isn't project knowledge. List it in the report under "For the kit", ready to paste into an issue on the yayharness repo.
 - One-off lessons stay in the log.
 
@@ -69,4 +70,4 @@ Unless `--no-commit` was passed:
 When this runs inside a feature or fix branch (suggested by `/yay:implement` or `/yay:fix`), commit on that branch, so the docs ship with the change.
 
 ### 6. Report
-Per doc: one of `updated (<what>)`, `re-verified, no change` or `skipped (<why>)`. Then the open questions, the uncovered areas you didn't document, the lessons promoted (and where to), and **For the kit**: the kit-level lessons, one line each.
+Per doc: one of `updated (<what>)`, `re-verified, no change` or `skipped (<why>)`. Then the open questions, the uncovered areas you didn't document, the lessons promoted (and where to, with the ladder rung for each correction), and **For the kit**: the kit-level lessons, one line each.

@@ -66,3 +66,27 @@ test_plan_has_design_field_and_design_notes_reach_it() {
   assert_eq "BL-1" "$("$YAYH" backlog open --for=P-1 | cut -f1)"
   assert_eq "BL-1" "$("$YAYH" backlog open --for=UX-1 | cut -f1)"
 }
+
+_chart() { # design file, then the diagram's lines: write a ## Statechart section
+  local f="$1"; shift
+  { printf '## Statechart\n```mermaid\nstateDiagram-v2\n'; printf '%s\n' "$@"; printf '```\n\n'; } > "$f.chart"
+  awk -v c="$f.chart" '/^## Screens$/ { while ((getline l < c) > 0) print l } $0 == "## Statechart" { skip = 1; next } /^## / { skip = 0 } !skip { print }' "$f" > "$f.n" && mv "$f.n" "$f"
+  rm -f "$f.chart"
+}
+
+test_check_statechart_section() {
+  export YAY_REPO; YAY_REPO="$(_drepo)"
+  local d; d="$YAY_REPO/$("$YAYH" artifact new design "Return requests")"
+  _fill "$d"
+  # the template's empty section stays silent
+  assert_eq "" "$("$YAYH" design check UX-1 2>&1)"
+  _chart "$d" '[*] --> Requested: customer submits' 'Requested --> Approved: admin approves' 'Requested --> Rejected: admin rejects' 'Approved --> Refunded: refund completes' 'Rejected --> [*]' 'Refunded --> [*]'
+  assert_eq "" "$("$YAYH" design check UX-1 2>&1)"
+  _chart "$d" '[*] --> Requested' 'Requested --> Approved: admin approves' 'Approved --> Refunded'
+  local out; out="$("$YAYH" design check UX-1 2>&1)"
+  assert_contains "$out" "warn: statechart state 'Refunded' has no way out"
+  assert_fails grep -q "'Requested' has no way out" <<<"$out"
+  assert_ok "$YAYH" design check UX-1
+  _chart "$d"
+  assert_contains "$("$YAYH" design check UX-1 2>&1)" "has no transitions"
+}

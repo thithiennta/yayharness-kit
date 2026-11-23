@@ -1,10 +1,10 @@
 # shellcheck shell=bash
 # Lessons: friction a run hit (a hook rejection, a review finding, a blocked item,
-# a check that couldn't run), appended to .yay/runs/lessons.md (gitignored, per
+# a check that couldn't run, a correction from the user), appended to .yay/runs/lessons.md (gitignored, per
 # checkout). /yay:knowledge-update promotes the ones that repeat into docs/knowledge/,
 # and lists the ones about the kit itself for the kit's maintainers.
 
-YAY_LESSON_KINDS='hook review blocked env plan retry kit'
+YAY_LESSON_KINDS='hook review blocked env plan retry kit correction'
 
 _yay_lessons_file() { printf '%s/.yay/runs/lessons.md\n' "$(yay_repo_root)"; }
 

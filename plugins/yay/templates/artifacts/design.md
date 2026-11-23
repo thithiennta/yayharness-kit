@@ -20,6 +20,9 @@ created: {{today}}
 <!-- Numbered steps of the main path, then the one or two other paths that matter (first use, an error, Free without Pro). -->
 1.
 
+## Statechart
+<!-- Only when the feature stores a status with 3+ states that change on user or system events (a return request, a points balance, a booking). One ```mermaid block with stateDiagram-v2, states named as the user sees them, each transition labelled with its event. Every transition gets an Acceptance line. Otherwise delete this section. -->
+
 ## Screens
 <!-- One ### per screen or state that looks different. Each: a wireframe in a ``` block, then one line per element: what it is, the existing component or pattern it reuses (with its file), and how it behaves. -->
 
