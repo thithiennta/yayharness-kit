@@ -1,5 +1,6 @@
 ---
 kind: feature
+lang: en
 title: {{title}}
 author: {{author}}
 date: {{today}}

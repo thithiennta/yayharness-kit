@@ -86,7 +86,7 @@ If it stops, run the same command again: it resumes from each item's brainstorm 
   /yay:report done --from=P-1                   # what you finished, in what users will notice
   /yay:report feature "customers keep asking…"  # a feature pitch: who, what they'd see, why, size
   ```
-  One plain page (a private link) plus paste-ready text, under 300 words, with no code or jargon. Kept in `.yay/reports/`, never committed.
+  One plain page (a private link) plus paste-ready text, short, with no code or jargon. Kept in `.yay/reports/`, never committed. Add `--lang=vi` for a Vietnamese report, or set `report.lang` once in `.yay/config.json`.
 
 ## 4. Release v1.0.0
 

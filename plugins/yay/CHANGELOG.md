@@ -8,6 +8,7 @@
   - The agent writes text only. `yayh report render` makes the page with one locked, plain look (no colors, light and dark mode, phone width), and folds an optional **For developers** section away. `--text` prints the paste-ready version.
   - `yayh report check` errors on code, file names, code names, HTML, tables, images, sub-headings, emoji, a template hint left behind, an empty or missing section, more than 300 words (`--max-words=N`; For developers isn't counted) and an **In one line** over 40 words. It warns on jargon, internal ids and PR numbers, long sentences and paragraphs, more than 6 bullets, and too much bold. `render` refuses while check has errors.
   - A cold reader checks the finished text: an agent on the new `reader` model step (`veryfast`) reads only the report and says what it's about, what's asked and what was unclear. The skill rewrites until those answers match, at most 2 rounds.
+  - **English or Vietnamese** (`--lang=en|vi`, or new config key `report.lang` for the whole team or one developer in `.yay/local.json`). A Vietnamese report has Vietnamese headings (**Tóm tắt** first, **Dành cho lập trình viên** last), limits sized for syllables (450 words, 60 in the summary), a page marked `lang="vi"`, an ASCII slug (`luu-dia-chi-…`), and a cold reader that reads in Vietnamese. The developer's notes can be in either language.
   - New commands: `yayh report new|check|render|list`.
 
 ## 0.16.0 (2026-11-23)

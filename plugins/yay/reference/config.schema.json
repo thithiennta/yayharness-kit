@@ -393,6 +393,14 @@
         }
       }
     },
+    "report": {
+      "type": "object",
+      "additionalProperties": false,
+      "description": "Optional. /yay:report settings.",
+      "properties": {
+        "lang": { "type": "string", "enum": ["en", "vi"], "default": "en", "description": "language reports are written in: headings, limits and the cold reader" }
+      }
+    },
     "models": {
       "type": "object",
       "additionalProperties": false,

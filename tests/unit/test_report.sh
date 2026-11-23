@@ -131,3 +131,88 @@ test_render_refuses_a_failing_report() {
   assert_fails "$YAYH" report render "$f"
   assert_no_file "$YAY_REPO/${f%.md}.html"
 }
+
+test_vietnamese_report_uses_its_headings_limits_and_slug() {
+  export YAY_REPO; YAY_REPO="$(mk_repo)"
+  local f out html
+  f="$("$YAYH" report new done "Lưu địa chỉ cho khách quay lại" --lang=vi)"
+  assert_contains "$f" "-luu-dia-chi-cho-khach-quay-lai.md"
+  assert_eq "vi" "$("$YAYH" fm get "$YAY_REPO/$f" lang)"
+  out="$("$YAYH" report check "$f" 2>&1)" || true
+  assert_contains "$out" "error: '## Đã xong' is empty"
+  cat > "$YAY_REPO/$f" <<'MD'
+---
+kind: done
+lang: vi
+title: Lưu địa chỉ cho khách quay lại
+author: test
+date: 2026-11-23
+---
+# Lưu địa chỉ cho khách quay lại
+
+## Tóm tắt
+Khách quay lại không cần nhập lại địa chỉ nữa. Anh chị không cần làm gì.
+
+## Đã xong
+- Địa chỉ lần trước được điền sẵn khi thanh toán
+- Khách vẫn sửa được trước khi trả tiền
+
+## Người dùng được gì
+Thanh toán nhanh hơn cho khách cũ.
+
+## Tiếp theo
+- Đang chờ designer gửi câu báo lỗi
+
+## Dành cho lập trình viên
+- Sửa trong `GiftMessage::clean()`.
+MD
+  assert_eq "" "$("$YAYH" report check "$f" 2>&1)"
+  html="$("$YAYH" report render "$f")"
+  out="$(cat "$YAY_REPO/$html")"
+  assert_contains "$out" '<html lang="vi">'
+  assert_contains "$out" '<div class="lead">'
+  assert_contains "$out" "<summary>Dành cho lập trình viên</summary>"
+  out="$("$YAYH" report render "$f" --text)"
+  assert_not_contains "$out" "Tóm tắt"
+  assert_contains "$out" "Dành cho lập trình viên"
+  # the English headings are not Vietnamese sections; code moves to the developers section
+  sed -i.bak 's/^## Tiếp theo$/## What'"'"'s next/; s/^- Khách vẫn sửa được trước khi trả tiền$/- Đã refactor endpoint, xem includes\/Address.php/' "$YAY_REPO/$f"; rm -f "$YAY_REPO/$f.bak"
+  out="$("$YAYH" report check "$f" 2>&1)" || true
+  assert_contains "$out" "error: no '## Tiếp theo' section"
+  assert_contains "$out" "move it to ## Dành cho lập trình viên"
+  assert_contains "$out" "jargon on line"
+}
+
+test_language_defaults_to_config_and_rejects_unknown() {
+  export YAY_REPO; YAY_REPO="$(mk_repo)"
+  mkdir -p "$YAY_REPO/.yay"; printf '{"report":{"lang":"vi"}}\n' > "$YAY_REPO/.yay/local.json"
+  local f; f="$("$YAYH" report new idea "Ý tưởng mới")"
+  assert_eq "vi" "$("$YAYH" fm get "$YAY_REPO/$f" lang)"
+  f="$("$YAYH" report new idea "Another idea" --lang=en)"
+  assert_eq "en" "$("$YAYH" fm get "$YAY_REPO/$f" lang)"
+  assert_fails "$YAYH" report new idea "Third idea" --lang=fr
+}
+
+test_english_limits_stay_at_300_words() {
+  export YAY_REPO; YAY_REPO="$(mk_repo)"; mkdir -p "$YAY_REPO/.yay/reports"
+  local f="$YAY_REPO/.yay/reports/wordy.md" out
+  _rgood "$f"
+  awk '/^## My idea$/ { print; for (i = 0; i < 30; i++) print "- Customers can pay a little faster with one more saved step now"; next } { print }' "$f" > "$f.n" && mv "$f.n" "$f"
+  out="$("$YAYH" report check wordy 2>&1)" || true
+  assert_contains "$out" "(limit 300, ## For developers not counted)"
+}
+
+test_config_validate_checks_report_lang() {
+  export YAY_REPO; YAY_REPO="$(fixture_repo bare merged)"
+  python3 -I - "$YAY_REPO/.yay/config.json" vi <<'PY'
+import json,sys
+p=sys.argv[1]; c=json.load(open(p)); c["report"]={"lang":sys.argv[2]}; json.dump(c,open(p,"w"))
+PY
+  assert_ok "$YAYH" config validate
+  python3 -I - "$YAY_REPO/.yay/config.json" fr <<'PY'
+import json,sys
+p=sys.argv[1]; c=json.load(open(p)); c["report"]={"lang":sys.argv[2]}; json.dump(c,open(p,"w"))
+PY
+  local out; out="$("$YAYH" config validate 2>&1 || true)"
+  assert_contains "$out" "config: report.lang must be en or vi (got 'fr')"
+}
