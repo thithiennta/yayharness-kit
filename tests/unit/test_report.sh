@@ -216,3 +216,74 @@ PY
   local out; out="$("$YAYH" config validate 2>&1 || true)"
   assert_contains "$out" "config: report.lang must be en or vi (got 'fr')"
 }
+
+_rguide() { # report file, audience: a guide with a command under step 1
+  cat > "$1" <<MD
+---
+kind: guide
+lang: en
+for: $2
+title: Run the browser tests
+author: test
+date: 2026-11-23
+---
+# Run the browser tests
+
+## In one line
+Run the browser tests on your machine in about 10 minutes.
+
+## Before you start
+- Docker Desktop is running
+
+## Steps
+1. Start the test site:
+   \`\`\`bash
+   yayh e2e env start
+   \`\`\`
+   The site address is printed at the end.
+2. Run the tests with \`yayh e2e run\`.
+
+## Check it worked
+The last line says all tests passed.
+
+## If it goes wrong
+- Docker does not answer: restart it and run step 1 again.
+MD
+}
+
+test_guide_for_devs_allows_code_in_steps_only() {
+  export YAY_REPO; YAY_REPO="$(mk_repo)"
+  local f out html
+  f="$("$YAYH" report new guide "Run the browser tests" --for=devs)"
+  assert_eq "devs" "$("$YAYH" fm get "$YAY_REPO/$f" for)"
+  _rguide "$YAY_REPO/$f" devs
+  assert_eq "" "$("$YAYH" report check "$f" 2>&1)"
+  html="$(cat "$YAY_REPO/$("$YAYH" report render "$f")")"
+  assert_contains "$html" "<li>Start the test site:<pre><code>yayh e2e env start</code></pre>"
+  assert_contains "$html" "<p>The site address is printed at the end.</p>"
+  assert_contains "$html" "<li>Run the tests with <code>yayh e2e run</code>.</li>"
+  assert_contains "$("$YAYH" report render "$f" --text)" "   yayh e2e env start"
+  # prose paths still need backticks, and the summary stays code-free
+  sed -i.bak 's/^- Docker Desktop is running$/- Edit includes\/Setup.php first/; s/^Run the browser tests on your machine in about 10 minutes.$/Run `yayh e2e run` in about 10 minutes./' "$YAY_REPO/$f"; rm -f "$YAY_REPO/$f.bak"
+  out="$("$YAYH" report check "$f" 2>&1)" || true
+  assert_contains "$out" "put it in backticks so it reads as code"
+  assert_contains "$out" "error: code in '## In one line'"
+}
+
+test_guide_for_team_keeps_the_plain_rules_and_allows_12_steps() {
+  export YAY_REPO; YAY_REPO="$(mk_repo)"
+  local f out
+  f="$("$YAYH" report new guide "Run the browser tests")"
+  assert_eq "team" "$("$YAYH" fm get "$YAY_REPO/$f" for)"
+  _rguide "$YAY_REPO/$f" team
+  out="$("$YAYH" report check "$f" 2>&1)" || true
+  assert_contains "$out" "error: code block in '## Steps'"
+  assert_contains "$out" "error: code in '## Steps'"
+  awk '/^## Steps$/ { print; for (i = 1; i <= 12; i++) print i ". Click the next button on the page"; skip = 1; next } /^## / { skip = 0 } !skip { print }' "$YAY_REPO/$f" > "$YAY_REPO/$f.n" && mv "$YAY_REPO/$f.n" "$YAY_REPO/$f"
+  assert_eq "" "$("$YAYH" report check "$f" 2>&1)"
+  printf '13. One more\n' > /dev/null
+  awk '/^12\. / { print; print "13. Click one more button"; next } { print }' "$YAY_REPO/$f" > "$YAY_REPO/$f.n" && mv "$YAY_REPO/$f.n" "$YAY_REPO/$f"
+  assert_contains "$("$YAYH" report check "$f" 2>&1)" "'## Steps' has 13 items (limit 12)"
+  assert_fails "$YAYH" report new guide "Other guide" --for=boss
+  assert_fails "$YAYH" report new idea "An idea" --for=devs
+}
