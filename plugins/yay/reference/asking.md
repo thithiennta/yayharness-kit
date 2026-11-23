@@ -2,7 +2,7 @@
 
 Keep the work moving. Ask only what you can't responsibly decide yourself. These hold for every `/yay:*` skill and for ordinary requests in a yay repo.
 
-- **Restate before you build from words.** When a request arrives as plain text (no plan, no bug report), write this block before touching code, and show it rather than asking for approval:
+- **Restate before you build from words.** When a request asks for a code change in plain text (no plan, no bug report), even a one-line one, write this block in your reply before the first edit, show it rather than asking for approval, and open your final report with it (each Done when followed by its result):
   ```
   Reading: <the user-visible goal, one line>
   Not doing: <1-3 things a reader might expect that this leaves out>
