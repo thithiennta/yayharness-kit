@@ -393,6 +393,14 @@
         }
       }
     },
+    "report": {
+      "type": "object",
+      "additionalProperties": false,
+      "description": "Optional. /yay:report settings.",
+      "properties": {
+        "lang": { "type": "string", "enum": ["en", "vi"], "default": "en", "description": "language reports are written in: headings, limits and the cold reader" }
+      }
+    },
     "models": {
       "type": "object",
       "additionalProperties": false,
@@ -406,7 +414,7 @@
         "steps": {
           "type": "object",
           "description": "step -> a tier name, inherit, or an inline { model, effort }",
-          "propertyNames": { "enum": ["scout", "web-research", "feasibility", "revise", "resolve", "review", "hypothesis", "portfolio-research", "cowork", "prepare", "implement", "synthesis", "task"] },
+          "propertyNames": { "enum": ["scout", "web-research", "feasibility", "reader", "revise", "resolve", "review", "hypothesis", "portfolio-research", "cowork", "prepare", "implement", "synthesis", "task"] },
           "additionalProperties": { "oneOf": [ { "type": "string" }, { "type": "object", "additionalProperties": false, "properties": { "model": { "enum": ["sonnet", "opus"] }, "effort": { "enum": ["low", "medium", "high", "xhigh", "max"] } } } ] }
         },
         "sizeBump": {

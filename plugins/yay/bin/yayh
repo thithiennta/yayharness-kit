@@ -30,6 +30,7 @@ YAY_LIB_DIR="$YAY_KIT_ROOT/lib"
 . "$YAY_LIB_DIR/doctor.sh"
 . "$YAY_LIB_DIR/verify.sh"
 . "$YAY_LIB_DIR/lessons.sh"
+. "$YAY_LIB_DIR/report.sh"
 
 usage() {
   cat <<'EOF'
@@ -118,6 +119,17 @@ Artifacts (brainstorms, plans, bugs, backlog)
                                    open notes (all worktrees) that apply to ID: id, kind, from, affects, default, title, path
   backlog settle <BL-n> decided "<answer>" | planned <P-n> | done "<commit or PR>" | dropped "<why>"
                                    close a decision or deferred note (this checkout)
+
+Reports (/yay:report: shared with the lead or team, kept in .yay/reports/, never committed)
+  report new <idea|done|feature> "<title>" [--lang=en|vi]
+                                   a markdown report from the kind's template (language: --lang,
+                                   else report.lang, else en); prints the path
+  report check <report> [--max-words=N]
+                                   plain-language errors and warnings (exit 1 on errors; limit 300 words, 450 in vi)
+  report render <report> [--text] [--max-words=N]
+                                   check, then write the plain page next to it (prints the path),
+                                   or print paste-ready text; refuses while check has errors
+  report list                      date, kind, title, path (TSV, newest first)
 
 Roadmap (docs/roadmap/: README.md + one file per sprint; or one docs/roadmap.md)
   roadmap layout                   split | single | none
@@ -376,6 +388,15 @@ case "$cmd" in
       open) yay_backlog_open "$@" ;;
       settle) [ $# -ge 2 ] || yay_die "usage: yayh backlog settle <BL-n> decided \"<answer>\" | planned <P-n> | done \"<commit or PR>\" | dropped \"<why>\""; yay_backlog_settle "$@" ;;
       *) yay_die "usage: yayh backlog open|settle" ;;
+    esac ;;
+  report)
+    sub="${1:-}"; shift || true
+    case "$sub" in
+      new) yay_report_new "$@" ;;
+      check) yay_report_check "$@" ;;
+      render) yay_report_render "$@" ;;
+      list) yay_report_list ;;
+      *) yay_die "usage: yayh report new|check|render|list" ;;
     esac ;;
   design)
     case "${1:-}" in check) [ $# -eq 2 ] || yay_die "usage: yayh design check <design>"; yay_design_check "$2" ;; *) yay_die "usage: yayh design check <design>" ;; esac ;;
