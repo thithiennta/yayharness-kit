@@ -2,7 +2,7 @@
 
 `/yay:harness-update` reads this file to tell a repo what changed between its recorded kit version and the installed one. Each entry lists new skills, config keys, template changes and behavior changes.
 
-## Unreleased (0.16.0)
+## 0.16.0 (2026-11-23)
 - **Restate the job, turn repeated corrections into checks, and statecharts for stateful flows** (P-2, from Lauren Tan's agent-harness practices). Run `/yay:harness-update` to pick up the new design and plan templates; everything else comes with the plugin update.
   - A request given as plain text (no plan, no bug report) gets a **Reading** block before any edit: Reading, Not doing, Done when (an exact check) and Model on (existing code to copy). It's shown, not approved, and opens the final report with each check's result; only a request with two plausible readings makes it the run's one question. `/yay:implement` (no plan yet) and `/yay:fix` (description only) use it, and the tiny lane's PR body carries it.
   - Plans start their Approach with `Model on: <path:line>`, and copy the checks in `conventions.md`'s `## Checks` that apply to their files into Verify.
