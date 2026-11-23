@@ -20,7 +20,7 @@ test_scaffold_woo_with_integration_and_vitest() {
   assert_contains "$out" "created	.github/workflows/tests.yml"
   assert_contains "$out" "created	tests/e2e/.wp-env.json"
   assert_contains "$out" "updated	tests/e2e/.wp-env.json	testsEnvironment: true"
-  assert_contains "$out" "deps	composer	composer require --dev --no-interaction -W phpunit/phpunit:^9.6 yoast/phpunit-polyfills:^2.0 brain/monkey:^2.6"
+  assert_contains "$out" "deps	composer	composer require --dev --no-interaction -W --prefer-stable phpunit/phpunit:^9.6 yoast/phpunit-polyfills:^2.0 brain/monkey:^2.6"
   assert_contains "$out" "deps	npm	npm install --save-dev vitest"
   assert_contains "$(cat "$YAY_REPO/tests/e2e/.wp-env.json")" '"testsEnvironment": true'
   assert_eq "vendor/bin/phpunit -c tests/php/unit.xml.dist" "$("$YAYH" config get commands.test-unit)"
@@ -145,4 +145,43 @@ PY
   local out; out="$("$YAYH" plan check "$plan" 2>&1)"
   assert_contains "$out" "warn: test 'test_saves_option — lost setting' has no layer"
   assert_eq "1" "$(printf '%s\n' "$out" | grep -c 'has no layer')"
+}
+
+test_scaffold_maps_an_existing_node_test_script() {
+  export YAY_REPO; YAY_REPO="$(_testrepo 'pkg={"scripts":{"test":"node --test apps/**/*.test.mjs"}}')"
+  "$YAYH" config get commands.test-js >/dev/null && { jq 'del(.commands["test-js"])' "$YAY_REPO/.yay/config.json" > "$T_TMP/c" && mv "$T_TMP/c" "$YAY_REPO/.yay/config.json"; }
+  assert_contains "$("$YAYH" test detect)" "js-runner	package.json	node-test"
+  local out; out="$("$YAYH" test scaffold --no-integration --no-ci)"
+  assert_eq "npm run test" "$("$YAYH" config get commands.test-js)" "the repo's node --test script is the JS layer"
+  assert_eq "node-test" "$("$YAYH" config get tests.jsRunner)"
+  assert_eq "" "$(printf '%s\n' "$out" | grep 'deps	npm' || true)" "no runner to install"
+  assert_no_file "$YAY_REPO/tests/js"
+}
+
+test_scaffold_none_keeps_an_existing_test_js_script() {
+  export YAY_REPO; YAY_REPO="$(_testrepo 'pkg={"scripts":{"test:js":"vitest run"}}')"
+  jq 'del(.commands["test-js"])' "$YAY_REPO/.yay/config.json" > "$T_TMP/c" && mv "$T_TMP/c" "$YAY_REPO/.yay/config.json"
+  "$YAYH" test scaffold js-runner=none --no-integration --no-ci >/dev/null
+  assert_eq "npm run test:js" "$("$YAYH" config get commands.test-js)"
+}
+
+test_scaffold_deps_and_result_cache() {
+  export YAY_REPO; YAY_REPO="$(_testrepo 'pkg={"devDependencies":{"vite":"5"}}')"
+  local out; out="$("$YAYH" test scaffold --no-integration --no-ci)"
+  assert_contains "$out" "composer require --dev --no-interaction -W --prefer-stable phpunit/phpunit"
+  assert_contains "$out" "npm install --save-dev vitest@^3"
+  assert_contains "$out" "updated	.gitignore	.phpunit.result.cache"
+  assert_ok git -C "$YAY_REPO" check-ignore -q .phpunit.result.cache
+}
+
+test_scaffold_wc_opt_in_without_requires_wc() {
+  export YAY_REPO; YAY_REPO="$(_testrepo)"
+  "$YAYH" test scaffold --no-ci >/dev/null
+  assert_not_contains "$(cat "$YAY_REPO/tests/e2e/.wp-env.json")" "woocommerce"
+  assert_contains "$(cat "$YAY_REPO/tests/e2e/bin/setup-env.sh")" "--role=subscriber" "no WooCommerce, no customer role"
+  export YAY_REPO; YAY_REPO="$(_testrepo)"
+  "$YAYH" test scaffold --no-ci --wc >/dev/null
+  assert_contains "$(cat "$YAY_REPO/tests/e2e/.wp-env.json")" "woocommerce.zip"
+  assert_contains "$(cat "$YAY_REPO/tests/e2e/bin/setup-env.sh")" "--role=customer"
+  assert_contains "$(cat "$YAY_REPO/tests/php/integration/bootstrap.php")" "woocommerce/woocommerce.php"
 }

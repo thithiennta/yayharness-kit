@@ -119,6 +119,21 @@ test_similar_function_flagged() {
   assert_contains "$out" "similar-exists	includes/fees.php:3	giftly_format_fee_price() is new; existing look-alikes: Settings::format_fee (includes/Settings.php:23)"
 }
 
+test_test_methods_are_not_look_alikes() {
+  export YAY_REPO; YAY_REPO="$(_rvrepo)"
+  mkdir -p "$YAY_REPO/tests/php/unit"
+  printf '<?php\nclass SettingsTest { public function test_format_fee() { return 1; } }\n' > "$YAY_REPO/tests/php/unit/SettingsTest.php"
+  local out; out="$("$YAYH" review diff main)"
+  assert_not_contains "$out" "similar-exists" "a test named after the code it tests"
+}
+
+test_review_survives_invalid_utf8_in_a_docblock() {
+  export YAY_REPO; YAY_REPO="$(_rvrepo)"
+  printf '<?php\n/** Formats the fee \xe2\x80 for the cart. */\nfunction giftly_format_fee_price( $f ) { return $f; }\n' > "$YAY_REPO/includes/fees.php"
+  local out; out="$("$YAYH" review diff main)" || _fail "review diff exited $?"
+  assert_contains "$out" "similar-exists	includes/fees.php:3"
+}
+
 test_no_caller_flagged() {
   export YAY_REPO; YAY_REPO="$(_rvrepo)"
   printf '<?php\nfunction giftly_unwired_helper() { return 1; }\n' > "$YAY_REPO/includes/unwired.php"

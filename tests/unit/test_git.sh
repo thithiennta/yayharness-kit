@@ -95,5 +95,6 @@ test_kit_scopes_always_allowed() {
   export YAY_REPO; YAY_REPO="$(_git_repo)"
   assert_ok "$YAYH" git commit-check "chore(harness): update yay harness to v0.2.0"
   assert_ok "$YAYH" git commit-check "chore(release): 1.4.0"
+  assert_ok "$YAYH" git commit-check "test(e2e): map flows and add browser tests"
   assert_fails "$YAYH" git commit-check "feat(blocks): not allowed here"
 }

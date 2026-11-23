@@ -51,10 +51,7 @@ yay_e2e_up() {
   return 1
 }
 
-_e2e_docker() { # running | stopped | missing
-  command -v docker >/dev/null 2>&1 || { echo missing; return; }
-  if docker info >/dev/null 2>&1; then echo running; else echo stopped; fi
-}
+_e2e_docker() { yay_docker_state; } # running | stopped | unresponsive | missing
 
 # Run commands.<name> with this checkout's port and URL exported, extra
 # arguments appended (shell-quoted).
@@ -79,7 +76,15 @@ yay_e2e_env() {
   case "$sub" in start|stop|reset) ;; *) yay_die "usage: yayh e2e env start|stop|reset" ;; esac
   _e2e_need_setup
   if _e2e_external; then echo "e2e.baseUrl is set ($(yay_e2e_url)): that site is managed outside yayh, nothing to $sub"; return 0; fi
-  [ "$(_e2e_docker)" = running ] || yay_die "Docker isn't running (wp-env needs it). Start Docker Desktop, then retry."
+  case "$(_e2e_docker)" in
+    running) ;;
+    unresponsive) yay_die "Docker isn't answering (docker info timed out): restart Docker Desktop, then retry." ;;
+    *) yay_die "Docker isn't running (wp-env needs it). Start Docker Desktop, then retry." ;;
+  esac
+  if [ "$sub" = start ] && [ ! -x "$(yay_repo_root)/$(yay_e2e_dir)/node_modules/.bin/wp-env" ]; then
+    echo "wp-env isn't installed in $(yay_e2e_dir): running commands.e2e-install first"
+    _e2e_exec e2e-install
+  fi
   _e2e_exec "e2e-$sub"
   if [ "$sub" != stop ]; then
     local i=0
@@ -196,16 +201,17 @@ _e2e_render() {
   rm -f "$tmp"
 }
 
-# yay_e2e_scaffold [dir=tests/e2e] [--no-ci]: write the starter files that don't
+# yay_e2e_scaffold [dir=tests/e2e] [--no-ci] [--wc]: write the starter files that don't
 # exist yet (never overwrites) and add the missing e2e keys to .yay/config.json.
 # Prints created|exists<TAB>path and config<TAB>key lines.
 yay_e2e_scaffold() {
-  local dir="" ci=1 a v root cfg pm wc flags port folder up plugins node install ci_install prepare
+  local dir="" ci=1 a v root cfg pm wc flags port folder up plugins node install ci_install prepare forcewc=0
   for a in "$@"; do
     case "$a" in
       dir=*) dir="${a#dir=}" ;;
       --no-ci) ci=0 ;;
-      *) yay_die "usage: yayh e2e scaffold [dir=tests/e2e] [--no-ci]" ;;
+      --wc) forcewc=1 ;;  # WooCommerce on the site though requires.wc is unset (a theme or add-on that works with it)
+      *) yay_die "usage: yayh e2e scaffold [dir=tests/e2e] [--no-ci] [--wc]" ;;
     esac
   done
   root="$(yay_repo_root)"; cfg="$(yay_config_file)"
@@ -217,11 +223,12 @@ yay_e2e_scaffold() {
   pm="$(yay_detect_pm 2>/dev/null || echo npm)"
   case "$pm" in
     pnpm) install="pnpm install --ignore-workspace"; ci_install="pnpm install --ignore-workspace --frozen-lockfile" ;;
-    yarn) install="yarn install"; ci_install="yarn install --frozen-lockfile" ;;
+    # yarn 1 fails on any dependency's engines field (@wordpress/env's @php-wasm packages want Node 24); npm only warns.
+    yarn) install="yarn install --ignore-engines"; ci_install="yarn install --frozen-lockfile --ignore-engines" ;;
     *) pm=npm; install="npm install"; ci_install="npm ci" ;;
   esac
   wc="$(yay_config_get requires.wc 2>/dev/null || true)"
-  flags="$pm,$(yay_kind)"; case "$wc" in ''|null) ;; *) flags="$flags,woo" ;; esac
+  flags="$pm,$(yay_kind)"; case "$wc" in ''|null) [ "$forcewc" = 0 ] || flags="$flags,woo" ;; *) flags="$flags,woo" ;; esac
   port="$(yay_e2e_base_port)"
   folder="$(yay_config_get plugin.slug)"
   up="$(printf '%s' "$dir" | awk -F/ '{ s = ""; for (i = 1; i <= NF; i++) if ($i != "" && $i != ".") s = s (s ? "/" : "") ".."; print s }')"
@@ -234,6 +241,8 @@ yay_e2e_scaffold() {
   done
   [ -n "$prepare" ] || prepare="true"
 
+  # The customer role exists only with WooCommerce.
+  local role=subscriber; case ",$flags," in *,woo,*) role=customer ;; esac
   local rel src dest
   while IFS= read -r rel; do
     [ -n "$rel" ] || continue
@@ -246,7 +255,7 @@ yay_e2e_scaffold() {
     if [ -e "$root/$dest" ]; then printf 'exists\t%s\n' "$dest"; continue; fi
     mkdir -p "$(dirname "$root/$dest")"
     _e2e_render "$src" "$flags" "port=$port" "dir=$dir" "root=$up" "folder=$folder" "plugins=$plugins" \
-      "kind=$(yay_kind)" "contentDir=$(yay_content_dir)" \
+      "kind=$(yay_kind)" "contentDir=$(yay_content_dir)" "customerRole=$role" \
       "node=$node" "ciInstall=$ci_install" "prepare=$prepare" > "$root/$dest"
     case "$dest" in *.sh) chmod +x "$root/$dest" ;; esac
     printf 'created\t%s\n' "$dest"
@@ -283,6 +292,12 @@ EOF
 # yay_e2e_surfaces -> TSV: kind<TAB>file:line<TAB>name. Every place a user can reach the plugin:
 # the starting map for /yay:e2e-init's scouts. Plain grep over tracked source (code.sh's file list).
 yay_e2e_surfaces() {
+  local out; out="$(_e2e_surfaces)"
+  if [ -n "$out" ]; then printf '%s\n' "$out"; return 0; fi
+  echo "yayh: no surfaces found. A plugin whose screens live in a theme or another plugin (a starter-sites importer, an add-on) has its flows there: read that repo's code (yayh e2e surfaces in it) and its own boot code." >&2
+}
+
+_e2e_surfaces() {
   local root f
   root="$(yay_repo_root)"
   cd "$root" || return 1
@@ -299,6 +314,8 @@ yay_e2e_surfaces() {
         return 0
       }
       /^[[:space:]]*(\/\/|\*|#)/ { next }
+      # Calling a WooCommerce hook (in a theme template override) is not a surface; hooking it is.
+      { call = ($0 ~ /(do_action|apply_filters)[[:space:]]*\([[:space:]]*["\x27]woocommerce_/) }
       {
         out("admin-page", "add_(sub)?menu_page[[:space:]]*\\([^;]*") ||
         out("admin-page", "add_(options|management|theme|users|dashboard|plugins)_page[[:space:]]*\\([^;]*")
@@ -308,11 +325,11 @@ yay_e2e_surfaces() {
         out("rest", "register_rest_route[[:space:]]*\\([^;]*")
         out("ajax", "[\"\x27]wp_ajax_(nopriv_)?[a-z0-9_]+")
         out("account", "add_rewrite_endpoint[[:space:]]*\\([[:space:]]*[\"\x27][^\"\x27]+") ||
-        out("account", "[\"\x27]woocommerce_account_[a-z0-9_]+")
-        out("wc-settings", "[\"\x27]woocommerce_(settings_tabs_array|get_settings_pages|get_sections_[a-z0-9_]+)")
-        out("checkout", "[\"\x27]woocommerce_(review_order|checkout|cart|before_cart|after_cart|proceed_to_checkout|blocks_)[a-z0-9_]*")
+        (!call && out("account", "[\"\x27]woocommerce_account_[a-z0-9_]+"))
+        (!call && out("wc-settings", "[\"\x27]woocommerce_(settings_tabs_array|get_settings_pages|get_sections_[a-z0-9_]+)"))
+        (!call && out("checkout", "[\"\x27]woocommerce_(review_order|checkout|cart|before_cart|after_cart|proceed_to_checkout|blocks_)[a-z0-9_]*"))
         out("checkout", "woocommerce_store_api_register_endpoint_data|registerCheckoutFilters|ExperimentalOrderMeta|registerPaymentMethod")
-        out("product", "[\"\x27](woocommerce_(single_product|before_add_to_cart|after_add_to_cart|product_options|product_data_)|product_type_selector)[a-z0-9_]*")
+        (!call && out("product", "[\"\x27](woocommerce_(single_product|before_add_to_cart|after_add_to_cart|product_options|product_data_)|product_type_selector)[a-z0-9_]*"))
         out("email", "extends[[:space:]]+WC_Email|[\"\x27]woocommerce_email_classes")
         out("gateway", "extends[[:space:]]+WC_Payment_Gateway|[\"\x27]woocommerce_payment_gateways")
         out("shipping", "extends[[:space:]]+WC_Shipping_Method|[\"\x27]woocommerce_shipping_methods")
@@ -320,10 +337,24 @@ yay_e2e_surfaces() {
         out("metabox", "add_meta_box[[:space:]]*\\([[:space:]]*[\"\x27][^\"\x27]+")
         out("assets", "wp_enqueue_script[[:space:]]*\\([[:space:]]*[\"\x27][^\"\x27]+")
         out("cron", "wp_schedule_(single_)?event[[:space:]]*\\(|as_schedule_[a-z_]+action[[:space:]]*\\(")
+        out("customizer", "->add_(panel|section)[[:space:]]*\\([[:space:]]*[\"\x27][^\"\x27]+")
+        out("menu", "register_nav_menus?[[:space:]]*\\(")
+        out("sidebar", "register_sidebars?[[:space:]]*\\(")
       }' "$f"
   done
   git ls-files -- '*block.json' 2>/dev/null | while IFS= read -r f; do
     case "$f" in node_modules/*|*/node_modules/*|vendor/*|*/vendor/*|build/*|*/build/*|dist/*|*/dist/*) continue ;; esac
     printf 'block\t%s:1\t%s\n' "$f" "$(sed -nE 's/^[[:space:]]*"name"[[:space:]]*:[[:space:]]*"([^"]+)".*/\1/p' "$f" | sed -n 1p)"
   done
+  # A theme's surfaces are its templates, parts, patterns and WooCommerce template overrides.
+  if [ "$(yay_kind)" = theme ]; then
+    git ls-files -- 'templates/*.html' 'parts/*.html' 'patterns/*.php' 'woocommerce/*.php' 2>/dev/null | while IFS= read -r f; do
+      case "$f" in
+        templates/*) printf 'template\t%s:1\t%s\n' "$f" "$(basename "$f" .html)" ;;
+        parts/*) printf 'part\t%s:1\t%s\n' "$f" "$(basename "$f" .html)" ;;
+        patterns/*) printf 'pattern\t%s:1\t%s\n' "$f" "$(sed -nE 's/^[[:space:]]*\*?[[:space:]]*Slug:[[:space:]]*(.+)$/\1/p' "$f" | sed -n 1p)" ;;
+        woocommerce/*) printf 'wc-template\t%s:1\t%s\n' "$f" "${f#woocommerce/}" ;;
+      esac
+    done
+  fi
 }

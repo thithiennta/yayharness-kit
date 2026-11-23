@@ -15,6 +15,7 @@
   "devDependencies": {
     "@playwright/test": "^1.52.0",
     "@types/node": "^20.0.0",
-    "@wordpress/env": "^11.7.0"
+    "@wordpress/env": "^11.7.0",
+    "typescript": "^5.6.0"
   }
 }

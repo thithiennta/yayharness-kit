@@ -34,6 +34,27 @@ yay_slugify() {
 
 yay_today() { date +%Y-%m-%d; }
 
+# yay_timeout <seconds> <cmd...>: run cmd, kill it after <seconds> (exit 124).
+# macOS has no timeout(1). The watcher writes nowhere, so $(...) never waits on it.
+yay_timeout() {
+  local secs="$1" pid w rc; shift
+  "$@" & pid=$!
+  ( sleep "$secs"; kill -9 "$pid" 2>/dev/null ) >/dev/null 2>&1 </dev/null & w=$!
+  wait "$pid" 2>/dev/null; rc=$?
+  kill "$w" 2>/dev/null; wait "$w" 2>/dev/null
+  [ "$rc" -eq 137 ] && rc=124
+  return "$rc"
+}
+
+# yay_docker_state -> running | stopped | unresponsive | missing. A hung daemon
+# makes `docker info` block for minutes, so it gets 10 seconds.
+yay_docker_state() {
+  command -v docker >/dev/null 2>&1 || { echo missing; return; }
+  local rc=0
+  yay_timeout "${YAY_DOCKER_TIMEOUT:-10}" docker info >/dev/null 2>&1 || rc=$?
+  case "$rc" in 0) echo running ;; 124) echo unresponsive ;; *) echo stopped ;; esac
+}
+
 # yay_in_list <item> <newline-separated list>: exact line match, no pipe.
 # (`producer | grep -q` can fail under pipefail when grep exits early and the
 # producer gets SIGPIPE, so match against a variable instead.)

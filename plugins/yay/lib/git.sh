@@ -123,13 +123,15 @@ yay_commit_style() {
   if [ -n "$scope" ]; then
     local scopes; scopes="$(yay_config_get git.scopes 2>/dev/null || true)"
     # Restrict only when the team listed scopes. The kit's own commits use
-    # harness, release, changelog, knowledge and roadmap, so those are always allowed.
+    # harness, release, changelog, knowledge, roadmap, e2e and tests, so those are always allowed.
     if [ -n "$scopes" ] && ! yay_in_list "$scope" "$scopes
 harness
 release
 changelog
 knowledge
-roadmap"; then
+roadmap
+e2e
+tests"; then
       echo "scope '$scope' is not in git.scopes ($(printf '%s' "$scopes" | tr '\n' ' '))" >&2; bad=1
     fi
   fi

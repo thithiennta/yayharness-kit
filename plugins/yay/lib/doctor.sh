@@ -82,7 +82,7 @@ yay_doctor() {
   fi
 
   # Docker: integration tests and e2e run in wp-env.
-  local dk="missing"; command -v docker >/dev/null 2>&1 && { if docker info >/dev/null 2>&1; then dk=running; else dk=stopped; fi; }
+  local dk; dk="$(yay_docker_state)"
   local needs=""
   if [ "$cfg" = 1 ]; then
     yay_config_get commands.test-integration >/dev/null 2>&1 && needs="integration tests"
@@ -91,6 +91,7 @@ yay_doctor() {
   case "$dk:$needs" in
     running:*) _yay_doc ok docker "running" ;;
     *:) _yay_doc ok docker "$dk (nothing configured needs it yet)" ;;
+    unresponsive:*) _yay_doc warn docker "not answering (docker info timed out): $needs won't run" "restart Docker Desktop" ;;
     *) _yay_doc warn docker "$dk: $needs won't run (written and marked not run)" "start Docker Desktop" ;;
   esac
   [ "$YAY_DOCTOR_FAILS" -eq 0 ]

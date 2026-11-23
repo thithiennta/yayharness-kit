@@ -9,7 +9,7 @@ wp {{e2e.kind}} activate {{e2e.folder}}
 wp rewrite structure '/%postname%/' --hard
 wp option update blogname '{{plugin.name}} E2E'
 wp user get customer >/dev/null 2>&1 || wp user create customer customer@example.com \
-	--role=customer --user_pass=password --first_name=Jane --last_name=Smith
+	--role={{e2e.customerRole}} --user_pass=password --first_name=Jane --last_name=Smith
 #if-woo
 
 wp option update woocommerce_coming_soon no

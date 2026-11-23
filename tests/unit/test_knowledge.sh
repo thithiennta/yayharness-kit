@@ -95,6 +95,30 @@ test_stamp_sets_frontmatter_and_marker() {
   assert_fails "$YAYH" knowledge stamp CLAUDE.md deadbeef
 }
 
+test_stamp_takes_several_docs_and_a_ref() {
+  export YAY_REPO; YAY_REPO="$(_krepo)"
+  _write_docs "$YAY_REPO"
+  local first; first="$(git -C "$YAY_REPO" rev-parse --short HEAD)"
+  echo x >> "$YAY_REPO/includes/Plugin.php"; commit_all "$YAY_REPO"
+  local out; out="$("$YAYH" knowledge stamp CLAUDE.md docs/knowledge/architecture.md docs/knowledge/known-issues.md "$first")"
+  assert_eq 3 "$(printf '%s\n' "$out" | grep -c "	$first$")"
+  assert_eq "$first" "$("$YAYH" fm get "$YAY_REPO/docs/knowledge/known-issues.md" updated_ref)"
+  assert_ok "$YAYH" knowledge check
+}
+
+test_check_counts_new_untracked_files_and_hints_the_stamp() {
+  export YAY_REPO; YAY_REPO="$(_krepo)"
+  _write_docs "$YAY_REPO"
+  "$YAYH" knowledge stamp CLAUDE.md docs/knowledge/architecture.md docs/knowledge/known-issues.md >/dev/null
+  mkdir -p "$YAY_REPO/tests/e2e"; echo x > "$YAY_REPO/tests/e2e/smoke.spec.ts"
+  printf -- '---\narea: e2e\ncovers: [tests/e2e/]\n---\n# E2E\n' > "$YAY_REPO/docs/knowledge/e2e.md"
+  local out; out="$("$YAYH" knowledge check 2>&1 || true)"
+  assert_not_contains "$out" "covers 'tests/e2e/'" "an uncommitted new folder still counts"
+  assert_contains "$out" "missing 'updated_ref': stamp it with 'yayh knowledge stamp docs/knowledge/e2e.md'"
+  "$YAYH" knowledge stamp docs/knowledge/e2e.md >/dev/null
+  assert_ok "$YAYH" knowledge check
+}
+
 test_stale_tracks_covers_project_watch_and_uncovered() {
   export YAY_REPO; YAY_REPO="$(_krepo)"
   _write_docs "$YAY_REPO"

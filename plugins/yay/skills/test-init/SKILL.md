@@ -1,7 +1,7 @@
 ---
 name: test-init
 description: Set up PHP unit, PHP integration and JS unit tests for a Yay plugin, scouting the code first. Use when the user says "set up unit tests", "add PHPUnit", "init tests", "test setup", "add Jest/Vitest", or a skill reports no commands.test-unit; run it again later to cover new risky code. Scaffolds or adopts PHPUnit + Brain Monkey, the WordPress/WooCommerce test suite in wp-env's tests site, and the JS runner, installs the dev packages, writes baseline tests for the riskiest units at the right layer, runs them, maps coverage, and opens the PR.
-argument-hint: "[--php=tests/php] [--js=tests/js] [--js-runner=vitest|jest|wp-scripts|none] [--no-integration] [--adopt|--fresh] [--depth=quick|full] [--agents=N] [--max-tests=N] [--no-ci] [--no-run] [--no-branch] [--no-pr]"
+argument-hint: "[--php=tests/php] [--js=tests/js] [--js-runner=vitest|jest|wp-scripts|node-test|none] [--no-integration] [--wc] [--adopt|--fresh] [--depth=quick|full] [--agents=N] [--max-tests=N] [--no-ci] [--no-run] [--no-branch] [--no-pr]"
 allowed-tools: Bash, Read, Grep, Glob, Write, Edit, Agent, AskUserQuestion
 ---
 
@@ -16,7 +16,8 @@ Give this repo the unit, integration and JS test layers in one pass, with real t
 | Option | Effect |
 |---|---|
 | `--php=<dir>` / `--js=<dir>` | Where the PHP and JS tests live. Default `tests/php` and `tests/js`. |
-| `--js-runner=<r>` | `vitest`, `jest`, `wp-scripts` or `none`. Default: the runner `package.json` already uses, otherwise Vitest when there is JS source, otherwise none. |
+| `--js-runner=<r>` | `vitest`, `jest`, `wp-scripts`, `node-test` or `none`. Default: the runner `package.json` already uses (`node-test` for a `node --test` script), otherwise Vitest when there is JS source, otherwise none. With `node-test` or `none`, an existing `test:js`, `test:unit` or `test` script becomes `commands.test-js`. |
+| `--wc` | Load WooCommerce in the integration site though `requires.wc` is unset (a theme or add-on that works with it). |
 | `--no-integration` | Skip the integration layer (no Docker, no wp-env tests site). |
 | `--adopt` / `--fresh` | Force adopting the existing PHPUnit/JS setup, or scaffolding alongside it. Default: adopt when `yayh test detect` finds a phpunit config or a JS runner with tests. |
 | `--depth=full` (default) / `quick` | Scout the areas in parallel with `yay:test-scout` agents, or read them yourself (fine for a small plugin). |
@@ -50,7 +51,7 @@ Wait for every report. Treat the reports as claims: before you write a test, ope
   - Don't rewrite its files. Map its commands into `.yay/config.json`: `commands.test-unit` (the phpunit run without WordPress), `test-integration` (with the WordPress test suite), `test-js`, and `test`, plus the `tests.*` dirs.
   - An integration suite that runs against a local MySQL or `bin/install-wp-tests.sh` stays as it is. Map it, and list it under **Decided**.
   - An existing WP_Mock setup counts as the unit layer; don't add Brain Monkey alongside it.
-- **Fresh:** `yayh test scaffold php=<dir> js=<dir> [js-runner=<r>] [--no-integration] [--no-ci]`. It prints `created`/`exists`/`updated`/`config` lines, never overwrites, and only adds missing config keys. For integration, it turns on wp-env's tests site in `<e2e.dir>/.wp-env.json`, and creates the e2e package if there isn't one.
+- **Fresh:** `yayh test scaffold php=<dir> js=<dir> [js-runner=<r>] [--no-integration] [--no-ci] [--wc]`. It prints `created`/`exists`/`updated`/`config` lines, never overwrites, and only adds missing config keys. For integration, it turns on wp-env's tests site in `<e2e.dir>/.wp-env.json`, and creates the e2e package if there isn't one.
 - Install what its `deps` lines name (skip with `--no-run`). That's `composer require --dev …` for PHP, and the package manager's add command for JS. If `composer.json` has no autoload for the plugin's classes, don't add one; the tests `require_once` what they need.
 - **Packaging:** check that the release zip is built with `composer install --no-dev` (commands.package, the build script, or the `.distignore`). If it isn't, fix it, because PHPUnit must never ship. Also check that `tests/` is excluded, as it usually already is. List the change under **Decided**.
 
@@ -68,7 +69,7 @@ Pick the units from step 3 by priority (`critical` first, then `important`), up 
 ### 7. Run and prove they can fail (skip with `--no-run`)
 - Run each layer twice: `yayh test run unit`, `yayh test run js`, and `yayh test run integration` when its site is up. Both runs must pass.
 - **It can fail:** for each test class, break the code it guards with one small change (flip a comparison, return early, change a constant) and run that class: it must fail. Then undo the change with `git checkout -- <file>`. A test that still passes asserts nothing, so fix the test.
-- **Product bug** (the code really is wrong today, and the scout's evidence says what's right): run `yayh artifact new bug "<title>" severity=<s>` and fill in its Repro from the test. Keep the test, but mark it as expected to fail:
+- **Product bug** (the code really is wrong today, and the scout's evidence says what's right): run `yayh artifact new bug "<title>" severity=<s>` (`critical`, `high`, `medium` or `low`) and fill in its Repro from the test. Keep the test, but mark it as expected to fail:
   - PHP: `$this->markTestIncomplete( 'B-<n>: <title>' )` at the top, followed by the real assertions.
   - JS: `test.fails( … )` in Vitest, or `test.failing( … )` in Jest.
 
@@ -79,7 +80,7 @@ Write or update `docs/knowledge/testing.md` as the `testing.md` row of `${CLAUDE
 - How to run each layer, the bootstraps, the shared stubs and factories, the gates (edition or license checks) and how tests get past them, and the traps from steps 5 and 7.
 - A **Coverage** table, one row per unit from step 3: `| unit | layer | priority | tests | source |`. In `tests`, put the test file with its tag, `candidate` (not written yet), or `bug: B-<n>`. `/yay:plan` and `/yay:test` read this table.
 
-Add the commands to the project block's **Tests** section in CLAUDE.md (`yayh test run all`; integration needs Docker), and a **Read when** line. `yayh knowledge check` must pass. Then run `yayh knowledge stamp docs/knowledge/testing.md`.
+Add the commands to the project block's **Tests** section in CLAUDE.md (`yayh test run all`; integration needs Docker), and a **Read when** line. Stamp it (`yayh knowledge stamp docs/knowledge/testing.md CLAUDE.md`), then `yayh knowledge check` must pass: a new doc has no `updated_ref` until it's stamped.
 
 ### 9. Commit and PR
 Stage by path (never `git add -A`):
