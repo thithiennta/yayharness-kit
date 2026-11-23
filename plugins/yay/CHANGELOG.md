@@ -2,7 +2,8 @@
 
 `/yay:harness-update` reads this file to tell a repo what changed between its recorded kit version and the installed one. Each entry lists new skills, config keys, template changes and behavior changes.
 
-## Unreleased (0.15.1)
+## 0.15.1 (2026-11-23)
+- Released without the eval suite (no case covers skill text that changed since its last score).
 - **Fixes from rolling the harness, tests and e2e out to Brandy, Brandy Blocks and Brandy Sites.** Nothing to run in a repo: they come with the plugin update. A repo already scaffolded may want the two hand edits at the end.
   - Docker: `yayh e2e status`, `yayh doctor` and `yayh e2e env start` give `docker info` 10 seconds, and a hung daemon reads `unresponsive` instead of blocking for minutes. `yayh e2e env start` runs `commands.e2e-install` first when wp-env isn't installed.
   - `yayh review diff` no longer exits 2 with no output when a docblock has a byte that isn't valid UTF-8 (macOS awk failed on it; `code find` and `review` now run awk in the C locale), and no longer flags a new test method as a look-alike of the code it tests.
