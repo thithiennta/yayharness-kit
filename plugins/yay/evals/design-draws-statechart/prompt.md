@@ -1,1 +1,1 @@
-Design the UI for gift returns: a customer can ask to return a gift from My Account, the store admin approves or rejects the request, and an approved return is refunded to the buyer. Write the design, no code.
+Design the UI for gift returns: a customer can ask to return a gift from My Account, the store admin approves or rejects the request, and an approved return is refunded to the buyer. Call the design "Gift returns". Write the design, no code.
