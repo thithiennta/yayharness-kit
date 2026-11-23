@@ -31,7 +31,7 @@ Fix one bug, minimally, on its own branch. **No fix without a cause:** the bug r
   - `root-caused` → go.
   - `open` with low confidence → this becomes a question in the single round (step 4): investigate more (`/yay:debug B-<n>`), or proceed.
   - `fixed`, `wontfix` or `duplicate` → stop.
-- **No report, only a description:** do a `/yay:debug --quick` pass inline. Create the report with `yayh artifact new bug …` (an attached screenshot is recorded and kept as in `${CLAUDE_PLUGIN_ROOT}/reference/artifacts.md` (Screenshots)), find the cause with `file:line` evidence, and fill in Root cause and Fix options. If the cause isn't clear within a reasonable read, stop and suggest `/yay:debug`.
+- **No report, only a description:** first write the **Reading** block (`${CLAUDE_PLUGIN_ROOT}/reference/asking.md`, "Restate before you build from words"): Reading is the wrong behaviour and the right one, Not doing names nearby behaviour the fix leaves alone, Done when is the repro check that will pass, and Model on is the code that already handles the same case correctly, when there is one. Then do a `/yay:debug --quick` pass inline. Create the report with `yayh artifact new bug …` (an attached screenshot is recorded and kept as in `${CLAUDE_PLUGIN_ROOT}/reference/artifacts.md` (Screenshots)), find the cause with `file:line` evidence, and fill in Root cause and Fix options. If the cause isn't clear within a reasonable read, stop and suggest `/yay:debug`.
 - Choose the fix option: the report's recommended one, unless the user says otherwise.
 - Run `yayh backlog open --for=B-<n>`. Settle the notes the fix answers (in the branch, step 2), and keep the others open.
 

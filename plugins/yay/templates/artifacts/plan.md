@@ -23,7 +23,7 @@ created: {{today}}
 <!-- Read this first. What reading the code changed about the source (brainstorm, roadmap item, bug), one numbered item each, with its file:line evidence and what the plan does about it. Then any docs the plan differs from: "differs: docs/knowledge/x.md says … → T4 updates it". Write "none" when the code held no surprises. -->
 
 ## Approach
-<!-- The design in a few bullets: where it hooks in, data/storage changes, edition split, compatibility. Cite files. -->
+<!-- First line: Model on: <path:line> — the existing feature this copies in structure (or "none, nothing similar exists"). Then the design in a few bullets: where it hooks in, data/storage changes, edition split, compatibility. Cite files. -->
 
 ## Tasks
 - [ ] T1 <what> — `path/to/file.php`

@@ -2,6 +2,13 @@
 
 `/yay:harness-update` reads this file to tell a repo what changed between its recorded kit version and the installed one. Each entry lists new skills, config keys, template changes and behavior changes.
 
+## Unreleased (0.16.0)
+- **Restate the job, turn repeated corrections into checks, and statecharts for stateful flows** (P-2, from Lauren Tan's agent-harness practices). Run `/yay:harness-update` to pick up the new design and plan templates; everything else comes with the plugin update.
+  - A request given as plain text (no plan, no bug report) gets a **Reading** block before any edit: Reading, Not doing, Done when (an exact check) and Model on (existing code to copy). It's shown, not approved; only a request with two plausible readings makes it the run's one question. `/yay:implement` (no plan yet) and `/yay:fix` (description only) use it, and the tiny lane's PR body carries it.
+  - Plans start their Approach with `Model on: <path:line>`, and copy the checks in `conventions.md`'s `## Checks` that apply to their files into Verify.
+  - New lesson kind `correction` (`yayh lessons add "<wrong move; right move>" kind=correction`). `/yay:knowledge-update` promotes a repeated correction down a ladder (`reference/corrections.md`): remove the wrong way, a lint rule, a test, a command check in `conventions.md`'s `## Checks`, and only then prose. Code and config rungs become deferred notes with the exact snippet.
+  - Designs have an optional `## Statechart` (a Mermaid `stateDiagram-v2`) when the feature stores a status with 3+ states that change on events; every transition gets an Acceptance line, and `/yay:plan` turns risky transitions and repeated events into tests. `yayh design check` warns on a chart with no diagram, no transitions, or a state with no way out.
+
 ## 0.15.1 (2026-11-23)
 - Released without the eval suite (no case covers skill text that changed since its last score).
 - **Fixes from rolling the harness, tests and e2e out to Brandy, Brandy Blocks and Brandy Sites.** Nothing to run in a repo: they come with the plugin update. A repo already scaffolded may want the two hand edits at the end.

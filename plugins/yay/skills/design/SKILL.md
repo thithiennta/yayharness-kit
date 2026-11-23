@@ -36,18 +36,29 @@ Turn a change that has a UI into a small, buildable design: a `UX-<n>` file that
    - **Job:** one or two sentences: who, when, and done means what.
    - **Where it lives:** an existing menu, tab or section first. A new top-level admin menu, a new settings page or a new checkout step is a decision that must be justified under **Decisions**.
    - **Flow:** the main path as numbered steps, then the paths that matter (first use, an error, Free without Pro).
+   - **Statechart:** only when the feature stores a status with 3 or more states that change on events (a customer requests a return, an admin approves it, a refund completes, points expire). Draw one Mermaid `stateDiagram-v2` from the user's point of view: states are what the user would call them, and each transition is labelled with the event that causes it and who triggers it. Include the ways out (cancel, reject, expire) and end states (`--> [*]`). It's for reviewing the logic before anyone builds it, so it shows behaviour, not classes or tables. Delete the section when there's no such status.
+     ```mermaid
+     stateDiagram-v2
+       [*] --> Requested: customer submits the form
+       Requested --> Approved: admin approves
+       Requested --> Rejected: admin rejects
+       Approved --> Refunded: refund completes
+       Rejected --> [*]
+       Refunded --> [*]
+     ```
    - **Screens:** one `###` per screen or state that looks different, each with an ASCII wireframe in a ``` block (boxes, labels, buttons, sample data), then one line per element: what it is, the existing component or pattern it reuses with its file, and its behaviour (default, validation, what saving does).
    - **States:** empty, saving or loading, success, validation error, failure, no permission, and the Pro feature in Free. Say what the user sees, or `n/a` with the reason.
    - **Copy:** every visible string, sentence case, plain words, consistent with the plugin's existing labels.
    - **Accessibility:** a label on every field, keyboard order, focus after save and after an error, notices announced, contrast, RTL.
    - **Decisions:** what you chose and the alternative you didn't take.
-   - **Acceptance:** 3–8 checks a reviewer or test can run: the action and the visible result.
+   - **Acceptance:** 3–8 checks a reviewer or test can run: the action and the visible result. With a statechart, every transition has one (more than 8 is fine then).
 4. **Mockup** (with `--mockup`, or when the layout is hard to judge from ASCII and the user is around): one self-contained HTML file at `.yay/designs/<slug>.html`. Use inline CSS that imitates the real surface (wp-admin's grey canvas, white panels, blue primary buttons, the form-table layout, or a plain storefront page), real copy from **Copy**, and every state from **States** stacked down the page under small headings. No external scripts, fonts or images. Record it with `yayh fm set <design> mockup .yay/designs/<slug>.html`, and `open` it when the user is present. It's a preview for discussion. The markdown stays the source of truth.
 5. **Simplify, then check.** Review the design as a skeptical product designer:
    - Can a field, setting, screen or step go? Can a sensible default replace a choice? Can an advanced option hide behind a toggle or a link?
    - Is there exactly one primary action per screen, and is it obvious?
    - Does it look like the plugin's existing screens and like WordPress and WooCommerce (notices, buttons, list tables, settings layout), not like a new app?
    - Is every state covered, and does every error say how to fix it?
+   - With a statechart: can every state be left or is it an end state, can the same event arrive twice (a double click, a webhook retry), and does every transition have an Acceptance check?
    - Free vs Pro: does Free show a locked feature honestly and only where the plugin already does upsells?
    - Storefront: does it work in classic and block checkout, on a narrow screen, and without breaking checkout when it fails?
 

@@ -275,6 +275,31 @@ EOF
 
 # ---------- designs ----------
 
+# _yay_statechart_check <file>: warn lines for the optional ## Statechart section:
+# no stateDiagram, no transitions, or a state with no way out (not an end state).
+_yay_statechart_check() {
+  awk '
+    $0 == "## Statechart" { on = 1; next }
+    /^## / { on = 0 }
+    !on { next }
+    /^[[:space:]]*```mermaid/ { fence = 1; next }
+    fence && /^[[:space:]]*```/ { fence = 0; next }
+    !fence { next }
+    /stateDiagram/ { diagram = 1; next }
+    /-->/ {
+      line = $0; sub(/:.*/, "", line); split(line, p, /-->/)
+      a = p[1]; b = p[2]; gsub(/[[:space:]]/, "", a); gsub(/[[:space:]]/, "", b)
+      n++
+      if (a != "[*]") { seen[a] = 1; out[a] = 1 }
+      if (b != "[*]") seen[b] = 1
+    }
+    END {
+      if (!diagram) { print "warn: '\''## Statechart'\'' has no ```mermaid stateDiagram-v2 block"; exit }
+      if (!n) { print "warn: '\''## Statechart'\'' has no transitions (A --> B: event)"; exit }
+      for (s in seen) if (!(s in out)) printf "warn: statechart state '\''%s'\'' has no way out: add its transitions or '\''%s --> [*]'\''\n", s, s
+    }' "$1" | sort
+}
+
 # yay_design_check <design> -> "error: …" / "warn: …" lines; exit 1 on any error.
 yay_design_check() {
   local rel f errs=0 st k sec n
@@ -300,6 +325,7 @@ yay_design_check() {
   [ "$n" -le 4 ] || echo "warn: $n screens: a simple design rarely needs more than 4; merge or cut some"
   awk '/^## States/{on=1; next} /^## /{on=0} on && !/^<!--/' "$f" | grep -iE 'error|fail' >/dev/null \
     || echo "warn: '## States' says nothing about errors"
+  grep -qx "## Statechart" "$f" && _ux_filled Statechart && _yay_statechart_check "$f"
   [ "$errs" -eq 0 ]
 }
 
