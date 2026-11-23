@@ -18,6 +18,7 @@ This repo uses the **yay** harness. Work through its skills so every developer a
 | Test build for QA | `/yay:release --bundle` | `release/bundles/<slug>-<x.y.z>-rc.<n>/` |
 | Ship | `/yay:release` → merge → `/yay:release --tag-only` | readme.txt changelog, `docs/releases/`, checked bundle, tag |
 | Keep docs true | `/yay:knowledge-update` | this file's project block, `docs/knowledge/` |
+| Share with the lead or team | `/yay:report` | `.yay/reports/` (never committed): a plain page link or paste-ready text |
 
 - A worked example from roadmap to release tag, with the exact prompts, is in `docs/yay-workflow.md`.
 - Each skill checks for the previous step's output and says when it's missing. You can still run any skill on its own.

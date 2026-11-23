@@ -8,6 +8,7 @@ A Claude Code plugin that gives every Yay WordPress plugin the same harness and 
                └──────── /yay:autopilot (all of them, for a whole queue) ──────────┤
 /yay:debug ─► /yay:fix ──────────────────────────────────────────┼─► /yay:release --bundle (QA) ─► (/yay:wporg) ─► /yay:release
 /yay:harness-init · /yay:harness-update · /yay:knowledge-init · /yay:knowledge-update
+/yay:report: an idea, what's done or a feature pitch, as one plain page for the lead (never committed)
 ```
 
 ## What's inside

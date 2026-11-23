@@ -2,6 +2,14 @@
 
 `/yay:harness-update` reads this file to tell a repo what changed between its recorded kit version and the installed one. Each entry lists new skills, config keys, template changes and behavior changes.
 
+## Unreleased (0.17.0)
+- **New `/yay:report`: plain reports a developer shares with the lead or the team.** Three kinds: `idea` (the problem, the idea, what you need), `done` (what's finished, what users notice, what's next) and `feature` (who it's for, what they'd see, why, size, questions). Run `/yay:harness-update` to add it to the CLAUDE.md skills table and `docs/yay-workflow.md`; the skill itself comes with the plugin update.
+  - Reports live in `.yay/reports/` (gitignored by the harness, and the folder gets its own `.gitignore` before then) and are never committed. They're shared as a private page link, or as paste-ready text for Slack or chat.
+  - The agent writes text only. `yayh report render` makes the page with one locked, plain look (no colors, light and dark mode, phone width), and folds an optional **For developers** section away. `--text` prints the paste-ready version.
+  - `yayh report check` errors on code, file names, code names, HTML, tables, images, sub-headings, emoji, a template hint left behind, an empty or missing section, more than 300 words (`--max-words=N`; For developers isn't counted) and an **In one line** over 40 words. It warns on jargon, internal ids and PR numbers, long sentences and paragraphs, more than 6 bullets, and too much bold. `render` refuses while check has errors.
+  - A cold reader checks the finished text: an agent on the new `reader` model step (`veryfast`) reads only the report and says what it's about, what's asked and what was unclear. The skill rewrites until those answers match, at most 2 rounds.
+  - New commands: `yayh report new|check|render|list`.
+
 ## 0.16.0 (2026-11-23)
 - **Restate the job, turn repeated corrections into checks, and statecharts for stateful flows** (P-2, from Lauren Tan's agent-harness practices). Run `/yay:harness-update` to pick up the new design and plan templates; everything else comes with the plugin update.
   - A request given as plain text (no plan, no bug report) gets a **Reading** block before any edit: Reading, Not doing, Done when (an exact check) and Model on (existing code to copy). It's shown, not approved, and opens the final report with each check's result; only a request with two plausible readings makes it the run's one question. `/yay:implement` (no plan yet) and `/yay:fix` (description only) use it, and the tiny lane's PR body carries it.

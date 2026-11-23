@@ -406,7 +406,7 @@
         "steps": {
           "type": "object",
           "description": "step -> a tier name, inherit, or an inline { model, effort }",
-          "propertyNames": { "enum": ["scout", "web-research", "feasibility", "revise", "resolve", "review", "hypothesis", "portfolio-research", "cowork", "prepare", "implement", "synthesis", "task"] },
+          "propertyNames": { "enum": ["scout", "web-research", "feasibility", "reader", "revise", "resolve", "review", "hypothesis", "portfolio-research", "cowork", "prepare", "implement", "synthesis", "task"] },
           "additionalProperties": { "oneOf": [ { "type": "string" }, { "type": "object", "additionalProperties": false, "properties": { "model": { "enum": ["sonnet", "opus"] }, "effort": { "enum": ["low", "medium", "high", "xhigh", "max"] } } } ] }
         },
         "sizeBump": {
