@@ -121,11 +121,11 @@ Artifacts (brainstorms, plans, bugs, backlog)
                                    close a decision or deferred note (this checkout)
 
 Reports (/yay:report: shared with the lead or team, kept in .yay/reports/, never committed)
-  report new <idea|done|feature> "<title>" [--lang=en|vi]
+  report new <idea|done|feature|guide> "<title>" [--lang=en|vi] [--for=team|devs]
                                    a markdown report from the kind's template (language: --lang,
-                                   else report.lang, else en); prints the path
+                                   else report.lang, else en; --for: guides only, devs allows code); prints the path
   report check <report> [--max-words=N]
-                                   plain-language errors and warnings (exit 1 on errors; limit 300 words, 450 in vi)
+                                   plain-language errors and warnings (exit 1 on errors; limit 300 words, 450 in vi, guides 400/600)
   report render <report> [--text] [--max-words=N]
                                    check, then write the plain page next to it (prints the path),
                                    or print paste-ready text; refuses while check has errors

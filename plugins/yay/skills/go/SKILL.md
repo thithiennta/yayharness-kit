@@ -33,6 +33,7 @@ Route by what the user wants, not by keywords. Pass the user's own words on as t
 | options for an idea, "how should we…" | `/yay:brainstorm "<topic>"` (`--from=R-<n>` when it names an item) |
 | a design for a screen, modal or email | `/yay:design "<topic>"` |
 | to share an idea, a summary of what they did, or a feature pitch with the lead or team: "write this up for the lead", "report" | `/yay:report <idea\|done\|feature> "<their notes>"` (`--from=<id\|branch>` when it names one) |
+| a how-to for someone else: "write a guide for support on…", "how do I explain to the team how to…" | `/yay:report guide "<their notes>"` (`--for=devs` when it's for developers) |
 | a plan, "break this down" | `/yay:plan "<topic>"` or `--from=<id>` |
 | something built or changed: "add…", "make…", "rename…", "build R-12" | `/yay:implement "<requirement>"` or `<id>` (it picks the lane: tiny, small or standard). Add `--explore` when they say "from scratch", "explore first" or "end to end", or ask to compare approaches. |
 | a whole sprint, a version or many items done | `/yay:autopilot` (`--sprint=current`, `--target=<x.y.z>`, or the ids) |
