@@ -128,11 +128,26 @@ EOF
   return $rc
 }
 
-# yay_knowledge_stamp <doc|CLAUDE.md> [ref] -> record the ref the doc now matches.
+# yay_knowledge_stamp <doc|CLAUDE.md>... [ref] -> record the ref each doc now matches.
+# The last argument is the ref when it isn't a file and names a commit.
 yay_knowledge_stamp() {
-  local doc="$1" ref="${2:-}" root today tmp
-  root="$(yay_repo_root)"; today="$(yay_today)"
+  local root ref="" a docs=""
+  root="$(yay_repo_root)"
+  for a in "$@"; do
+    if [ "$a" != CLAUDE.md ] && [ ! -f "$root/$a" ] && yay_git rev-parse --verify --quiet "$a^{commit}" >/dev/null; then ref="$a"
+    else docs="$docs$a
+"; fi
+  done
+  [ -n "$docs" ] || yay_die "usage: yayh knowledge stamp <doc|CLAUDE.md>... [ref]"
   [ -n "$ref" ] || ref="$(yay_git rev-parse --short HEAD)"
+  while IFS= read -r a; do [ -z "$a" ] || _k_stamp_one "$a" "$ref"; done <<EOF
+$docs
+EOF
+}
+
+_k_stamp_one() {
+  local doc="$1" ref="$2" root today tmp
+  root="$(yay_repo_root)"; today="$(yay_today)"
   yay_git rev-parse --verify --quiet "$ref^{commit}" >/dev/null || yay_die "not a commit: $ref"
   if [ "$doc" = CLAUDE.md ]; then
     [ -f "$root/CLAUDE.md" ] && grep -q '<!-- yay:project:start' "$root/CLAUDE.md" || yay_die "CLAUDE.md has no yay:project block"
@@ -187,14 +202,16 @@ $(yay_knowledge_docs)"; fi
     else
       local k
       for k in area updated updated_ref covers; do
-        yay_fm_get "$root/$f" "$k" >/dev/null 2>&1 || _k_issue "$f" 1 "front-matter is missing '$k'"
+        case "$k" in updated|updated_ref) yay_fm_get "$root/$f" "$k" >/dev/null 2>&1 || _k_issue "$f" 1 "front-matter is missing '$k': stamp it with 'yayh knowledge stamp $f'" ;;
+          *) yay_fm_get "$root/$f" "$k" >/dev/null 2>&1 || _k_issue "$f" 1 "front-matter is missing '$k'" ;; esac
       done
       local r; r="$(yay_fm_get "$root/$f" updated_ref 2>/dev/null || true)"
-      if [ -n "$r" ] && ! yay_git rev-parse --verify --quiet "$r^{commit}" >/dev/null; then _k_issue "$f" 1 "updated_ref '$r' is not a commit"; fi
+      if [ -n "$r" ] && ! yay_git rev-parse --verify --quiet "$r^{commit}" >/dev/null; then _k_issue "$f" 1 "updated_ref '$r' is not a commit: stamp it with 'yayh knowledge stamp $f'"; fi
       local c
       while IFS= read -r c; do
         [ -n "$c" ] || continue
-        [ -n "$(yay_git ls-files -- "$c" | sed -n 1p)" ] || _k_issue "$f" 1 "covers '$c' matches no tracked file"
+        # New files count before their first commit (knowledge is written next to the code).
+        [ -n "$(yay_git ls-files --cached --others --exclude-standard -- "$c" | sed -n 1p)" ] || _k_issue "$f" 1 "covers '$c' matches no file in the repo"
       done <<EOF
 $(yay_fm_list "$(yay_fm_get "$root/$f" covers 2>/dev/null || true)")
 EOF

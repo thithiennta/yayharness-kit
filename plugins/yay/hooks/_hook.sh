@@ -17,6 +17,7 @@ hook_get() { yay_json_get "$HOOK_IN" "$1" 2>/dev/null || true; }
 # (no opinion) when it isn't a yay repo. Not for use inside $(...).
 hook_use_repo() {
   local d="$1"
+  [ "$d" != "-" ] || exit 0   # hook_cmd_dir couldn't tell which repo
   while [ -n "$d" ] && [ ! -d "$d" ]; do d="$(dirname "$d")"; done
   ROOT="$(git -C "$d" rev-parse --show-toplevel 2>/dev/null)" || exit 0
   [ -f "$ROOT/.yay/config.json" ] || exit 0
@@ -27,9 +28,22 @@ hook_use_repo() {
 # targets, and the command segment after `commit`.
 GIT_RE='(^|[;&|(]|[[:space:]])git([[:space:]]+-C[[:space:]]+[^[:space:]]+|[[:space:]]+-c[[:space:]]+[^[:space:]]+)*[[:space:]]+'
 hook_cmd_dir() {
-  local cmd="$1" dir cwd
+  local cmd="$1" dir cwd var val
   dir="$(printf '%s' "$cmd" | sed -nE 's/.*git[[:space:]]+-C[[:space:]]+("([^"]+)"|([^[:space:]]+)).*/\2\3/p' | sed -n 1p)"
-  [ -n "$dir" ] || dir="$(printf '%s' "$cmd" | sed -nE 's/^[[:space:]]*cd[[:space:]]+("([^"]+)"|([^[:space:]&;]+)).*/\2\3/p' | sed -n 1p)"
+  # Else the last `cd <dir>` before the commit, at the start or after ; && || |.
+  [ -n "$dir" ] || dir="$(printf '%s' "$cmd" | sed -E 's/git([[:space:]]+-[Cc][[:space:]]+[^[:space:]]+)*[[:space:]]+(commit|tag).*//' \
+    | grep -Eo '(^|[;&|(])[[:space:]]*cd[[:space:]]+("[^"]+"|[^[:space:]&;|)]+)' | sed -n '$p' \
+    | sed -E 's/^[;&|(]?[[:space:]]*cd[[:space:]]+//; s/^"(.*)"$/\1/')"
+  # A plain $VAR or ${VAR}: resolve it from a VAR=value in the same command.
+  case "$dir" in
+    '$'*)
+      var="$(printf '%s' "$dir" | sed -nE 's/^\$\{?([A-Za-z_][A-Za-z0-9_]*)\}?$/\1/p')"
+      val=""; [ -z "$var" ] || val="$(printf '%s' "$cmd" | sed -nE "s/.*(^|[;&|[:space:]])$var=(\"([^\"\$]+)\"|'([^']+)'|([^[:space:];&|\$]+)).*/\\3\\4\\5/p" | sed -n 1p)"
+      dir="$val"
+      # Still unknown (computed in the command): no opinion beats checking the wrong checkout.
+      [ -n "$dir" ] || { printf '%s\n' "-"; return; } ;;
+    *'$'*|*'`'*) printf '%s\n' "-"; return ;;
+  esac
   cwd="$(hook_get cwd)"; [ -n "$cwd" ] || cwd="$PWD"
   case "$dir" in "") dir="$cwd" ;; /*) ;; "~"*) dir="$HOME${dir#\~}" ;; *) dir="$cwd/$dir" ;; esac
   printf '%s\n' "$dir"

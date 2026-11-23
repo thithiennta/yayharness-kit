@@ -48,6 +48,16 @@ test_detect_theme_from_style_css() {
   assert_contains "$(cat "$YAY_REPO/functions.php")" "'BRANDY_VERSION', '1.5.0'"
 }
 
+test_detect_skips_a_version_constant_read_from_the_header() {
+  export YAY_REPO; YAY_REPO="$(mk_repo)"
+  printf '/*\nTheme Name: Brandy\nVersion: 2.1.1\nText Domain: brandy\n*/\n' > "$YAY_REPO/style.css"
+  printf "<?php\ndefine( 'BRANDY_VERSION', wp_get_theme()->get( 'Version' ) );\n" > "$YAY_REPO/functions.php"
+  mkdir -p "$YAY_REPO/.yay"; "$YAYH" harness detect 2>/dev/null > "$YAY_REPO/.yay/config.json"
+  assert_not_contains "$(jq -c .versionFiles "$YAY_REPO/.yay/config.json")" 'functions.php' "a non-literal define has no version to rewrite"
+  "$YAYH" version set 2.1.2 >/dev/null
+  assert_contains "$(cat "$YAY_REPO/style.css")" "Version: 2.1.2"
+}
+
 test_plugin_repo_has_no_kind_and_defaults_to_plugin() {
   export YAY_REPO; YAY_REPO="$(mk_repo)"
   printf '<?php\n/**\n * Plugin Name: Giftly\n */\n' > "$YAY_REPO/giftly.php"
@@ -219,4 +229,21 @@ test_theme_site_skips_without_e2e_and_refuses_plugins() {
   # a plugin repo gets pointed back to yayh wporg site
   YAY_REPO="$(fixture_repo legacy-rich configured)"
   assert_contains "$("$YAYH" wporg theme-site "$T_TMP/ts.zip" out="$o" 2>&1 || true)" "use yayh wporg site"
+}
+
+test_e2e_surfaces_list_theme_templates_not_woo_hook_calls() {
+  export YAY_REPO; YAY_REPO="$(_themerepo)"
+  mkdir -p "$YAY_REPO/parts" "$YAY_REPO/patterns" "$YAY_REPO/woocommerce/cart"
+  printf '<!-- wp:site-title /-->\n' > "$YAY_REPO/parts/header.html"
+  printf '<?php\n/**\n * Title: Hero\n * Slug: brandy/hero\n */\n?>\n<p>Hi</p>\n' > "$YAY_REPO/patterns/hero.php"
+  printf "<?php\ndo_action( 'woocommerce_before_cart' );\n" > "$YAY_REPO/woocommerce/cart/cart.php"
+  printf "<?php\nadd_action( 'woocommerce_before_cart', 'brandy_notice' );\n" >> "$YAY_REPO/functions.php"
+  commit_all "$YAY_REPO"
+  local out; out="$(cd "$YAY_REPO" && "$YAYH" e2e surfaces)"
+  assert_contains "$out" "template	templates/index.html:1	index"
+  assert_contains "$out" "part	parts/header.html:1	header"
+  assert_contains "$out" "pattern	patterns/hero.php:1	brandy/hero"
+  assert_contains "$out" "wc-template	woocommerce/cart/cart.php:1	cart/cart.php"
+  assert_contains "$out" "checkout	functions.php:4	woocommerce_before_cart"
+  assert_not_contains "$out" "checkout	woocommerce/cart/cart.php" "calling a Woo hook is not a surface"
 }

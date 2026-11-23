@@ -29,8 +29,10 @@ yay_review_diff() {
   while IFS="$YAY_TAB" read -r f ln kind name sig doc; do
     [ -n "$name" ] || continue
     case "$kind" in function|method) ;; *) continue ;; esac
+    # A test is named after what it tests; that's not duplication.
+    _yay_code_is_test "$f" && continue
     short="${name##*::}"; short="${short##*.}"
-    hits="$(yay_code_similar "$short" --limit=8 2>/dev/null | awk -F '\t' -v self="$f:$ln" -v news="$(printf '%s' "$news" | awk -F '\t' '{ printf "%s:%s,", $1, $2 }')" '
+    hits="$(yay_code_similar "$short" --limit=8 2>/dev/null | LC_ALL=C awk -F '\t' -v self="$f:$ln" -v news="$(printf '%s' "$news" | LC_ALL=C awk -F '\t' '{ printf "%s:%s,", $1, $2 }')" '
         $1 >= 3 && $2 != self && index("," news, "," $2 ",") == 0 && ($3 == "function" || $3 == "method") { printf "%s (%s)", $4, $2; n++; if (n == 3) exit; printf "; " }')"
     hits="${hits%; }"
     [ -z "$hits" ] || printf 'similar-exists\t%s:%s\t%s() is new; existing look-alikes: %s. Reuse or extend one, or say why not.\n' "$f" "$ln" "$name" "$hits" >> "$out"
@@ -58,8 +60,8 @@ EOF
     [ -n "$f" ] && [ -f "$root/$f" ] || continue
     case "$f" in *.php|*.js|*.jsx|*.ts|*.tsx|*.mjs|*.css|*.scss) ;; *) continue ;; esac
     { if git -C "$root" cat-file -e "$mb:$f" 2>/dev/null; then git -C "$root" diff -U0 "$mb" -- "$f"
-      else awk '{ if (NR == 1) print "@@ -0,0 +1 @@"; print "+" $0 }' "$root/$f"; fi; } \
-      | awk -v file="$f" '
+      else LC_ALL=C awk '{ if (NR == 1) print "@@ -0,0 +1 @@"; print "+" $0 }' "$root/$f"; fi; } \
+      | LC_ALL=C awk -v file="$f" '
         function is_doc(s)  { return s ~ /^[[:space:]]*(\/\*\*|\*\/|\*([[:space:]]|$))/ }
         function is_line(s) { return s ~ /^[[:space:]]*(\/\/|#[^\[]|#$|\/\*[^*])/ }
         function is_cmt(s)  { return is_doc(s) || is_line(s) }
@@ -126,11 +128,11 @@ EOF
   if [ -n "$plan" ]; then
     local prel planned
     prel="$(yay_artifact_resolve "$plan")" || yay_die "no plan '$plan'"
-    planned="$(awk '/^## /{t=($0 ~ /^## Tasks/)} t' "$root/$prel" | grep -oE '`[^`]+`' | tr -d '`' || true)"
+    planned="$(LC_ALL=C awk '/^## /{t=($0 ~ /^## Tasks/)} t' "$root/$prel" | grep -oE '`[^`]+`' | tr -d '`' || true)"
     while IFS= read -r f; do
       [ -n "$f" ] || continue
       case "$f" in docs/*|tests/*|*/tests/*|readme.txt|CHANGELOG*|*.lock|package.json|composer.json) continue ;; esac
-      if ! printf '%s\n' "$planned" | awk -v f="$f" '{ p = $1; sub(/\/$/, "", p) } f == p || index(f, p "/") == 1 { found = 1 } END { exit !found }'; then
+      if ! printf '%s\n' "$planned" | LC_ALL=C awk -v f="$f" '{ p = $1; sub(/\/$/, "", p) } f == p || index(f, p "/") == 1 { found = 1 } END { exit !found }'; then
         printf 'outside-plan\t%s\tchanged, but no task in %s names it. Is this change needed for the plan?\n' "$f" "$plan" >> "$out"
       fi
     done <<EOF
@@ -139,7 +141,7 @@ EOF
   fi
 
   cat "$out"
-  awk -F '\t' '{ c[$1]++; n++ } END { printf "summary\t%d finding(s)", n; for (k in c) printf "\t%s=%d", k, c[k]; printf "\n" }' "$out" | sort
+  LC_ALL=C awk -F '\t' '{ c[$1]++; n++ } END { printf "summary\t%d finding(s)", n; for (k in c) printf "\t%s=%d", k, c[k]; printf "\n" }' "$out" | sort
   rm -f "$out"
   return 0
 }

@@ -73,6 +73,18 @@ test_commit_on_base_branch_blocked() {
   assert_exit 0 _bash guard-bash.sh "$r" 'git commit -m "feat: x"'
 }
 
+test_commit_guard_checks_the_checkout_the_command_targets() {
+  local r w; r="$(_repo)"
+  w="$T_TMP/wt"; git -C "$r" worktree add -q -b feat/x "$w" >/dev/null 2>&1
+  git -C "$r" switch -q dev
+  # The session sits in the base-branch checkout; the commit goes to the worktree.
+  assert_exit 0 _bash guard-bash.sh "$r" "cd $w && git commit -m 'feat: x'"
+  assert_exit 0 _bash guard-bash.sh "$r" "W=$w; cd \"\$W\" && git add a && git commit -m 'feat: x'"
+  assert_exit 0 _bash guard-bash.sh "$r" "export X=1; cd \"$w\" && git commit -m 'feat: x'"
+  assert_exit 0 _bash guard-bash.sh "$r" 'cd "$(yayh git worktree feat/x)" && git commit -m "feat: x"'
+  assert_exit 2 _bash guard-bash.sh "$w" "W=$r; cd \$W && git commit -m 'feat: x'"
+}
+
 test_no_verify_blocked_but_unrelated_flags_fine() {
   local r; r="$(_repo)"
   assert_exit 2 _bash guard-bash.sh "$r" 'git commit --no-verify -m "feat: x"'

@@ -167,19 +167,19 @@ Code (reuse before you write)
 E2E (Playwright + wp-env, one site per checkout; reference/e2e.md)
   e2e status                       setup, deps, docker, env (up|down|external) + URL, port, spec files (TSV)
   e2e detect                       an existing browser-test setup: playwright|wp-env|cypress|script|ci (TSV)
-  e2e scaffold [dir=tests/e2e] [--no-ci]
+  e2e scaffold [dir=tests/e2e] [--no-ci] [--wc]
                                    write missing starter files and config keys (never overwrites)
   e2e port | e2e url               this checkout's port / base URL (worktrees get their own)
   e2e env start|stop|reset         wp-env for this checkout (reset wipes the site and re-seeds it)
   e2e run [playwright args...]     commands.e2e against this checkout's site, e.g. --grep "@P-4|@smoke"
   e2e specs [ID]                   spec files with test counts, or the tests tagged @ID (file:line:text)
-  e2e surfaces                     where users reach the plugin: admin pages, shortcodes, blocks, Woo hooks, REST... (TSV)
+  e2e surfaces                     where users reach the plugin: admin pages, shortcodes, blocks, Woo hooks, REST, theme templates and patterns... (TSV)
   e2e cli <command...>             run in the wp-env cli container: wp option get x, tail -n 50 wp-content/debug.log
 
 Tests (PHP unit + integration, JS unit; which layer per task: reference/testing.md)
   test status                      unit, integration (tests site up|down), js (runner), php, deps, docker, file counts (TSV)
   test detect                      what exists: phpunit configs, composer dev packages, test dirs, JS runner, scripts, ci (TSV)
-  test scaffold [php=tests/php] [js=tests/js] [js-runner=vitest|jest|wp-scripts|none] [--no-integration] [--no-js] [--no-ci]
+  test scaffold [php=tests/php] [js=tests/js] [js-runner=vitest|jest|wp-scripts|node-test|none] [--no-integration] [--no-js] [--no-ci] [--wc]
                                    write missing starter files and config keys (never overwrites); deps lines = packages to add
   test run unit|integration|js|all [--id=P-4] [runner args...]
                                    one layer, or every configured one (integration skipped when its site is down)
@@ -231,7 +231,7 @@ Knowledge (CLAUDE.md project block + docs/knowledge/)
   knowledge check [file...]        paths/links exist, front-matter, length budget
   knowledge stale [--since=<ref|tag|YYYY-MM-DD>]
                                    stale|fresh|never|bad-ref|uncovered per doc (exit 1 if any stale)
-  knowledge stamp <doc|CLAUDE.md> [ref]
+  knowledge stamp <doc|CLAUDE.md>... [ref]
                                    record the commit a doc was verified against (default HEAD)
   knowledge block                  print the CLAUDE.md project block
 
@@ -498,7 +498,7 @@ case "$cmd" in
       docs) yay_knowledge_docs ;;
       check) yay_knowledge_check "$@" ;;
       stale) yay_knowledge_stale "$@" ;;
-      stamp) [ $# -ge 1 ] || yay_die "usage: yayh knowledge stamp <doc|CLAUDE.md> [ref]"; yay_knowledge_stamp "$@" ;;
+      stamp) [ $# -ge 1 ] || yay_die "usage: yayh knowledge stamp <doc|CLAUDE.md>... [ref]"; yay_knowledge_stamp "$@" ;;
       block) yay_project_block ;;
       *) yay_die "usage: yayh knowledge docs|check|stale|stamp|block" ;;
     esac ;;

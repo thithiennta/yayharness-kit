@@ -185,7 +185,8 @@ yay_detect() {
     vf="{\"file\":$(yay_json_str "$main"),\"pattern\":$(yay_json_str '^[[:space:]*]*Version:[[:space:]]*([0-9][^[:space:]]*)')}"
     # A theme defines its version constant in functions.php, a plugin in its main file.
     local cf="$main" const; [ "$kind" = theme ] && cf=functions.php
-    const="$(grep -oE "define\([[:space:]]*'[A-Z0-9_]+_VERSION'" "$root/$cf" 2>/dev/null | sed -n 1p | grep -oE "[A-Z0-9_]+_VERSION" || true)"
+    # Only a literal value: define( 'X_VERSION', wp_get_theme()->get( 'Version' ) ) has nothing to rewrite.
+    const="$(grep -oE "define\([[:space:]]*'[A-Z0-9_]+_VERSION',[[:space:]]*'[^']+'" "$root/$cf" 2>/dev/null | sed -n 1p | grep -oE "[A-Z0-9_]+_VERSION" || true)"
     [ -n "$const" ] && vf="$vf,{\"file\":$(yay_json_str "$cf"),\"pattern\":$(yay_json_str "define\\([[:space:]]*'$const',[[:space:]]*'([^']+)'")}"
   fi
   # A theme's readme.txt usually has no Stable tag, and a pattern that matches nothing fails `version set`.

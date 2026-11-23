@@ -9,7 +9,7 @@ YAY_TESTS_TEMPLATES="${YAY_KIT_ROOT:-$(cd "$(dirname "${BASH_SOURCE[0]}")/.." &&
 yay_tests_php_dir() { yay_config_get tests.php 2>/dev/null || echo tests/php; }
 yay_tests_js_dir() { yay_config_get tests.js 2>/dev/null || echo tests/js; }
 
-# vitest | jest | wp-scripts | none: tests.jsRunner, else what package.json already uses.
+# vitest | jest | wp-scripts | node-test | none: tests.jsRunner, else what package.json already uses.
 _tests_js_runner() {
   local r root; r="$(yay_config_get tests.jsRunner 2>/dev/null || true)"
   if [ -n "$r" ]; then printf '%s\n' "$r"; return; fi
@@ -18,7 +18,20 @@ _tests_js_runner() {
   if grep -q '"vitest"' "$root/package.json"; then echo vitest
   elif grep -q '"jest"' "$root/package.json"; then echo jest
   elif grep -q '"@wordpress/scripts"' "$root/package.json"; then echo wp-scripts
+  elif grep -qE '"[^"]*node (--[a-z-]+ )*--test' "$root/package.json"; then echo node-test
   else echo vitest; fi
+}
+
+# The package.json script that already runs the JS tests: test:js, test:unit, or a
+# test script that isn't the PHP one. Empty when there's none.
+_tests_js_script() {
+  local root s v; root="$(yay_repo_root)"
+  [ -f "$root/package.json" ] || return 0
+  for s in test:js test:unit test; do
+    v="$(yay_json_get "$root/package.json" "scripts.$s" 2>/dev/null || true)"
+    case "$v" in ""|*phpunit*|*"no test specified"*) continue ;; esac
+    printf '%s\n' "$s"; return 0
+  done
 }
 
 _tests_up() { # <path> -> ".." per segment
@@ -74,11 +87,11 @@ yay_tests_detect() {
   done
 }
 
-# yay_tests_scaffold [php=tests/php] [js=tests/js] [js-runner=vitest|jest|wp-scripts|none]
-#   [--no-integration] [--no-js] [--no-ci]: writes the missing files, adds missing config keys,
+# yay_tests_scaffold [php=tests/php] [js=tests/js] [js-runner=vitest|jest|wp-scripts|node-test|none]
+#   [--no-integration] [--no-js] [--no-ci] [--wc]: writes the missing files, adds missing config keys,
 #   and prints created/exists/updated/config lines plus deps lines (packages to install).
 yay_tests_scaffold() {
-  local php="" js="" runner="" integ=1 ci=1 a root cfg
+  local php="" js="" runner="" integ=1 ci=1 forcewc=0 a root cfg
   for a in "$@"; do
     case "$a" in
       php=*) php="${a#php=}" ;;
@@ -87,7 +100,8 @@ yay_tests_scaffold() {
       --no-integration) integ=0 ;;
       --no-js) runner=none ;;
       --no-ci) ci=0 ;;
-      *) yay_die "usage: yayh test scaffold [php=tests/php] [js=tests/js] [js-runner=vitest|jest|wp-scripts|none] [--no-integration] [--no-js] [--no-ci]" ;;
+      --wc) forcewc=1 ;;
+      *) yay_die "usage: yayh test scaffold [php=tests/php] [js=tests/js] [js-runner=vitest|jest|wp-scripts|node-test|none] [--no-integration] [--no-js] [--no-ci] [--wc]" ;;
     esac
   done
   root="$(yay_repo_root)"; cfg="$(yay_config_file)"
@@ -97,7 +111,7 @@ yay_tests_scaffold() {
   php="${php%/}"; js="${js%/}"
   for a in "$php" "$js"; do case "$a" in /*|*..*) yay_die "test dirs must be relative paths inside the repo" ;; esac; done
   [ -n "$runner" ] || runner="$(_tests_js_runner)"
-  case "$runner" in vitest|jest|wp-scripts|none) ;; *) yay_die "js-runner must be vitest, jest, wp-scripts or none" ;; esac
+  case "$runner" in vitest|jest|wp-scripts|node-test|none) ;; *) yay_die "js-runner must be vitest, jest, wp-scripts, node-test or none" ;; esac
 
   local pm wc flags levels jsroot e2e node jsinstall prepare v unitcmd jscmd="" integcmd extra slug kind
   pm="$(yay_detect_pm 2>/dev/null || echo npm)"
@@ -107,7 +121,7 @@ yay_tests_scaffold() {
     *) pm=npm; jsinstall="npm ci" ;;
   esac
   wc="$(yay_config_get requires.wc 2>/dev/null || true)"
-  flags="$pm"; case "$wc" in ''|null) ;; *) flags="$flags,woo" ;; esac
+  flags="$pm"; case "$wc" in ''|null) [ "$forcewc" = 0 ] || flags="$flags,woo" ;; *) flags="$flags,woo" ;; esac
   [ "$runner" = none ] || flags="$flags,js"
   [ "$integ" = 1 ] && flags="$flags,integration"
   kind="$(yay_kind)"; flags="$flags,$kind"
@@ -134,10 +148,15 @@ yay_tests_scaffold() {
     jest) jscmd="./node_modules/.bin/jest $js" ;;
     wp-scripts) jscmd="./node_modules/.bin/wp-scripts test-unit-js $js" ;;
   esac
+  # node --test, or no runner to add: keep the script the repo already runs its JS tests with.
+  case "$runner" in node-test|none)
+    v="$(_tests_js_script)"; [ -z "$v" ] || jscmd="$pm run $v" ;;
+  esac
 
   # Integration runs in wp-env's tests site, which lives in the e2e package.
   if [ "$integ" = 1 ] && [ ! -f "$root/$e2e/.wp-env.json" ]; then
-    if [ "$ci" = 1 ]; then yay_e2e_scaffold "dir=$e2e"; else yay_e2e_scaffold "dir=$e2e" --no-ci; fi
+    set -- "dir=$e2e"; [ "$ci" = 1 ] || set -- "$@" --no-ci; [ "$forcewc" = 0 ] || set -- "$@" --wc
+    yay_e2e_scaffold "$@"
   fi
   if [ "$integ" = 1 ] && grep -q '"testsEnvironment":[[:space:]]*false' "$root/$e2e/.wp-env.json" 2>/dev/null; then
     sed -i.bak -E 's/"testsEnvironment":[[:space:]]*false/"testsEnvironment": true/' "$root/$e2e/.wp-env.json" && rm -f "$root/$e2e/.wp-env.json.bak"
@@ -168,7 +187,12 @@ yay_tests_scaffold() {
   done <<EOF
 $(cd "$YAY_TESTS_TEMPLATES" && find . -type f | sed 's|^\./||' | sort)
 EOF
-  [ "$runner" = none ] || mkdir -p "$root/$js"
+  case "$runner" in none|node-test) ;; *) mkdir -p "$root/$js" ;; esac
+  # PHPUnit 9 writes its result cache where it runs.
+  if ! git -C "$root" check-ignore -q .phpunit.result.cache 2>/dev/null; then
+    printf '.phpunit.result.cache\n' >> "$root/.gitignore"
+    printf 'updated\t.gitignore\t.phpunit.result.cache\n'
+  fi
 
   # Config: add only what's missing, so hand-tuned commands survive a re-run.
   local snippet="" key cmd tmp cmds="" tcfg=""
@@ -186,7 +210,7 @@ EOF
   [ -z "$cmds" ] || snippet="\"commands\":{$cmds}"
   for key in php js jsRunner; do
     yay_json_get "$cfg" "tests.$key" >/dev/null 2>&1 && continue
-    case "$key" in php) v="$php" ;; js) [ "$runner" = none ] && continue; v="$js" ;; jsRunner) v="$runner" ;; esac
+    case "$key" in php) v="$php" ;; js) case "$runner" in none|node-test) continue ;; esac; v="$js" ;; jsRunner) v="$runner" ;; esac
     tcfg="$tcfg${tcfg:+,}$(yay_json_str "$key"):$(yay_json_str "$v")"
     printf 'config\ttests.%s\n' "$key"
   done
@@ -202,13 +226,15 @@ EOF
   for p in phpunit/phpunit:^9.6 yoast/phpunit-polyfills:^2.0 brain/monkey:^2.6; do
     grep -q "\"${p%%:*}\"" "$root/composer.json" 2>/dev/null || need="$need $p"
   done
-  [ -z "$need" ] || printf 'deps\tcomposer\tcomposer require --dev --no-interaction -W%s\n' "$need"
-  if [ "$runner" != none ]; then
+  [ -z "$need" ] || printf 'deps\tcomposer\tcomposer require --dev --no-interaction -W --prefer-stable%s\n' "$need"
+  case "$runner" in none|node-test) ;; *)
+    # vitest 4+ needs Node 20.19+; 3 runs on the Node 18 and 20 the plugins build with.
     case "$runner" in vitest) p=vitest ;; jest) p=jest ;; wp-scripts) p=@wordpress/scripts ;; esac
     if ! grep -q "\"$p\"" "$root/package.json" 2>/dev/null; then
+      [ "$p" = vitest ] && p="vitest@^3"
       case "$pm" in npm) printf 'deps\tnpm\tnpm install --save-dev %s\n' "$p" ;; *) printf 'deps\t%s\t%s add -D %s\n' "$pm" "$pm" "$p" ;; esac
-    fi
-  fi
+    fi ;;
+  esac
 }
 
 # Test files per layer.
@@ -322,7 +348,7 @@ yay_tests_status() {
   printf 'php\t%s\t\n' "$v"
   if [ -x "$root/vendor/bin/phpunit" ]; then v=installed; else v=missing; fi
   printf 'deps\t%s\tvendor/bin/phpunit\n' "$v"
-  if [ "$runner" != none ]; then
+  if [ "$runner" != none ] && [ "$runner" != node-test ]; then
     case "$runner" in wp-scripts) a=wp-scripts ;; *) a="$runner" ;; esac
     if [ -x "$root/node_modules/.bin/$a" ]; then v=installed; else v=missing; fi
     printf 'jsdeps\t%s\tnode_modules/.bin/%s\n' "$v" "$a"

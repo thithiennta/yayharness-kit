@@ -39,7 +39,7 @@ yay_code_index() {
   root="$(yay_repo_root)"
   { if [ $# -gt 0 ]; then printf '%s\n' "$@"; else _yay_code_files; fi; } | while IFS= read -r f; do
     [ -f "$root/$f" ] || continue
-    awk -v file="$f" '
+    LC_ALL=C awk -v file="$f" '
       function sig(s) { sub(/^[[:space:]]+/, "", s); sub(/[[:space:]]*\{[[:space:]]*$/, "", s); return substr(s, 1, 160) }
       function emit(kind, name) { printf "%s\t%d\t%s\t%s\t%s\t%s\n", file, FNR, kind, name, sig($0), doc; doc = "" }
       # docblock summary: the first text line of the /** … */ right above a definition
@@ -83,7 +83,7 @@ yay_code_index() {
 # _yay_code_words <text> -> lowercase words, split on non-alphanumerics and camelCase.
 _yay_code_words() {
   printf '%s\n' "$*" | sed -E 's/([a-z0-9])([A-Z])/\1 \2/g' | tr 'A-Z' 'a-z' | tr -c 'a-z0-9\n' ' ' \
-    | tr ' ' '\n' | awk 'length($0) >= 2 && !seen[$0]++'
+    | tr ' ' '\n' | LC_ALL=C awk 'length($0) >= 2 && !seen[$0]++'
 }
 
 # yay_code_find <words...> [--limit=N] [--kind=function|method|class|const]
@@ -97,7 +97,7 @@ yay_code_find() {
   done
   [ -n "${q# }" ] || yay_die "usage: yayh code find <words...> [--limit=N] [--kind=…]"
   local words; words="$(_yay_code_words "$q" | tr '\n' ' ')"
-  yay_code_index | awk -F '\t' -v words="$words" -v kind="$kind" '
+  yay_code_index | LC_ALL=C awk -F '\t' -v words="$words" -v kind="$kind" '
     function split_words(s, out,   i, c, buf) {
       # camelCase and snake_case -> words (portable awk has no lookbehind)
       out_n = 0; buf = ""
@@ -138,11 +138,11 @@ yay_code_new() {
     case "$f" in *.php|*.js|*.jsx|*.ts|*.tsx|*.mjs) ;; *) continue ;; esac
     idx="$(yay_code_index "$f")"; [ -n "$idx" ] || continue
     if git -C "$root" ls-files --error-unmatch -- "$f" >/dev/null 2>&1 && git -C "$root" cat-file -e "$mb:$f" 2>/dev/null; then
-      added="$(git -C "$root" diff -U0 "$mb" -- "$f" | awk '/^@@/ { split($3, a, ","); l = substr(a[1], 2) + 0; next } /^\+\+\+/ { next } /^\+/ { printf "%s%d", (n++ ? "," : ""), l; l++ }')"
+      added="$(git -C "$root" diff -U0 "$mb" -- "$f" | LC_ALL=C awk '/^@@/ { split($3, a, ","); l = substr(a[1], 2) + 0; next } /^\+\+\+/ { next } /^\+/ { printf "%s%d", (n++ ? "," : ""), l; l++ }')"
     else
       added="ALL"
     fi
-    printf '%s\n' "$idx" | awk -F '\t' -v added="$added" 'BEGIN { if (added != "ALL") { n = split(added, a, ","); for (i = 1; i <= n; i++) ok[a[i]] = 1 } }
+    printf '%s\n' "$idx" | LC_ALL=C awk -F '\t' -v added="$added" 'BEGIN { if (added != "ALL") { n = split(added, a, ","); for (i = 1; i <= n; i++) ok[a[i]] = 1 } }
       added == "ALL" || ($2 in ok)'
   done <<EOF
 $files
@@ -172,7 +172,7 @@ yay_code_unused() {
     hits="$(git -C "$root" grep -n -w -I -F --untracked -e "$short" -- \
         '*.php' '*.js' '*.jsx' '*.ts' '*.tsx' '*.mjs' \
         ':!*vendor/*' ':!*node_modules/*' ':!*.min.js' ':!dist/*' ':!*/dist/*' ':!build/*' ':!*/build/*' ':!release/*' 2>/dev/null \
-      | awk -F ':' -v self="$f:$ln" '$1 ":" $2 != self { print $1 }')"
+      | LC_ALL=C awk -F ':' -v self="$f:$ln" '$1 ":" $2 != self { print $1 }')"
     src=0; tst=0
     while IFS= read -r h; do
       [ -n "$h" ] || continue
@@ -184,7 +184,7 @@ EOF
     [ "$src" -eq 0 ] || continue
     note=""
     if [ "$kind" = method ]; then
-      csig="$(yay_code_index "$f" | awk -F '\t' -v ln="$ln" '$3 == "class" && $2 + 0 < ln + 0 { s = $5 } END { print s }')"
+      csig="$(yay_code_index "$f" | LC_ALL=C awk -F '\t' -v ln="$ln" '$3 == "class" && $2 + 0 < ln + 0 { s = $5 } END { print s }')"
       case "$csig" in *" extends "*|*" implements "*)
         note="may be called by name from its parent: ${csig#*class }" ;;
       esac
