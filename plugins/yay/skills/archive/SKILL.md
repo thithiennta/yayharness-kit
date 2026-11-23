@@ -1,6 +1,6 @@
 ---
 name: archive
-description: Clean up finished work a Yay plugin release has shipped, so docs/ stays small over time. Deletes the plans, brainstorms, bugs, backlog notes, designs, roadmap items, empty past sprints and release briefs that were final in the release, and keeps one row each in docs/archive.md (ids stay taken, text is one git show away). Use when the user says "archive", "clean up the roadmap", "clean up old plans", "docs are too big", "tidy the backlog", or after /yay:release --tag-only.
+description: Clean up finished work a Yay plugin release has shipped, so docs/ stays small over time. Deletes the plans, brainstorms, bugs, backlog notes, designs, roadmap items (with their item briefs), empty past sprints and release briefs that were final in the release, and keeps one row each in docs/archive.md (ids stay taken, text is one git show away). Use when the user says "archive", "clean up the roadmap", "clean up old plans", "docs are too big", "tidy the backlog", or after /yay:release --tag-only.
 argument-hint: "[--release=<tag>] [--dry-run] [--no-pr]"
 allowed-tools: Bash(yayh *), Bash(git *), Bash(gh *), Read
 ---

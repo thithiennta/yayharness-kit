@@ -37,6 +37,7 @@ Always edit through `yayh roadmap` where a command exists (`add`, `set`, `move`)
 | `--multi-agent` / `--plugins=a,b\|all` / `--rounds=1\|2` | Co-plan several plugins. See `reference/roadmap-extras.md`. |
 | `--publish` | Publish the roadmap as a private page. See `reference/roadmap-extras.md`. |
 | `--trello` | Optional. Also mirror the sprints and items to a Trello board. Off unless given. See `reference/roadmap-extras.md`. |
+| `--brief[=R-<n>] "<notes>"` | Write an **item brief**: what one item is (flow, rules, out of scope, done when), for the developers, in `docs/briefs/`. No id: add the item first. See `${CLAUDE_PLUGIN_ROOT}/reference/briefs.md`. Briefs are also offered after every plan, version plan and `--add` (same file, **Offer after planning**). |
 | `--dry-run` | Show the proposed roadmap and change nothing. |
 | `--no-pr`, `--draft` | As in `/yay:implement`: the PR is opened by default; `--no-pr` finishes locally and prints the commands; draft PR. |
 
@@ -104,6 +105,8 @@ Commit: `docs(roadmap): add R-<n> <title>` (several: `add R-5..R-7 for 1.5.0`, o
 
 With `--trello`, sync only the item that changed (`reference/roadmap-extras.md`, Trello).
 
+After an `--add` is committed, offer briefs for the new items (`${CLAUDE_PLUGIN_ROOT}/reference/briefs.md`, **Offer after planning**).
+
 ## Plan (default)
 
 1. **Where we are.**
@@ -136,6 +139,7 @@ With `--trello`, sync only the item that changed (`reference/roadmap-extras.md`,
 7. **Trello** (only with `--trello`): sync before committing, so the saved card URLs go in the same commit. See `reference/roadmap-extras.md`.
 8. **Commit and PR**: `docs(roadmap): plan to <horizon>`, as above.
 9. **Report** the sprint table with the new ids, what slipped and where it went, what was promoted, the Trello cards (with `--trello`), the PR link, and end with the **Next** line (`reference/asking.md`), usually the top row of `yayh status` (`/yay:brainstorm --from=R-<n>` for the first item of the current sprint).
+10. **Offer briefs** for the items this plan added or scheduled (`${CLAUDE_PLUGIN_ROOT}/reference/briefs.md`, **Offer after planning**).
 
 ## Version plan (`--target=<v>` without `--add`)
 
@@ -143,14 +147,15 @@ Plan one release instead of the whole horizon.
 1. Resolve `<v>` (**Target version**). Run Plan steps 1–2 as usual.
 2. **Scope.** The version's items are `yayh roadmap list --target=<v>`, plus any items the request names (added with `target=<v>`; **Unclear items** applies to them as to `--add`). When the request asks for suggestions ("what should go in 1.5.0"), propose evidenced candidates (Plan step 3) and say which you added.
 3. **Fit.** Sum the sizes against capacity from the current sprint on. Schedule the version's items into the earliest sprints that fit, dependencies first, ahead of untargeted work. The sprint where the last one lands is the earliest the version can be released: say so. When that's past the horizon or in a freeze, name what to cut or retarget (a hard call for the step-5 question round). Even when it fits, name the **cut candidates**: the 1–3 items that go first if the work runs late (low value per day, nothing depends on them).
-4. **Brief.** `yayh roadmap brief <v>` creates `docs/roadmap/release-<v>.md` (or says it exists; then update it rather than rewrite it). It's hand-written and `yayh roadmap` never touches it. Fill it in plain words a leader or support can read:
+4. **Release brief.** `yayh roadmap brief <v>` creates `docs/roadmap/release-<v>.md` (or says it exists; then update it rather than rewrite it). It's hand-written and `yayh roadmap` never touches it. Fill it in plain words a leader or support can read:
    - **Goal:** what the release is for and who gets what.
    - **Release criteria:** `- [ ]` lines that must be true to ship: each item's `acceptance` merged into release-level checks (works on every edition and checkout it names, upgrades from the last release, any guideline a wordpress.org submission needs). `/yay:release` checks them.
    - **Out of scope:** what people might expect and where it goes instead, plus "Cut first if late: R-<a>, R-<b>" from step 3.
    - **Risks:** what could go wrong for merchants or shoppers, its impact, and what limits it.
    - **Open questions:** each with the proposal the work follows until someone answers. Your own hard calls from step 3 go here too when they can wait.
-5. **Write and commit** as in Plan steps 6–8 (`docs(roadmap): plan <v>`); every item in scope carries `target=<v>`, and the brief rides in the same commit (`git add -- docs/roadmap`).
+5. **Write and commit** as in Plan steps 6–8 (`docs(roadmap): plan <v>`); every item in scope carries `target=<v>`, and the release brief rides in the same commit (`git add -- docs/roadmap`).
 6. **Report** the version's table (id, title, size, sprint, status), its earliest release sprint, the cut candidates, the open questions, and **Next**: `/yay:autopilot --target=<v>` to build it all, or `/yay:brainstorm --from=R-<n>` for the first item.
+7. **Offer briefs** for the version's items that have none (`${CLAUDE_PLUGIN_ROOT}/reference/briefs.md`, **Offer after planning**).
 
 `--status --target=<v>` is read-only: the version's items with status and sprint (`docs/roadmap/v<v>.md`, or `yayh roadmap list --target=<v>`), what's left to build, the item whose sprint ends last (it holds the release back), the target counts from `yayh roadmap status`, and `yayh roadmap brief <v> --check`: the release criteria not yet ticked and the open questions (or that the version has no brief yet: `/yay:roadmap --target=<v>` writes one).
 

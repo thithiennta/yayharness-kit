@@ -31,6 +31,7 @@ YAY_LIB_DIR="$YAY_KIT_ROOT/lib"
 . "$YAY_LIB_DIR/verify.sh"
 . "$YAY_LIB_DIR/lessons.sh"
 . "$YAY_LIB_DIR/report.sh"
+. "$YAY_LIB_DIR/brief.sh"
 
 usage() {
   cat <<'EOF'
@@ -123,13 +124,23 @@ Artifacts (brainstorms, plans, bugs, backlog)
 Reports (/yay:report: shared with the lead or team, kept in .yay/reports/, never committed)
   report new <idea|done|feature|guide> "<title>" [--lang=en|vi] [--for=team|devs]
                                    a markdown report from the kind's template (language: --lang,
-                                   else report.lang, else en; --for: guides only, devs allows code); prints the path
+                                   else language, else en; --for: guides only, devs allows code); prints the path
   report check <report> [--max-words=N]
                                    plain-language errors and warnings (exit 1 on errors; limit 300 words, 450 in vi, guides 400/600)
   report render <report> [--text] [--max-words=N]
                                    check, then write the plain page next to it (prints the path),
                                    or print paste-ready text; refuses while check has errors
   report list                      date, kind, title, path (TSV, newest first)
+
+Item briefs (/yay:roadmap --brief: what one roadmap item is, docs/briefs/R-<n>-<slug>.md; not the release brief)
+  brief new <R-n> [--lang=en|vi]   a brief from the template, linked from the item (- brief:); prints the path
+  brief path <R-n>                 the item's brief (exit 3 when it has none)
+  brief check <R-n|path> [--max-words=N]
+                                   plain-language errors and warnings, 3-7 Done when checks, a real
+                                   Out of scope (exit 1 on errors; limit 700 words, 1000 in vi)
+  brief checks <R-n|path>          how many Done when checks it has
+  brief render <R-n|path> [--text] check, then the plain page in .yay/briefs/ (prints the path), or text
+  brief list                       item, status, title, path (TSV)
 
 Roadmap (docs/roadmap/: README.md + one file per sprint; or one docs/roadmap.md)
   roadmap layout                   split | single | none
@@ -388,6 +399,17 @@ case "$cmd" in
       open) yay_backlog_open "$@" ;;
       settle) [ $# -ge 2 ] || yay_die "usage: yayh backlog settle <BL-n> decided \"<answer>\" | planned <P-n> | done \"<commit or PR>\" | dropped \"<why>\""; yay_backlog_settle "$@" ;;
       *) yay_die "usage: yayh backlog open|settle" ;;
+    esac ;;
+  brief)
+    sub="${1:-}"; shift || true
+    case "$sub" in
+      new) yay_brief_new "$@" ;;
+      path) [ $# -eq 1 ] || yay_die "usage: yayh brief path <R-n>"; yay_brief_path "$1" ;;
+      check) yay_brief_check "$@" ;;
+      checks) [ $# -eq 1 ] || yay_die "usage: yayh brief checks <R-n|path>"; yay_brief_checks "$1" ;;
+      render) yay_brief_render "$@" ;;
+      list) yay_brief_list ;;
+      *) yay_die "usage: yayh brief new|path|check|checks|render|list" ;;
     esac ;;
   report)
     sub="${1:-}"; shift || true

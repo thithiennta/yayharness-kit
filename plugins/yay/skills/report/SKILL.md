@@ -24,7 +24,7 @@ The kit does the hard part of keeping reports clean: the agent writes **text onl
 | `--for=team\|devs` | Guides only: who follows it. `team` (default) is support, a lead or a store owner, with every plain-language rule. `devs` is developers: commands, paths and setting names are allowed in backticks or a code block under their step, and the jargon warnings are off. |
 | `[topic or notes]` | What it's about, or the user's raw notes. Without a kind, pick it from the words ("I finished…" is `done`, "customers want…" is `feature`, "how to…" or "steps to…" is `guide`, with `devs` when it runs commands or touches the code, anything else is `idea`). |
 | `--from=<id\|branch>` | Ground it in a plan, roadmap item, brainstorm, bug or branch: read it, and for `done` read the branch's commits and PR. |
-| `--lang=en\|vi` | The language the **reader** reads. Default: `report.lang` from `.yay/config.json` or `.yay/local.json` (`yayh config get report.lang en`), then English. The developer's notes can be in either language; the report is written in this one. |
+| `--lang=en\|vi` | The language the **reader** reads. Default: `language` from `.yay/config.json` or `.yay/local.json` (`yayh config get language en`), then English. The developer's notes can be in either language; the report is written in this one. |
 | `--text` | Paste-ready text only, no page. |
 | `--max-words=N` | Raise or lower the word limit: 300 in English, 450 in Vietnamese (each syllable counts as a word); a guide gets 400 and 600. The developers section and code blocks never count. |
 

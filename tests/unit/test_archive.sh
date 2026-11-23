@@ -155,3 +155,24 @@ test_archive_takes_screenshots_and_waits_for_uncommitted_ones() {
   assert_no_file "$YAY_REPO/docs/assets/B-1"
   assert_file "$YAY_REPO/docs/assets/R-2/1-wip.png"            # R-2 stays, so do its screenshots
 }
+
+test_archive_takes_an_item_brief_with_its_item_only() {
+  export YAY_REPO; YAY_REPO="$(mk_repo)"
+  mkdir -p "$YAY_REPO/.yay" "$YAY_REPO/docs/briefs"
+  printf '{"git":{"baseBranch":"main"}}\n' > "$YAY_REPO/.yay/config.json"
+  printf -- '---\nsprint_length: 2w\n---\n# Roadmap\n\n## Later\n\n### R-1 Shipped thing\n- status: shipped:1.0.0\n- size: S\n- brief: docs/briefs/R-1-shipped-thing.md\n\n### R-3 Someday\n- status: todo\n- size: L\n- brief: docs/briefs/R-3-someday.md\n' > "$YAY_REPO/docs/roadmap.md"
+  printf -- '---\nitem: R-1\ntitle: Shipped thing\nstatus: ready\n---\n# R-1 Shipped thing\n' > "$YAY_REPO/docs/briefs/R-1-shipped-thing.md"
+  printf -- '---\nitem: R-3\ntitle: Someday\nstatus: draft\n---\n# R-3 Someday\n' > "$YAY_REPO/docs/briefs/R-3-someday.md"
+  commit_all "$YAY_REPO" "chore: init"
+  git -C "$YAY_REPO" tag -a v1.0.0 -m "v1.0.0"
+  local dry out; dry="$("$YAYH" artifact archive)"
+  assert_contains "$dry" "archive	R-1	shipped:1.0.0	docs/roadmap.md"
+  assert_contains "$dry" "archive	R-1 brief	ready	docs/briefs/R-1-shipped-thing.md"
+  assert_not_contains "$dry" "R-3"
+  out="$("$YAYH" artifact archive --yes)"
+  assert_contains "$out" "archived	R-1 brief	docs/briefs/R-1-shipped-thing.md"
+  assert_no_file "$YAY_REPO/docs/briefs/R-1-shipped-thing.md"
+  assert_file "$YAY_REPO/docs/briefs/R-3-someday.md"
+  assert_contains "$(cat "$YAY_REPO/docs/archive.md")" "| R-1 brief | Brief: Shipped thing | ready |"
+  assert_eq "docs/briefs/R-3-someday.md" "$("$YAYH" brief path R-3)"
+}
