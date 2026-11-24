@@ -2,7 +2,7 @@
 
 `/yay:harness-update` reads this file to tell a repo what changed between its recorded kit version and the installed one. Each entry lists new skills, config keys, template changes and behavior changes.
 
-## Unreleased (0.18.0)
+## 0.18.0 (2026-11-24)
 - **Every skill that starts from your words says the job back first, and big work waits for you** (P-4, from Lauren Tan's "make it say the job back" and Thariq Shihipar's "Finding your unknowns"). Run `/yay:harness-update` to pick up the plan template; everything else comes with the plugin update. The rules are in `reference/restate.md`.
   - The block now has five lines: Reading, **Assumed** (the guesses you can correct, shown before the work instead of only at the end), Not doing, **Watch for** (at most 3 blind spots this change could hit, such as HPOS, block checkout, Free vs Pro, caching or data older versions stored) and Done when. Each skill adds its own line: Model on (implement, fix, plan), Deciding (brainstorm), Who/Where (design), Seen/Expected/Since (debug), and a Proving line per risk in test and e2e.
   - **Big work stops once on it, before writing any file:** `/yay:brainstorm`, `/yay:design`, `/yay:debug` from a pasted thread or a long report, and `/yay:plan` and `/yay:implement` in the standard lane from words. The stop is the run's one question round: "Is this the job?" first, then at most 2 hard questions moved up from later in the run. Small and tiny work, test and e2e show the block and carry on. With nobody to ask (`--no-ask`, autopilot), nothing waits, and a stop with no answer goes on with the agent's reading.
