@@ -38,6 +38,7 @@ Always edit through `yayh roadmap` where a command exists (`add`, `set`, `move`)
 | `--publish` | Publish the roadmap as a private page. See `reference/roadmap-extras.md`. |
 | `--trello` | Optional. Also mirror the sprints and items to a Trello board. Off unless given. See `reference/roadmap-extras.md`. |
 | `--brief[=R-<n>] "<notes>"` | Write an **item brief**: what one item is (flow, rules, out of scope, done when), for the developers, in `docs/briefs/`. No id: add the item first. See `${CLAUDE_PLUGIN_ROOT}/reference/briefs.md`. Briefs are also offered after every plan, version plan and `--add` (same file, **Offer after planning**). |
+| `--interview` | With `--brief`: interview one question at a time instead of one round (`${CLAUDE_PLUGIN_ROOT}/reference/restate.md`). |
 | `--dry-run` | Show the proposed roadmap and change nothing. |
 | `--no-pr`, `--draft` | As in `/yay:implement`: the PR is opened by default; `--no-pr` finishes locally and prints the commands; draft PR. |
 

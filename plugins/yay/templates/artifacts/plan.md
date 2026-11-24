@@ -19,6 +19,12 @@ created: {{today}}
 
 ## Non-goals
 
+## Key decisions
+<!-- What a reviewer checks first: the parts most likely to change the work. One bullet each, with the choice and why, or "none":
+- Stored data: options, meta, tables, and what older versions already stored
+- Hooks and public shapes: actions and filters added, REST routes, blocks, templates others override
+- User-facing flow: what the shopper or admin sees and does, step by step -->
+
 ## Findings
 <!-- Read this first. What reading the code changed about the source (brainstorm, roadmap item, bug), one numbered item each, with its file:line evidence and what the plan does about it. Then any docs the plan differs from: "differs: docs/knowledge/x.md says … → T4 updates it". Write "none" when the code held no surprises. -->
 
