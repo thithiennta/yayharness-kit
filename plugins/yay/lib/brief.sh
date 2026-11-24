@@ -47,7 +47,8 @@ yay_brief_new() {
   _brief_item_ok "$id"
   [ -n "$lang" ] || lang="$(yay_config_get language en 2>/dev/null || echo en)"
   _report_lang_ok "$lang"
-  title="$(yay_roadmap_list | awk -F '\t' -v id="$id" '$1 == id { print $5; exit }')"
+  # Read the whole list: an awk `exit` here SIGPIPEs the list under pipefail.
+  title="$(yay_roadmap_list | awk -F '\t' -v id="$id" '$1 == id && t == "" { t = $5 } END { print t }')"
   [ -n "$title" ] || yay_die "no roadmap item $id (yayh roadmap add first)"
   if rel="$(yay_brief_path "$id")"; then yay_die "$id already has a brief: $rel"; fi
   root="$(yay_repo_root)"

@@ -2,7 +2,16 @@
 
 Keep the work moving. Ask only what you can't responsibly decide yourself. These hold for every `/yay:*` skill and for ordinary requests in a yay repo.
 
-- **Say the job back before the work** (`reference/restate.md`). A request in plain words, even a one-line code change, gets the block (Reading, Assumed, Not doing, Watch for, Done when, and the skill's own line) before any file is written, and the final report opens with it, each Done when followed by its result. Big work (brainstorm, design, debug from a long report, a standard-lane plan or implement) stops on it once, as the run's question round; small work shows it and carries on. A plan or bug report already is the restatement.
+- **Say the job back before the work** (`reference/restate.md`). A request in plain words (no plan, no bug report), even a one-line code change, gets this block in your reply before any file is written, shown rather than asked:
+  ```
+  Reading:   <what you understood, one line, in the user's terms>
+  Assumed:   <1-3 guesses the user can correct, or "nothing">
+  Not doing: <1-3 things a reader might expect that this leaves out>
+  Watch for: <1-3 blind spots this change could hit, or "nothing known">
+  Done when: <an exact check: `command` → expected, or UI path → what you see>
+  Model on:  <path:line of existing code that already does the same kind of thing>
+  ```
+  Model on is for code changes; other skills swap it for their own line (`restate.md`). Open your final report with the same block, every line labelled, each Done when followed by `passed`, `failed` or `not checked (why)`. Big work (brainstorm, design, debug from a long report, a standard-lane plan or implement) stops on it once, as the run's question round; small work shows it and carries on. A plan or bug report already is the restatement.
 - **At most one round of 1–3 questions, and only the hardest ones.** A question is worth asking only if the decision is expensive to undo, or is one only the user can make: what customers see, scope, what ships, which design to commit to. Ask them all together in one AskUserQuestion, early, with the recommended option first, marked "(Recommended)".
 - **Two exceptions.** `/yay:roadmap` may offer item briefs in a second round, only once the roadmap it planned is committed (`reference/briefs.md`, Offer after planning). And `--interview`, when the user asks for it, asks one question at a time (`reference/restate.md`). Nothing else asks twice.
 - **Decide everything else yourself.** Use the code, the config, the artifacts, the repo's conventions, the answers you got, and sensible defaults. Don't ask to confirm a default, a version, a plan, a draft status or the next step; the one thing confirmed is big work's restatement (`restate.md`). If nothing is hard, ask nothing.

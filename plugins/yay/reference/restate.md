@@ -57,4 +57,4 @@ On `/yay:brainstorm`, `/yay:plan` and `/yay:roadmap --brief`, when the user asks
 
 ## The finish line
 
-The final report opens with the block, each Done when followed by `passed`, `failed` or `not checked (why)`. Assumptions the user never confirmed go under **Decided**.
+The final report opens with the whole block, every line labelled as above (the skill's own line included), each Done when followed by `passed`, `failed` or `not checked (why)`. Assumptions the user never confirmed go under **Decided**.
