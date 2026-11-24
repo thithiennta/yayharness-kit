@@ -2,7 +2,7 @@
 
 `/yay:harness-update` reads this file to tell a repo what changed between its recorded kit version and the installed one. Each entry lists new skills, config keys, template changes and behavior changes.
 
-## Unreleased (0.17.0)
+## 0.17.0 (2026-11-24)
 - **Item briefs: what a roadmap item is, written by the product manager for the developers.** Run `/yay:harness-update` to pick up the `docs/briefs/` folder, the CLAUDE.md row, the gitignore line and the workflow doc; the rest comes with the plugin update.
   - `/yay:roadmap --brief=R-<n> "<notes>"` (or `--brief "<idea>"`, which adds the item first) drafts `docs/briefs/R-<n>-<slug>.md` from the notes and the evidence, asks one round on the gaps (edge cases, out of scope, how we'll know it's done), checks it, has a cold reader (a developer new to the plugin) list what they'd have to guess, and links it from the item with `- brief:`. Sections: In one line, Problem, What the user sees, Rules and edge cases, Out of scope, Done when (3-7 checkboxes), Open questions, and an optional, folded For developers. English or Vietnamese (`language`).
   - **Offered once the roadmap is decided:** after a plan, a version plan or `--add` is written and committed, `/yay:roadmap` offers briefs for every item it scheduled that has none, in one question, then drafts them all and asks one round for all of them. Never mid-planning, and never with nobody to ask. `reference/asking.md` names this as its one exception to "one round".
@@ -20,9 +20,9 @@
   - **Guides** (`/yay:report guide`): Before you start, numbered Steps (up to 12), Check it worked, If it goes wrong. `--for=team` (default) keeps every plain-language rule, for support, a lead or a store owner. `--for=devs` allows commands in a code block under their step and paths in backticks, turns the jargon warnings off, and keeps the summary code-free. Guides get 400 words (600 in Vietnamese), code blocks not counted, and the cold reader walks the steps and says where it would get stuck. A step's code and notes stay inside the step on the page.
   - Reports never state what the notes don't support, even facts that sound safe (who reviews it, when it ships, what depends on what): they're asked once, or left out. The summary's ask comes from the notes; with none, it says "Nothing needed from you".
   - New commands: `yayh report new|check|render|list`.
+- **A screenshot you attach is kept even when it looks blank or unreadable.** Skills used to skip a file they judged empty; now they keep it in `docs/assets/<ID>/` and say what they couldn't make out. Comes with the plugin update.
 
 ## 0.16.0 (2026-11-23)
-- **A screenshot you attach is kept even when it looks blank or unreadable.** Skills used to skip a file they judged empty; now they keep it in `docs/assets/<ID>/` and say what they couldn't make out. Comes with the plugin update.
 - **Restate the job, turn repeated corrections into checks, and statecharts for stateful flows** (P-2, from Lauren Tan's agent-harness practices). Run `/yay:harness-update` to pick up the new design and plan templates; everything else comes with the plugin update.
   - A request given as plain text (no plan, no bug report) gets a **Reading** block before any edit: Reading, Not doing, Done when (an exact check) and Model on (existing code to copy). It's shown, not approved, and opens the final report with each check's result; only a request with two plausible readings makes it the run's one question. `/yay:implement` (no plan yet) and `/yay:fix` (description only) use it, and the tiny lane's PR body carries it.
   - Plans start their Approach with `Model on: <path:line>`, and copy the checks in `conventions.md`'s `## Checks` that apply to their files into Verify.
