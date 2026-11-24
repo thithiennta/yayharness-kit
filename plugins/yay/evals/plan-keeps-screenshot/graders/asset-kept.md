@@ -1,5 +1,5 @@
 ---
 type: file_exists
-path: docs/assets/P-1/*.png
+path: docs/assets/*/*.png
 weight: 2
 ---

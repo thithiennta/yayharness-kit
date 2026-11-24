@@ -48,4 +48,6 @@ When an item has a brief (`yayh brief path R-<n>`), read it before the code. It'
 - every Done when check becomes a Verify check (`yayh brief checks R-<n>` says how many; `yayh plan check` warns when Verify has fewer)
 - an open question that changes the work goes to the run's question round, or becomes a backlog decision note with the brief's leaning as its default
 
+No brief is the usual case: work from the item's title, `why` and `acceptance` as before. A missing brief never blocks or stops the work, and is no reason to ask.
+
 Don't edit the brief from a developer's skill. When the code shows the brief is wrong or can't be done, say so in the report and leave a decision note (`from=R-<n>`) for the product manager.
