@@ -132,3 +132,11 @@ test_plan_check_wants_a_verify_check_per_done_when() {
   "$YAYH" artifact new plan "Gift box" roadmap="$id2" >/dev/null
   assert_not_contains "$("$YAYH" plan check P-2 2>&1)" "Done when checks"
 }
+
+test_new_works_for_the_first_item_of_a_long_roadmap() { # an early awk exit SIGPIPEd the list (exit 141)
+  export YAY_REPO; YAY_REPO="$(mk_repo)"; mkdir -p "$YAY_REPO/docs"
+  { printf -- '---\nhorizon: 2027-01-01\nsprint_length: 2w\n---\n# Roadmap\n\n## Later\n'
+    local i; for i in $(seq 1 400); do printf '\n### R-%s Item number %s with a fairly long title for the pipe\n- status: todo\n- size: S\n- why: %s\n' "$i" "$i" "padding padding padding padding padding padding padding padding"; done
+  } > "$YAY_REPO/docs/roadmap.md"
+  assert_contains "$("$YAYH" brief new R-1)" "docs/briefs/R-1-item-number-1-"
+}

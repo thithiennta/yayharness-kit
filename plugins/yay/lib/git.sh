@@ -184,7 +184,7 @@ yay_worktree_create() {
   local branch="$1" from="${2:-}" slug path existing
   slug="${branch#*/}"
   path="$(yay_worktree_path "$slug")"
-  existing="$(yay_git worktree list --porcelain | awk -v b="refs/heads/$branch" '/^worktree /{p=substr($0,10)} $0=="branch " b {print p; exit}')"
+  existing="$(yay_git worktree list --porcelain | awk -v b="refs/heads/$branch" '/^worktree /{p=substr($0,10)} $0=="branch " b && w == "" {w=p} END {print w}')"
   if [ -n "$existing" ]; then printf '%s\n' "$existing"; return; fi
   [ -n "$from" ] || from="$(yay_base_branch)"
   mkdir -p "$(dirname "$path")"

@@ -9,6 +9,8 @@
   - **`--interview`** on `/yay:brainstorm`, `/yay:plan` and `/yay:roadmap --brief`: one question at a time, the one that would change the most structure first, until nothing big is open. The default stays one round.
   - **Plans lead with Key decisions:** a standard plan has `## Key decisions` after Non-goals (stored data, hooks and public shapes, the user-facing flow, each with its choice). `yayh plan check` warns when a draft or ready standard plan leaves it empty.
   - Every final report opens with the block, each Done when marked passed, failed or not checked.
+- **`/yay:implement` waits for both reviewers before it reports, and its report opens with the restatement again.** A reviewer that answered after the report could leave a stale "Reviews: clean"; now the report is the run's last message. Comes with the plugin update.
+- **`yayh brief new` works for every roadmap item.** It failed silently (exit 141) for any item that wasn't near the end of a long roadmap. `yayh git worktree` and `yayh status` had the same early-exit pipe and are fixed too.
 
 ## 0.17.0 (2026-11-24)
 - **Item briefs: what a roadmap item is, written by the product manager for the developers.** Run `/yay:harness-update` to pick up the `docs/briefs/` folder, the CLAUDE.md row, the gitignore line and the workflow doc; the rest comes with the plugin update.

@@ -127,7 +127,7 @@ yay_status() {
   if [ -f "$f" ]; then
     cur="$(yay_roadmap_current "$today" 2>/dev/null | cut -f1 || true)"
     # Between sprints, or before the first one: the next sprint counts as current.
-    [ -n "$cur" ] || cur="$(yay_roadmap_parse "$f" | awk -F '\t' -v today="$today" '$1 == "S" && $3 != "-" && $3 > today { print $2; exit }')"
+    [ -n "$cur" ] || cur="$(yay_roadmap_parse "$f" | awk -F '\t' -v today="$today" '$1 == "S" && $3 != "-" && $3 > today && c == "" { c = $2 } END { print c }')"
     secs="$(yay_roadmap_parse "$f" | awk -F '\t' -v cur="$cur" -v today="$today" '
       $1 == "S" { end[$2] = $4 }
       $1 == "I" {
