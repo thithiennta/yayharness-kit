@@ -279,6 +279,26 @@ X
   case "$("$YAYH" plan check "$q" 2>&1 || true)" in *Findings*) _fail "done plan asked for Findings" ;; *) _pass ;; esac
 }
 
+test_plan_check_asks_for_key_decisions_while_planning() {
+  export YAY_REPO; YAY_REPO="$(_arepo)"
+  local q s; q="$("$YAYH" artifact new plan "Decisions plan")"
+  assert_contains "$("$YAYH" plan check "$q" 2>&1 || true)" "warn: '## Key decisions' is missing or empty"
+  python3 -I - "$YAY_REPO/$q" <<'X'
+import sys; p=sys.argv[1]; s=open(p).read()
+s=s.replace("## Key decisions\n", "## Key decisions\n- Stored data: one option, giftly_preview (bool, default on).\n", 1)
+open(p,"w").write(s)
+X
+  case "$("$YAYH" plan check "$q" 2>&1 || true)" in *"Key decisions"*) _fail "filled Key decisions still warned" ;; *) _pass ;; esac
+  # a small plan and a done plan aren't asked
+  s="$("$YAYH" artifact new plan "Small one" lane=small)"
+  case "$("$YAYH" plan check "$s" 2>&1 || true)" in *"Key decisions"*) _fail "small plan asked for Key decisions" ;; *) _pass ;; esac
+  python3 -I - "$YAY_REPO/$q" <<'X'
+import sys,re; p=sys.argv[1]; s=open(p).read()
+s=re.sub(r"## Key decisions\n- .*?\n", "## Key decisions\n", s); s=s.replace("status: draft","status: done",1); open(p,"w").write(s)
+X
+  case "$("$YAYH" plan check "$q" 2>&1 || true)" in *"Key decisions"*) _fail "done plan asked for Key decisions" ;; *) _pass ;; esac
+}
+
 test_plan_risk_tags() {
   export YAY_REPO; YAY_REPO="$(_arepo)"
   local q; q="$("$YAYH" artifact new plan "Risky plan")"

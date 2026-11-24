@@ -274,7 +274,9 @@ EOF
   if [ "$lane" != small ]; then
     case "$st" in draft|ready)
       awk '/^## Findings/{on=1; next} /^## /{on=0} on && /[^[:space:]]/ && !/^<!--/{found=1} END{exit !found}' "$f" \
-        || _pw "'## Findings' is missing or empty: what reading the code changed about the source, with file:line, or 'none'" ;;
+        || _pw "'## Findings' is missing or empty: what reading the code changed about the source, with file:line, or 'none'"
+      awk '/^## Key decisions/{on=1; next} /^## /{on=0} /<!--/{c=1} c{ if (/-->/) c=0; next } on && /[^[:space:]]/ && !/^[[:space:]]*[-*][[:space:]]*$/{found=1} END{exit !found}' "$f" \
+        || _pw "'## Key decisions' is missing or empty: what's stored, the hooks and public shapes, and the user-facing flow, each with its choice, or 'none'" ;;
     esac
   fi
   if ! awk '/^## Verify/{on=1; next} /^## /{on=0} on && /[^[:space:]]/ && !/^<!--/ && !/^[[:space:]]*([-*]|[0-9]+\.)[[:space:]]*$/{found=1} END{exit !found}' "$f"; then

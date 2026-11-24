@@ -53,6 +53,8 @@ Two ways. Pick one.
 
 Do the same for R-2 and R-3. A small item can go straight to `/yay:implement R-2`; it picks the lane (tiny, small or standard) and says which.
 
+Each skill first **says the job back**: what it understood, what it assumed, what it won't do, what to watch for, and how we'll know it's done. On big work (brainstorm, design, a standard plan, debugging a long report) it stops there once, so you can correct it before any file is written. Add `--interview` to brainstorm, plan or `roadmap --brief` to be asked one question at a time instead.
+
 **B. The whole sprint in one run**
 
 ```

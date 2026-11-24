@@ -30,7 +30,7 @@ Find **why**, with evidence, and write it down. This skill doesn't fix product c
 
 ### 1. Intake
 - For `B-<n>`, resolve it, read it, and continue from its current status.
-- Otherwise, before writing anything, pull the facts out of the input: the exact error text, where it shows (storefront, checkout, admin, email, REST), the edition and version, WP/WC/PHP versions, the theme, block vs classic checkout, HPOS, and other plugins involved. Ask with **one** AskUserQuestion only for what blocks the investigation and can't be found out.
+- Otherwise, before writing anything, pull the facts out of the input: the exact error text, where it shows (storefront, checkout, admin, email, REST), the edition and version, WP/WC/PHP versions, the theme, block vs classic checkout, HPOS, and other plugins involved. Then **say the problem back** (`${CLAUDE_PLUGIN_ROOT}/reference/restate.md`): `Seen`, `Expected`, `Since`, Assumed, Not doing, Watch for, and Done when as the repro check. From a pasted thread, a ticket or a description longer than a few lines, and with the user there, stop on it once with AskUserQuestion (never a question at the end of your reply) before investigating: question 1 is "Is this the problem?", plus at most 2 questions for what blocks the investigation and can't be found out. A short description shows the block and asks only what blocks the investigation, in **one** AskUserQuestion. No answer: go on with your reading.
 - `yayh artifact new bug "<short symptom>" severity=<s> editions="<e>"`. Fill in Symptoms and Environment now (a screenshot of the bug goes in Symptoms, kept as in `${CLAUDE_PLUGIN_ROOT}/reference/artifacts.md` (Screenshots)), and set `found_in` (`yayh fm set <file> found_in <version>`).
 
 ### 2. Ground
