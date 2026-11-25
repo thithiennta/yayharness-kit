@@ -41,7 +41,7 @@ Keep each line short. A thin request is normal: fill the gaps from the code, the
 - `/yay:debug` from a pasted thread or a description longer than a few lines
 - `/yay:plan` and `/yay:implement` in the standard lane, from words or a roadmap item
 
-Everything else shows the block and carries on: the tiny and small lanes, test and e2e, a run that starts from a plan or a bug report, `--no-ask`, autopilot's inner runs (its decision sheet is the stop), and any run with nobody to ask.
+Everything else shows the block and carries on: the tiny and small lanes, test and e2e, a run that starts from a plan or a bug report, `--no-ask`, autopilot's inner runs (they return the block, and the decision sheet asks "Is this the job?" once for every item), and any run with nobody to ask.
 
 **The stop is the run's one question round** (`asking.md`), asked **with the AskUserQuestion tool**, never as text at the end of your reply: a reply that ends on a question ends the run, and the work never gets written. One AskUserQuestion:
 1. "Is this the job?" with the block in the question. Options: "Yes, go on (Recommended)", "Adjust" (the user types the correction), and, when the request has a second plausible reading, that reading.

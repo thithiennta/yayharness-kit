@@ -69,11 +69,12 @@ const PREPARED = {
     option: { type: 'string', description: 'the brainstorm option the plan follows' },
     tasks: { type: 'number' },
     tests: { type: 'string', description: 'the plan\'s Tests line' },
+    restatement: { type: 'string', description: 'the "Say it back" block you showed, one labelled line each (Reading, Assumed, Not doing, Watch for, Done when, plus the skill\'s own line), joined with newlines' },
     questions: { type: 'array', items: QUESTION, description: '0-2 hard calls; usually none' },
     decided: { type: 'array', items: { type: 'string' }, description: 'every other choice you made' },
     blocked: { type: 'string', description: 'empty, or why this item cannot be planned' },
   },
-  required: ['id', 'brainstorm', 'plan', 'plan_status', 'option', 'questions', 'decided', 'blocked'],
+  required: ['id', 'brainstorm', 'plan', 'plan_status', 'option', 'restatement', 'questions', 'decided', 'blocked'],
 }
 
 const BUILT = {
@@ -118,7 +119,7 @@ Bring roadmap item **${it.id} ${it.title}** to an implementable plan, in the mai
 
 1. ${start}
 2. Follow ${KIT}/skills/plan/SKILL.md with \`--from=<the brainstorm id>\`, \`roadmap=${it.id}\`, the type that fits (feat unless it's a fix or refactor), and \`--tests=auto\`. Do every step, including the self-review and \`yayh plan check\` with no errors. That includes "Picking up notes": run \`yayh backlog open --for=${it.id}\` and settle into the plan every decision and deferred note the evidence now answers (tracked notes as \`Settles:\` lines under the plan's ## Risks).
-3. The brainstorm and plan skills' "Say it back" stop and the plan's "Hard questions only" step are where you would ask. Don't ask: show the block and go on. Instead:
+3. The brainstorm and plan skills' "Say it back" stop and the plan's "Hard questions only" step are where you would ask. Don't ask: show the block, return the plan's block (with its Model on line) as **restatement**, and go on. The decision sheet shows it to the user, who may correct it. Instead:
    - Return as **questions** only the calls that are expensive to undo or that only the user can make: which brainstorm option (only when the options are genuinely close or change what customers see), customer-visible behaviour the source doesn't pin down, tests when the repo's rules say tests need approval. At most 2, usually 0. Each names the item and lists the option the plan follows first.
    - If a question is returned, leave the plan \`draft\` and write the question under the plan's ## Risks as "Open (autopilot sheet): …". Otherwise mark it ready (\`yayh fm set <plan> status ready\`).
    - An open **decision note** (\`BL-<n>\`) on this item that only the user can make and that is expensive to get wrong counts toward those 2 questions; name its id in the question. Any other call you can't make: write a decision note with the default the plan follows (the plan skill's "Park what's still open") and list it in **decided** as "BL-<n>: default …". Work you leave out of scope becomes a deferred note.
@@ -132,7 +133,7 @@ if (A.mode === 'prepare') {
   const skipped = ITEMS.filter(it => !todo.includes(it))
   if (skipped.length) log(`Already planned (no prepare needed): ${skipped.map(it => `${it.id} (${it.stage})`).join(', ')}`)
   const prepared = await runLimited(todo, PAR, it => agent(preparePrompt(it), { label: `prepare:${it.id}`, phase: 'Prepare', schema: PREPARED, ...route('prepare', it.size) }))
-  return { mode: 'prepare', prepared: prepared.map((p, i) => p || { id: todo[i].id, blocked: 'prepare agent failed', plan: '', plan_status: 'none', questions: [], decided: [] }) }
+  return { mode: 'prepare', prepared: prepared.map((p, i) => p || { id: todo[i].id, blocked: 'prepare agent failed', plan: '', plan_status: 'none', restatement: '', questions: [], decided: [] }) }
 }
 
 // ---------- build ----------
@@ -147,6 +148,7 @@ The user answered the autopilot decision sheet for **${it.id} ${it.title}** (pla
 ${answer}
 
 In the main checkout, apply it before anyone builds the plan:
+- If it corrects the reading of the item (\`Reading:\`, \`Not doing:\` or another restatement line), rewrite the plan's Goal, Non-goals, Key decisions and the tasks that follow from them to match, and the brainstorm's Problem when it's affected.
 - If it picks a brainstorm option, set the brainstorm's \`decision\` and \`status decided\` (\`yayh fm set\`), and write any condition into its Recommendation.
 - Revise the plan (${KIT}/skills/plan/SKILL.md: Design, Tasks, Tests and Verify, Write it) so it follows the answer. Replace the "Open (autopilot sheet): …" risk lines with the decision.
 - If the answer settles a decision note (\`BL-<n>\`): settle an untracked note with \`yayh backlog settle BL-<n> decided "<answer>"\`; for a tracked note, add the line \`Settles: BL-<n> decided "<answer>"\` under the plan's ## Risks (implement applies it on the branch). \`yayh plan check\` must have no errors. Then \`yayh fm set <plan> status ready\`.
