@@ -1,6 +1,6 @@
 ---
 name: e2e-init
-description: Set up end-to-end browser tests for a Yay plugin by scouting the whole plugin first. Use when the user says "init e2e", "set up e2e", "add Playwright", "browser tests", "e2e setup", or a skill reports no commands.e2e; run it again later to map new flows. Maps every surface (admin screens, shortcodes, blocks, My Account, cart and checkout, product pages, emails), writes a flow map, scaffolds or adopts Playwright + wp-env (one site per checkout), seeds the site from what the plugin needs, writes baseline specs for the critical browser-only flows, runs them and opens the PR.
+description: Set up end-to-end browser tests (Playwright + wp-env) for a Yay plugin by scouting the whole plugin first. Use when the user says "init e2e", "set up e2e", "add Playwright", "browser tests", "e2e setup", or a skill reports no commands.e2e; run it again later to map new flows. Writes the flow map, a seeded site, baseline specs for the critical browser-only flows, and a PR.
 argument-hint: "[--dir=tests/e2e] [--adopt|--fresh] [--wc] [--depth=quick|full] [--agents=N] [--max-specs=N] [--smoke-only] [--no-ci] [--no-run] [--no-branch] [--no-pr]"
 allowed-tools: Bash, Read, Grep, Glob, Write, Edit, Agent, AskUserQuestion
 ---

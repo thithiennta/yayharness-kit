@@ -1,7 +1,7 @@
 ---
 name: test
 description: Write, run or triage PHP unit, PHP integration and JS tests for a Yay plugin, choosing the right layer for each risk. Use when the user says "test this", "write a unit test", "add tests for P-4", "regression test for B-7", "run the tests", "why is this test failing". Goes down the ladder (unit, integration, js, e2e, manual), writes tests tagged with the plan or bug they prove, proves they fail without the change, and runs them.
-argument-hint: "<P-<n>|B-<n>|<file or Class::method>|\"<behaviour>\"> [--layer=auto|unit|integration|js] [--run[=<layer>]] [--triage] [--commit]"
+argument-hint: "<P-<n>|B-<n>|<file or Class::method>|\"<behaviour>\"> [--layer=auto|unit|integration|js] [--run[=<layer>]] [--id=<ID>] [--triage] [--commit]"
 allowed-tools: Bash, Read, Grep, Glob, Write, Edit, Agent, AskUserQuestion
 ---
 
