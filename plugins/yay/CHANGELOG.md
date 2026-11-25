@@ -2,6 +2,10 @@
 
 `/yay:harness-update` reads this file to tell a repo what changed between its recorded kit version and the installed one. Each entry lists new skills, config keys, template changes and behavior changes.
 
+## Unreleased (0.19.1)
+- **Skill descriptions fit the skill listing again.** Claude Code cuts each skill's description at about 500 characters, and eight were longer (`roadmap`, `report`, `release`, `design`, `wporg`, `wporg-theme`, `e2e-init`, `test-init`), so their last trigger phrases never reached routing: a pasted Theme Directory review or "what goes in 1.5.0" could miss its skill. Each is now a purpose and its triggers, under 460 characters; the option detail stays in the skill body. Comes with the plugin update.
+- **Argument hints list every option.** `--brief` and `--interview` on `/yay:roadmap`, `--interview` on `/yay:brainstorm` and `/yay:plan`, `--no-push` on `/yay:implement`, `/yay:fix` and `/yay:release`, and `--id` on `/yay:test` now show in autocomplete.
+
 ## 0.19.0 (2026-11-25)
 - **The autopilot decision sheet says each item back before it asks.** Each prepare agent returns its plan's restatement block. The sheet shows every block, and its first question is "Did autopilot read every item right?", with each item's Reading and Not doing lines. A correction (`R-<n>: …`) goes to that item's revise step, which rewrites the plan's Goal, Non-goals and tasks before the build. The hard questions keep the other 3 places. `--no-ask` keeps every reading and lists it under Decided. Comes with the plugin update.
 

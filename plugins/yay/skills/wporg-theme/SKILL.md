@@ -1,6 +1,6 @@
 ---
 name: wporg-theme
-description: Pre-review a Yay WordPress theme's zip the way the WordPress.org Themes Team reviews Theme Directory submissions (Theme Check, the required items, a clean-site run and a reviewer pass), write the result as their Trac ticket review with a checklist ID, file:line and fix on every finding, then fix on a branch. Use in a theme repo (plugin.kind = theme, e.g. Brandy, WPShadcn) when the user says "submit the theme to wp.org", "is the theme ready for wordpress.org", "review it like the theme team", "Theme Check", or pastes a review from themes.trac.wordpress.org (--ticket fixes every occurrence and drafts the reply).
+description: Pre-review a Yay WordPress theme's zip the way the WordPress.org Themes Team reviews Theme Directory submissions, write it as their Trac ticket review, then fix on a branch. Use in a theme repo (plugin.kind = theme, e.g. Brandy, WPShadcn) when the user says "submit the theme to wp.org", "is the theme ready for wordpress.org", "review it like the theme team", "Theme Check", or pastes a review from themes.trac.wordpress.org (--ticket).
 argument-hint: "[--ticket] [--zip=<path>] [--edition=<e>] [--report-only] [--no-site] [--no-tc] [--keep-site]"
 allowed-tools: Bash, Read, Grep, Glob, Write, Edit, AskUserQuestion
 ---

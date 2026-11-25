@@ -1,6 +1,6 @@
 ---
 name: test-init
-description: Set up PHP unit, PHP integration and JS unit tests for a Yay plugin, scouting the code first. Use when the user says "set up unit tests", "add PHPUnit", "init tests", "test setup", "add Jest/Vitest", or a skill reports no commands.test-unit; run it again later to cover new risky code. Scaffolds or adopts PHPUnit + Brain Monkey, the WordPress/WooCommerce test suite in wp-env's tests site, and the JS runner, installs the dev packages, writes baseline tests for the riskiest units at the right layer, runs them, maps coverage, and opens the PR.
+description: Set up PHP unit, PHP integration and JS unit tests for a Yay plugin, scouting the code first. Use when the user says "set up unit tests", "add PHPUnit", "init tests", "test setup", "add Jest/Vitest", or a skill reports no commands.test-unit; run it again later to cover new risky code. Scaffolds or adopts the test layers, writes baseline tests for the riskiest units, and opens the PR.
 argument-hint: "[--php=tests/php] [--js=tests/js] [--js-runner=vitest|jest|wp-scripts|node-test|none] [--no-integration] [--wc] [--adopt|--fresh] [--depth=quick|full] [--agents=N] [--max-tests=N] [--no-ci] [--no-run] [--no-branch] [--no-pr]"
 allowed-tools: Bash, Read, Grep, Glob, Write, Edit, Agent, AskUserQuestion
 ---
