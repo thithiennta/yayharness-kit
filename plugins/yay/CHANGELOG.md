@@ -2,7 +2,7 @@
 
 `/yay:harness-update` reads this file to tell a repo what changed between its recorded kit version and the installed one. Each entry lists new skills, config keys, template changes and behavior changes.
 
-## Unreleased (0.19.0)
+## 0.19.0 (2026-11-25)
 - **The autopilot decision sheet says each item back before it asks.** Each prepare agent returns its plan's restatement block. The sheet shows every block, and its first question is "Did autopilot read every item right?", with each item's Reading and Not doing lines. A correction (`R-<n>: …`) goes to that item's revise step, which rewrites the plan's Goal, Non-goals and tasks before the build. The hard questions keep the other 3 places. `--no-ask` keeps every reading and lists it under Decided. Comes with the plugin update.
 
 ## 0.18.0 (2026-11-24)
