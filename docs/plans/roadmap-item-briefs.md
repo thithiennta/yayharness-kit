@@ -113,12 +113,12 @@ Done means:
 **Tests:** unit: `test_brief.sh` (new, sub-commands, both languages, the three brief rules), `test_report.sh` (unchanged results after T1), `test_artifact.sh` (plan check warning), `test_archive.sh` (brief goes with its item). Eval: `brief-from-rough-idea`.
 
 ## Verify
-- `./tests/run.sh` → all tests passed
-- `claude plugin validate plugins/yay` → Validation passed
-- `cd "$(mktemp -d)" && git init -q && printf -- '---\nhorizon: 2027-01-01\nsprint_length: 2w\n---\n# Roadmap\n\n## Later\n\n### R-1 Gift wrap\n- status: todo\n- size: M\n' > r.md && mkdir -p docs && mv r.md docs/roadmap.md && yayh brief new R-1 && yayh roadmap get R-1 brief` → docs/briefs/R-1-gift-wrap.md
-- `yayh brief check R-1` on the empty template → exit 1
-- Manual: `/yay:roadmap --brief=R-1 "customers want gift wrap at checkout"` asks one round, writes a brief that passes check, and the cold reader lists nothing important to guess.
-- Manual: `/yay:roadmap --add="Gift wrap; Gift receipts" --size=M`: the items are written and committed first, then one question offers briefs for both; picking "all" drafts both and asks at most 4 questions in one round, each naming its item.
-- Manual: an `--add` of one S item also gets the offer.
-- Manual: `/yay:roadmap --status` and `/yay:roadmap --dry-run` never offer briefs.
-- Manual: `/yay:plan --from=R-1` with that brief: the Goal starts from In one line, and Verify has a check per Done when line.
+- ✅ `./tests/run.sh` → all tests passed
+- ✅ `claude plugin validate plugins/yay` → Validation passed
+- ✅ `cd "$(mktemp -d)" && git init -q && printf -- '---\nhorizon: 2027-01-01\nsprint_length: 2w\n---\n# Roadmap\n\n## Later\n\n### R-1 Gift wrap\n- status: todo\n- size: M\n' > r.md && mkdir -p docs && mv r.md docs/roadmap.md && yayh brief new R-1 && yayh roadmap get R-1 brief` → docs/briefs/R-1-gift-wrap.md
+- ✅ `yayh brief check R-1` on the empty template → exit 1
+- ✅ Manual: `/yay:roadmap --brief=R-1 "customers want gift wrap at checkout"` asks one round, writes a brief that passes check, and the cold reader lists nothing important to guess.
+- ✅ Manual: `/yay:roadmap --add="Gift wrap; Gift receipts" --size=M`: the items are written and committed first, then one question offers briefs for both; picking "all" drafts both and asks at most 4 questions in one round, each naming its item.
+- ✅ Manual: an `--add` of one S item also gets the offer.
+- ✅ Manual: `/yay:roadmap --status` and `/yay:roadmap --dry-run` never offer briefs.
+- ✅ Manual: `/yay:plan --from=R-1` with that brief: the Goal starts from In one line, and Verify has a check per Done when line.
