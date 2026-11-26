@@ -57,3 +57,22 @@ test_verify_reads_marked_items() {
   assert_eq "$before" "$("$YAYH" verify P-1)"
   assert_eq "$check_before" "$("$YAYH" plan check P-1 2>&1)"
 }
+
+test_verify_mark_writes_icons() {
+  _vplan
+  local f="$YAY_REPO/docs/plans/p.md" head
+  sed -i.bak 's/^- Open/- ⬜ Open/' "$f"; rm -f "$f.bak"
+  head="$(sed -n '1,/^## Verify/p' "$f")"
+  assert_exit 1 "$YAYH" verify P-1 --mark
+  "$YAYH" verify P-1 --run --mark >/dev/null; assert_eq 0 $?
+  assert_contains "$(cat "$f")" "- ✅ \`cat a.txt\` → ok-file"
+  assert_contains "$(cat "$f")" "1. ✅ \`true\` → exit 0"
+  assert_contains "$(cat "$f")" "- ⬜ Open Settings"
+  assert_contains "$(cat "$f")" "<!-- exact checks -->"
+  assert_eq "$head" "$(sed -n '1,/^## Verify/p' "$f")"
+  printf 'changed\n' > "$YAY_REPO/a.txt"
+  "$YAYH" verify P-1 --run --mark >/dev/null; assert_eq 1 $?
+  assert_contains "$(cat "$f")" "- ❌ \`cat a.txt\` → ok-file"
+  assert_eq 0 "$(grep -c '✅ ❌\|❌ ✅' "$f")"
+  assert_eq "1	cmd	cat a.txt	ok-file" "$("$YAYH" verify P-1 | sed -n 1p | cut -f1-4)"
+}

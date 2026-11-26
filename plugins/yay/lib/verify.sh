@@ -27,13 +27,34 @@ _yay_verify_items() {
     }' "$1"
 }
 
-# yay_verify <plan> [--run] -> TSV: n status command expected detail
+# _yay_verify_mark <file> <marks: "n<TAB>icon" lines; "*<TAB>icon" = every unmarked item>
+# rewrites the icon at the start of those Verify items; returns 1 when nothing changed
+_yay_verify_mark() {
+  local tmp; tmp="$(mktemp)"
+  YAY_MARKS="$2" awk '
+    BEGIN { k = split(ENVIRON["YAY_MARKS"], L, "\n"); for (i = 1; i <= k; i++) if (split(L[i], P, "\t") == 2) m[P[1]] = P[2]
+            icon = "^(✅|❌|⚠️|⚠|⏭️|⏭|⬜)[[:space:]]+" }
+    /^## / { on = ($0 ~ /^## Verify/); print; next }
+    !on || /^<!--/ { print; next }
+    match($0, /^[[:space:]]*([-*]|[0-9]+\.)[[:space:]]+/) && substr($0, RLENGTH + 1) ~ /^[^[:space:]]/ {
+      n++; pre = substr($0, 1, RLENGTH); rest = substr($0, RLENGTH + 1)
+      if (n in m) { sub(icon, "", rest); $0 = pre m[n] " " rest }
+      else if (("*" in m) && rest !~ icon) $0 = pre m["*"] " " rest
+    }
+    { print }' "$1" > "$tmp" || { rm -f "$tmp"; return 2; }
+  if cmp -s "$1" "$tmp"; then rm -f "$tmp"; return 1; fi
+  cat "$tmp" > "$1"; rm -f "$tmp"
+}
+
+# yay_verify <plan> [--run [--mark]] -> TSV: n status command expected detail
 #   without --run: status is cmd | manual (what would run)
 #   with --run:    status is pass | fail | manual; exit 1 when any command check fails
+#   --mark (with --run) writes ✅ or ❌ at the start of each command item in the plan
 yay_verify() {
-  local plan="" run=0 a rel f root n kind cmd exp text out code fails=0 status detail
-  for a in "$@"; do case "$a" in --run) run=1 ;; -*) yay_die "usage: yayh verify <plan> [--run]" ;; *) plan="$a" ;; esac; done
-  [ -n "$plan" ] || yay_die "usage: yayh verify <plan> [--run]"
+  local plan="" run=0 mark=0 marks="" a rel f root n kind cmd exp text out code fails=0 status detail
+  for a in "$@"; do case "$a" in --run) run=1 ;; --mark) mark=1 ;; -*) yay_die "usage: yayh verify <plan> [--run [--mark]]" ;; *) plan="$a" ;; esac; done
+  [ -n "$plan" ] || yay_die "usage: yayh verify <plan> [--run [--mark]]"
+  [ "$mark" = 0 ] || [ "$run" = 1 ] || yay_die "--mark needs --run"
   root="$(yay_repo_root)"
   rel="$(yay_artifact_resolve "$plan")" || yay_die "no plan '$plan'"
   f="$root/$rel"
@@ -51,9 +72,12 @@ yay_verify() {
     esac
     [ "$status" = pass ] || detail="$detail: $(printf '%s' "$out" | tail -n 3 | tr '\t\n' '  ' | cut -c1-200)"
     [ "$status" = pass ] || fails=$((fails + 1))
+    marks="$marks$n$YAY_TAB$([ "$status" = pass ] && echo ✅ || echo ❌)
+"
     printf '%s\t%s\t%s\t%s\t%s\n' "$n" "$status" "$cmd" "$exp" "$detail"
   done <<EOT
 $(_yay_verify_items "$f")
 EOT
+  [ "$mark" = 0 ] || _yay_verify_mark "$f" "$marks" || [ $? = 1 ] || yay_die "could not mark $rel"
   [ "$fails" -eq 0 ]
 }

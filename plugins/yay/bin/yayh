@@ -112,8 +112,9 @@ Artifacts (brainstorms, plans, bugs, backlog)
   plan tick <plan> <T<n>> [--undo] tick a task's checkbox
   plan check <plan>                structure errors and warnings (exit 1 on errors)
   plan risk <plan> [T<n>]          each task's risk from its [risk: 1|2|3] tag (untagged: 2)
-  verify <plan> [--run]            the plan's Verify items: n, cmd|manual, command, expected (TSV);
-                                   --run runs the `cmd` → expected ones: pass|fail|manual (exit 1 on a fail)
+  verify <plan> [--run [--mark]]   the plan's Verify items: n, cmd|manual, command, expected (TSV);
+                                   --run runs the `cmd` → expected ones: pass|fail|manual (exit 1 on a fail);
+                                   --mark (with --run) writes ✅ or ❌ at the start of each command item
   id conflicts [base]              ids this branch adds that the base branch already uses
   design check <design>            structure errors and warnings for a UX-<n> (exit 1 on errors)
   backlog open [--for=<ID>] [--kind=decision|deferred]
