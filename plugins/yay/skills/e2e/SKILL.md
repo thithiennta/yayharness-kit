@@ -36,7 +36,6 @@ Specs that prove what only a browser can prove, tagged with the artifact they pr
    - **`B-<n>`:** read Repro and Root cause. One test that walks the repro and asserts the correct behaviour. If a unit test can cover it (the cause is pure PHP logic), say so and stop: that belongs to `/yay:fix`'s regression test.
    - **`"<flow>"`:** the outcome the user described, at one level of detail: one spec file, one to three tests.
    - Check existing coverage first: the **Flows** table in `docs/knowledge/e2e.md`, `yayh e2e specs` and `yayh e2e specs <ID>`. Extend the flow's existing file instead of adding a near-copy. For a `"<flow>"` that is a `candidate` row, use its slug, locators source and `needs`.
-   - **Say it back:** before writing, show one `Proving: <flow outcome> → e2e → <what the test asserts>` line per test (`${CLAUDE_PLUGIN_ROOT}/reference/restate.md`), and carry on.
 3. **Write.** Read `fixtures/test.ts`, `bin/setup-env.sh` and one existing spec, then write in their style, following `reference/e2e.md`'s rules:
    - tag every test with `{ tag: '@<ID>' }`
    - arrange with `wp()`, act and assert in the browser, clean up what you changed

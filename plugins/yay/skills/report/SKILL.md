@@ -1,6 +1,6 @@
 ---
 name: report
-description: Write a short, plain report a developer shares with the lead or team - an idea, a summary of what they've done, a feature pitch, or a how-to guide - readable in a minute. Use when the user says "report", "write this up for the lead", "share my idea", "summarise what I did", "status for the boss", "pitch this feature", "write a guide for", "how do I explain to the team how to…", or wants to turn notes, a branch or a plan into something to send.
+description: Write a short, plain report a developer shares with the lead or the team - an idea, a summary of what they've done, an idea for a feature, or a how-to guide - that anyone can read in a minute. Use when the user says "report", "write this up for the lead", "share my idea", "summarise what I did", "status for the boss", "pitch this feature", "write a guide for", "how do I explain to the team how to…", or wants to turn notes, a branch or a plan into something to send. The kit fixes the look (one plain page, no colors) and checks the words (no code, no jargon, under 300 words), then a cold reader tests it. Kept in .yay/reports/, never committed; shared as a private page link or paste-ready text.
 argument-hint: "<idea|done|feature|guide> [topic or notes] [--for=team|devs] [--from=<P-n|R-n|branch>] [--lang=en|vi] [--text] [--max-words=N]"
 allowed-tools: Bash(yayh *), Bash(git *), Bash(gh *), Bash(open *), Read, Grep, Glob, Write, Edit, Agent, AskUserQuestion, Artifact
 ---

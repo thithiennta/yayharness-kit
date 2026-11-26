@@ -1,7 +1,7 @@
 ---
 name: plan
 description: Write or review a Yay plugin implementation plan. Use when the user says "plan this", "write a plan", "break this down", "review the plan", before any non-trivial change, or when /yay:fix escalates. Turns a brainstorm, roadmap item, bug or request into docs/plans/ P-<n> with goal, approach, tasks naming their files, an agreed Tests line and exact Verify checks. --check reviews one; --trello (optional) adds the tasks to a Trello card.
-argument-hint: "<topic|BS-<n>|R-<n>|B-<n>|UX-<n>|P-<n>> [--from=<id>] [--check] [--split] [--type=feat|fix|chore|refactor|perf] [--tests=auto|none] [--edition=<name>|all] [--lane=small|standard] [--interview] [--commit] [--trello]"
+argument-hint: "<topic|BS-<n>|R-<n>|B-<n>|UX-<n>|P-<n>> [--from=<id>] [--check] [--split] [--type=feat|fix|chore|refactor|perf] [--tests=auto|none] [--edition=<name>|all] [--lane=small|standard] [--commit] [--trello]"
 allowed-tools: Bash(yayh *), Bash(git *), Read, Grep, Glob, Write, Edit, Agent, AskUserQuestion, mcp__trello__trelloReadBoard, mcp__trello__trelloReadList, mcp__trello__trelloReadCard, mcp__trello__trelloReadChecklist, mcp__trello__trelloReadMember, mcp__trello__trelloWriteCard, mcp__trello__trelloWriteChecklist
 ---
 
@@ -22,7 +22,6 @@ A plan is the contract `/yay:implement` follows task by task. The format is in `
 | `--type=<t>` | Branch and commit type for `/yay:implement` (default `feat`; `fix` for bugs; `refactor` for no behavior change). |
 | `--tests=auto\|none` | `auto` (default; `ask` is accepted as the same): pick the tests yourself, one per risk at the right layer, and ask only if the repo's rules require approval for tests. `none`: write `**Tests:** none` and verify by manual checks. |
 | `--edition=<e>` | Which editions the plan touches. Default: inferred from where the code lives. |
-| `--interview` | After the block (step 2), ask one question at a time until nothing open would change a task (`reference/restate.md`). |
 | `--lane=small\|standard` | How much plan the work needs. Default: picked in step 2 (see **Lanes**). |
 | `--commit` | Commit the plan when you're on a non-base branch (with its `docs/assets/P-<n>` screenshots, if any). |
 | `--trello` | Optional. After the plan is written, add its tasks to Trello as a checklist. Off unless given. See step 8. |
@@ -50,11 +49,9 @@ When a small plan turns out bigger than that, switch it to standard (`yayh fm se
    - **Open notes:** run `yayh backlog open --for=<source id>` (and `--for=P-<n>` when revising a plan). These are decisions and work an earlier step parked for later. Settle each one now if you can; see "Picking up notes" below.
 2. **Ground it.** Read the project block and the relevant `docs/knowledge/` docs. Read **every file the plan will touch**. A plan that names a file you haven't opened is a guess.
    - **Findings** (standard lane): write down what the reading changed. For each surprise that changes the source's approach or adds work, one numbered item with its evidence (`includes/Cart.php:212`, or the WooCommerce or WordPress source file and line) and what the plan does about it. A guard the brief missed, an API that behaves differently, an edge case in the data. Compare the plan with the knowledge docs, `CLAUDE.md` and the design: a place where the plan **differs** from what a doc says gets a task that updates that doc in the same branch. The section is the implementer's and the reviewer's starting point, so keep it to facts, not a diary. Write `none` when nothing surprised you.
-   - **Say it back** (`${CLAUDE_PLUGIN_ROOT}/reference/restate.md`), when the plan starts from words or a roadmap item (a brainstorm or a bug report already is the restatement): the block with `Model on:`, plus the Key decisions you'd make. Standard lane, with the user there: stop on it once with AskUserQuestion (never a question at the end of your reply), before writing the plan file. Question 1 is "Is this the job?", questions 2-3 are step 7's (tests when the rules need approval, the biggest open decision). That's the round; step 7 then asks nothing. Small lane: show it and go on.
 3. **Design.**
    - **Goal:** the user-visible outcome and "done means…", starting from the roadmap item's acceptance.
    - **Non-goals.**
-   - **Key decisions** (standard lane): what a reviewer checks first, because it's the most likely to change the work. One bullet each for Stored data (options, meta, tables, and what older versions stored), Hooks and public shapes (actions, filters, REST routes, blocks, overridable templates) and User-facing flow, each with the choice and why, or `none`.
    - **Findings:** from step 2.
    - **Approach:** start with `Model on: <path:line> — <why it's the closest>`: the existing feature that already does the same kind of thing, which the change copies in structure, or `Model on: none, nothing similar exists`. Then hooks, storage and option keys, REST, UI, the edition split, compatibility, migration. When the change stores a status with 3+ states that change on events and there's no design with a statechart (backend work, a sync job, an order status flow), draw one here as in `/yay:design` (**Statechart**), and give each transition its line in Verify.
    - **Risks** with a rollback.
@@ -90,7 +87,7 @@ When a small plan turns out bigger than that, switch it to standard (`yayh fm se
      - Does every Findings item end in a task, a Non-goal or a note? A finding nothing acts on is lost.
 
    Fix what you find.
-7. **Hard questions only** (`${CLAUDE_PLUGIN_ROOT}/reference/asking.md`). When step 2 stopped on the block, that was the round: skip to applying the answers. Otherwise, if the user is around and something hard is open, show the task list and ask **one** AskUserQuestion with at most 3 questions, from these:
+7. **Hard questions only** (`${CLAUDE_PLUGIN_ROOT}/reference/asking.md`). If the user is around and something hard is open, show the task list and ask **one** AskUserQuestion with at most 3 questions, from these:
    - **Tests to include** (multiSelect, with the proposed tests as options), only when the repo's rules say tests need approval (the project block or `.claude/rules/`). Otherwise decide yourself: keep the tests that guard real risk.
    - **The single biggest open decision**, if one remains (the brainstorm option, or a design choice). Your pick comes first.
 

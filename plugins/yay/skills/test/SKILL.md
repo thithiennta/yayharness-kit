@@ -1,7 +1,7 @@
 ---
 name: test
 description: Write, run or triage PHP unit, PHP integration and JS tests for a Yay plugin, choosing the right layer for each risk. Use when the user says "test this", "write a unit test", "add tests for P-4", "regression test for B-7", "run the tests", "why is this test failing". Goes down the ladder (unit, integration, js, e2e, manual), writes tests tagged with the plan or bug they prove, proves they fail without the change, and runs them.
-argument-hint: "<P-<n>|B-<n>|<file or Class::method>|\"<behaviour>\"> [--layer=auto|unit|integration|js] [--run[=<layer>]] [--id=<ID>] [--triage] [--commit]"
+argument-hint: "<P-<n>|B-<n>|<file or Class::method>|\"<behaviour>\"> [--layer=auto|unit|integration|js] [--run[=<layer>]] [--triage] [--commit]"
 allowed-tools: Bash, Read, Grep, Glob, Write, Edit, Agent, AskUserQuestion
 ---
 
@@ -39,7 +39,6 @@ Tests at the cheapest layer that proves each risk, tagged with the artifact they
    - **A unit or a behaviour:** read the code, its callers and its `git log`. List 2–4 cases (input → expected), each backed by the code, a docblock or history. A limit (a cap, a minimum, a threshold) gets three cases: one below it, one exactly at it, and one just above it (for a 200 cap: 199, 200, 201). A case far past the limit doesn't stand in for the one just above it.
    - For each risk, pick the layer by the ladder (or `--layer`). When a risk is browser-only, it goes to `/yay:e2e`, not here.
    - **Existing coverage first:** `yayh test list`, `yayh test list <ID>`, and the **Coverage** table in `docs/knowledge/testing.md`. Extend the existing test class for that unit instead of adding a near-copy.
-   - **Say it back:** before writing, show one `Proving: <risk> → <layer> → <the check>` line per risk (`${CLAUDE_PLUGIN_ROOT}/reference/restate.md`), and carry on.
 3. **Write.** Read `TestCase.php` (unit), one existing test from the same layer, and the bootstrap, then write in their style, following `reference/testing.md`:
    - tag every test with its ID
    - one class per unit, mirroring the source path

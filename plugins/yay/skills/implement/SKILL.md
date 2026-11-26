@@ -1,7 +1,7 @@
 ---
 name: implement
 description: Build a Yay plugin plan task by task in its own worktree and branch, or plan a requirement first and then build it. Use when the user says "implement P-4", "build this plan", "start on the plan", "continue the implementation", or "implement <a requirement>" / "implement R-12" when no plan exists yet. Implements, verifies and ticks each task, commits with a Plan trailer, runs the full checks, refreshes knowledge it made stale, and opens a PR assigned to its owner.
-argument-hint: "<P-<n>|plan-slug|\"<requirement>\"|R-<n>|BS-<n>|B-<n>> [--type=feat|fix|chore|refactor|perf] [--task=T<n>] [--continue] [--explore] [--lane=tiny|small|standard] [--no-worktree] [--base=<branch>] [--no-pr|--no-push] [--draft] [--no-review]"
+argument-hint: "<P-<n>|plan-slug|\"<requirement>\"|R-<n>|BS-<n>|B-<n>> [--type=feat|fix|chore|refactor|perf] [--task=T<n>] [--continue] [--explore] [--lane=tiny|small|standard] [--no-worktree] [--base=<branch>] [--no-pr] [--draft] [--no-review]"
 allowed-tools: Bash, Read, Grep, Glob, Write, Edit, Agent, AskUserQuestion
 ---
 
@@ -45,7 +45,7 @@ When the argument isn't a plan (a requirement, or an `R-`/`BS-`/`B-<n>` with no 
   - `done` or `dropped` → stop.
 - Read the project block, the knowledge docs the plan touches, and every file the tasks name. When the plan has `design: UX-<n>`, read the design too: UI tasks build its screens, states and copy exactly, with the components it names.
 - **Pick up open notes:** run `yayh backlog open --for=P-<n>`. These are decisions and later work that earlier steps parked for this plan, its roadmap item or its source, including notes on other branches. Handle each one as `/yay:plan` describes under "Picking up notes" (`${CLAUDE_PLUGIN_ROOT}/skills/plan/SKILL.md`): settle the ones the code, the finished work or this round can now answer, and update the plan to match. That means rewriting the tasks, the `Reuse:` lines and the Tests and Verify items they change, and adding a task where a settled decision differs from what an earlier plan already built. Then run `yayh plan check` again. Also apply any `Settles: BL-<n> …` lines the plan carries under `## Risks`. Plan edits and settles happen in the branch: if there's no branch yet, make them right after step 2. A decision that still can't be made stays open, and the plan follows its default. It never stops the run.
-- **Hard questions only, once, now** (`${CLAUDE_PLUGIN_ROOT}/reference/asking.md`). Include any carried over from step 0. When step 0 already stopped on the restatement (a standard-lane plan written from words), that was the round: ask nothing here. Otherwise ask only if the plan leaves a decision that's expensive to undo or that only the user can make (for example, customer-visible behaviour the plan doesn't pin down): at most 3, in one AskUserQuestion. Everything else the plan leaves open, decide in its spirit and list under **Decided** in the PR. Usually that means no questions at all. Never stop mid-task to ask, unless the plan turns out wrong in a way that changes scope or what customers see (step 3.1).
+- **Hard questions only, once, now** (`${CLAUDE_PLUGIN_ROOT}/reference/asking.md`). Include any carried over from step 0. Ask only if the plan leaves a decision that's expensive to undo or that only the user can make (for example, customer-visible behaviour the plan doesn't pin down): at most 3, in one AskUserQuestion. Everything else the plan leaves open, decide in its spirit and list under **Decided** in the PR. Usually that means no questions at all. Never stop mid-task to ask, unless the plan turns out wrong in a way that changes scope or what customers see (step 3.1).
 
 ### 2. Branch and worktree (skip with `--continue`)
 1. Get the branch name: `branch="$(yayh git branch-name <plan type> "<plan title>" --id=P-<n>)"`, which gives `<type>/p-<n>-<slug>`.
@@ -101,7 +101,6 @@ For each unticked task in order (or only `--task`):
    - Spawn two read-only agents in parallel (one message), each with the Agent tool's `model` and `effort` both set from `yayh model resolve review --plan=P-<n>` (model routing: `${CLAUDE_PLUGIN_ROOT}/reference/models.md`). Don't pass your own reasoning to either, so their reads stay independent.
      - `yay:bug-reviewer`. Its brief: the worktree path, the base branch, and the plan's **Goal** paragraph copied as it is, the tasks `yayh plan risk P-<n>` rates 3 (their text, as "the hard-to-undo parts"), and "review this branch for correctness".
      - `yay:code-reviewer`. Its brief: the worktree path, the base branch, `P-<n>`, and "review this branch".
-   - **Wait for both results** before anything else: an agent that runs in the background reports back later, so don't write the PR, the report or the next step until both reviewers have answered. Nothing you start may still be running when you report: the report is the run's last message.
    - For each finding, either fix it or answer it:
      - **Fix:** the change the finding names. Commit `fix(<scope>): P-<n> <what>` for a correctness finding, or `refactor(<scope>): P-<n> reuse <helper>` / `refactor(<scope>): P-<n> restore comments`, with the `Plan:` trailer, then re-run the checks the change touches. A bug fix gets a test at the cheapest layer that proves it, when it's a real risk.
      - **Answer:** you disagree, with a reason. It goes in the PR under "Review".
@@ -135,7 +134,7 @@ Fill the PR body from `.github/pull_request_template.md`:
 Then record the PR number with `yayh fm set <plan> pr <number>`, and commit and push that.
 
 ### 6. Report
-When step 0 restated a request (`restate.md`), open the report with that block, each Done when followed by `passed`, `failed` or `not checked (why)`. Then give the plan (and, when step 0 wrote it, that it did, with its task count and any **Decided** planning choices), the notes settled and the notes written or still open (`BL-<n>`, kind, default), the branch, the worktree path, the commits (one line each), the checks and their results, the pre-existing failures, the knowledge updated, the PR URL, and the manual checks left for the reviewer. End with the **Next** line (`reference/asking.md`): `yayh next P-<n>` (the plan is done, so this is the most urgent other work).
+Give the plan (and, when step 0 wrote it, that it did, with its task count and any **Decided** planning choices), the notes settled and the notes written or still open (`BL-<n>`, kind, default), the branch, the worktree path, the commits (one line each), the checks and their results, the pre-existing failures, the knowledge updated, the PR URL, and the manual checks left for the reviewer. End with the **Next** line (`reference/asking.md`): `yayh next P-<n>` (the plan is done, so this is the most urgent other work).
 
 The reviews get a section of their own, one line per reviewer, even when a reviewer found nothing. Never merge the two into one list:
 ```
