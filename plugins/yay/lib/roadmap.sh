@@ -1035,7 +1035,7 @@ _yay_roadmap_build() {
         printf "\n| ID | Title | Status | Size | Sprint |\n|---|---|---|---|---|\n" > p
         for (i = 1; i <= n; i++) if (I_tg[i] == v) {
           k = I_sec[i]; sl = (k in S_file) ? "[" S_label[k] "](" S_file[k] ")" : "-"
-          printf "| %s | %s | %s | %s | %s |\n", I_id[i], cell(I_ti[i]), cell(I_st[i]), cell(I_sz[i]), sl > p
+          printf "| %s | %s | %s | %s | %s |\n", I_id[i], cell(I_ti[i]), (base(I_st[i]) ~ /^(done|shipped)$/ ? "✅ " : "") cell(I_st[i]), cell(I_sz[i]), sl > p
         }
         close(p)
         printf "%s\t| [%s](v%s.md)%s | %s | %s |\n", v, v, v, (hasb ? " · [brief](release-" v ".md)" : ""), V_line[v], V_last[v] > (out "/.versions")

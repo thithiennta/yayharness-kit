@@ -420,6 +420,14 @@ test_split_writes_go_to_the_right_file_and_regenerate_versions() {
   "$YAYH" roadmap move R-4 1 >/dev/null
   assert_contains "$(cat "$d/sprint-1.md")" "### R-4 Import from URL"
   assert_not_contains "$(cat "$d/later.md")" "R-4"
+  "$YAYH" roadmap set R-3 status shipped:1.5.0 >/dev/null
+  assert_contains "$(cat "$d/v1.5.0.md")" "| ✅ shipped:1.5.0 |"
+  assert_contains "$(cat "$d/v1.5.0.md")" "| R-5 | Gift \| wrap | todo | S |"
+  assert_contains "$(cat "$d/v1.5.0.md")" "1 open, 0 in progress, 1 shipped"
+  "$YAYH" roadmap set R-5 status done >/dev/null
+  assert_contains "$(cat "$d/v1.5.0.md")" "| R-5 | Gift \| wrap | ✅ done | S |"
+  assert_not_contains "$(cat "$d/sprint-1.md")" "✅"
+  assert_ok "$YAYH" roadmap render --check
   # a version nobody targets any more loses its file; hand-written files stay
   printf 'notes\n' > "$d/notes.md"
   "$YAYH" roadmap set R-3 target none >/dev/null
