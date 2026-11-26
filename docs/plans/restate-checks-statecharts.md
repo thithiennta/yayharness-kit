@@ -101,13 +101,13 @@ Done means:
 **E2E:** none
 
 ## Verify
-- `./tests/run.sh` → exit 0
-- `bash tests/unit/test_lessons.sh` → exit 0 (covers `kind=correction`)
-- `bash tests/unit/test_design.sh` → exit 0 (covers the statechart warnings)
-- `grep -c "Reading:" plugins/yay/reference/asking.md` → 1
-- `grep -c "stateDiagram-v2" plugins/yay/templates/artifacts/design.md` → 1
-- the three new evals pass on their configured runs (`/kit-release` scores them)
-- `/yay:implement "<a clear one-line change>"` in a real Yay repo: the Reading block appears before any edit, no question is asked, and the PR body carries it
+- ✅ `./tests/run.sh` → exit 0
+- ✅ `bash tests/unit/test_lessons.sh` → exit 0 (covers `kind=correction`)
+- ✅ `bash tests/unit/test_design.sh` → exit 0 (covers the statechart warnings)
+- ✅ `grep -c "Reading:" plugins/yay/reference/asking.md` → 1
+- ✅ `grep -c "stateDiagram-v2" plugins/yay/templates/artifacts/design.md` → 1
+- ✅ the three new evals pass on their configured runs (`/kit-release` scores them)
+- ✅ `/yay:implement "<a clear one-line change>"` in a real Yay repo: the Reading block appears before any edit, no question is asked, and the PR body carries it
 
 ## Risks
 - **More output per run, and a creeping confirmation step.** The rule says the block is shown, not approved. The eval checks that no question is asked for a clear request. Roll back by reverting T1.

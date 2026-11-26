@@ -142,22 +142,22 @@ Done means:
 **E2E:** none
 
 ## Verify
-- `./tests/run.sh wporg release doctor` → exit 0 (unit)
-- `./tests/run.sh` → exit 0
-- `python3 -I plugins/yay/skills/wporg/scripts/precheck.py tests/fixtures/wporg/planted --slug wporg-planted --wp-version 6.9` → Q9 (unit)
-- `plugins/yay/bin/yayh --help` → wporg site
-- `claude plugin validate plugins/yay` → exit 0
-- `grep -q "/yay:wporg" plugins/yay/skills/go/SKILL.md` → exit 0
-- `grep -q -- "--wporg" plugins/yay/skills/release/SKILL.md` → exit 0
-- In a Yay plugin repo with `plugin.wporgSlug` set and e2e set up, run `/yay:wporg`. You should see:
-  - a report at `release/bundles/<slug>-wporg-<version>/review.md` in the email's shape
-  - every finding with an ID, a `file:line` and a fix, and blockers tagged `[blocks upload]`
-  - `site.tsv` with T1, Q11, Q7, Q10 and Q6 lines
-  - the repo's working tree unchanged (`git status` clean)
-- In the same repo, `/yay:release --bundle --wporg` → the bundle has `wporg/review.md`, and a planted blocker (e.g. `Stable tag` ≠ `Version` in a scratch branch) stops it with that ID.
-- In the same repo without e2e set up, `/yay:wporg` → a report headed "static only (no site: run /yay:e2e-init)" with no site lines, and the skill doesn't fail.
-- After `yayh wporg site <zip> out=<dir>` → `wp-env` for the release site is stopped, and `<site>/plugin/<slug>/` has no `mu-plugins` or `plugin-check` leftovers.
-- `PATH="$PWD/plugins/yay/bin:$PATH" claude plugin eval plugins/yay --case wporg-planted-violations --runs 1 --ablation none --scaffold --allow-tools Bash Write Edit --trust-plugin --no-publish` → all graders pass. Same for `wporg-fix-from-email`.
+- ✅ `./tests/run.sh wporg release doctor` → exit 0 (unit)
+- ✅ `./tests/run.sh` → exit 0
+- ✅ `python3 -I plugins/yay/skills/wporg/scripts/precheck.py tests/fixtures/wporg/planted --slug wporg-planted --wp-version 6.9` → Q9 (unit)
+- ✅ `plugins/yay/bin/yayh --help` → wporg site
+- ✅ `claude plugin validate plugins/yay` → exit 0
+- ✅ `grep -q "/yay:wporg" plugins/yay/skills/go/SKILL.md` → exit 0
+- ✅ `grep -q -- "--wporg" plugins/yay/skills/release/SKILL.md` → exit 0
+- ✅ In a Yay plugin repo with `plugin.wporgSlug` set and e2e set up, run `/yay:wporg`. You should see:
+  - ✅ a report at `release/bundles/<slug>-wporg-<version>/review.md` in the email's shape
+  - ✅ every finding with an ID, a `file:line` and a fix, and blockers tagged `[blocks upload]`
+  - ✅ `site.tsv` with T1, Q11, Q7, Q10 and Q6 lines
+  - ✅ the repo's working tree unchanged (`git status` clean)
+- ✅ In the same repo, `/yay:release --bundle --wporg` → the bundle has `wporg/review.md`, and a planted blocker (e.g. `Stable tag` ≠ `Version` in a scratch branch) stops it with that ID.
+- ✅ In the same repo without e2e set up, `/yay:wporg` → a report headed "static only (no site: run /yay:e2e-init)" with no site lines, and the skill doesn't fail.
+- ✅ After `yayh wporg site <zip> out=<dir>` → `wp-env` for the release site is stopped, and `<site>/plugin/<slug>/` has no `mu-plugins` or `plugin-check` leftovers.
+- ✅ `PATH="$PWD/plugins/yay/bin:$PATH" claude plugin eval plugins/yay --case wporg-planted-violations --runs 1 --ablation none --scaffold --allow-tools Bash Write Edit --trust-plugin --no-publish` → all graders pass. Same for `wporg-fix-from-email`.
 
 ## Risks
 - **The T3 refactor breaks `/yay:release`'s UI check.** The SKIP test covers only the no-Docker path, so run `/yay:release --bundle` once on a real plugin before merging. To roll back, revert T3. T4 is the only other caller.
