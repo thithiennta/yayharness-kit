@@ -2,19 +2,17 @@
 
 Keep the work moving. Ask only what you can't responsibly decide yourself. These hold for every `/yay:*` skill and for ordinary requests in a yay repo.
 
-- **Say the job back before the work** (`reference/restate.md`). A request in plain words (no plan, no bug report), even a one-line code change, gets this block in your reply before any file is written, shown rather than asked:
+- **Restate before you build from words.** When a request asks for a code change in plain text (no plan, no bug report), even a one-line one, write this block in your reply before the first edit, show it rather than asking for approval, and open your final report with it (each Done when followed by its result):
   ```
-  Reading:   <what you understood, one line, in the user's terms>
-  Assumed:   <1-3 guesses the user can correct, or "nothing">
+  Reading: <the user-visible goal, one line>
   Not doing: <1-3 things a reader might expect that this leaves out>
-  Watch for: <1-3 blind spots this change could hit, or "nothing known">
   Done when: <an exact check: `command` → expected, or UI path → what you see>
-  Model on:  <path:line of existing code that already does the same kind of thing>
+  Model on: <path:line of existing code that already does the same kind of thing>
   ```
-  Model on is for code changes; other skills swap it for their own line (`restate.md`). Open your final report with the same block, every line labelled, each Done when followed by `passed`, `failed` or `not checked (why)`. Big work (brainstorm, design, debug from a long report, a standard-lane plan or implement) stops on it once, as the run's question round; small work shows it and carries on. A plan or bug report already is the restatement.
+  It becomes the round's question only when the request has two plausible readings, or no check can say when it's done: give your reading first, marked "(Recommended)". With nobody to ask, take the likely reading and list it under **Decided**. `Model on: none` is allowed when nothing similar exists; say so. A plan or bug report already is the restatement, so skip this when one exists.
 - **At most one round of 1–3 questions, and only the hardest ones.** A question is worth asking only if the decision is expensive to undo, or is one only the user can make: what customers see, scope, what ships, which design to commit to. Ask them all together in one AskUserQuestion, early, with the recommended option first, marked "(Recommended)".
-- **Two exceptions.** `/yay:roadmap` may offer item briefs in a second round, only once the roadmap it planned is committed (`reference/briefs.md`, Offer after planning). And `--interview`, when the user asks for it, asks one question at a time (`reference/restate.md`). Nothing else asks twice.
-- **Decide everything else yourself.** Use the code, the config, the artifacts, the repo's conventions, the answers you got, and sensible defaults. Don't ask to confirm a default, a version, a plan, a draft status or the next step; the one thing confirmed is big work's restatement (`restate.md`). If nothing is hard, ask nothing.
+- **One exception: an optional follow-up after the work is written.** `/yay:roadmap` may offer item briefs in a second round, only once the roadmap it planned is committed (`reference/briefs.md`, Offer after planning). Nothing else asks twice.
+- **Decide everything else yourself.** Use the code, the config, the artifacts, the repo's conventions, the answers you got, and sensible defaults. Don't ask to confirm a default, a version, a plan, a draft status or the next step. If nothing is hard, ask nothing.
 - **Write your decisions down so they can be overruled.** List the choices you made under **Decided** in the report, the PR or the artifact. A question that stays open and doesn't block the work becomes a **decision note** (`yayh artifact new backlog "<question>" kind=decision from=<id> default="<what you did>"`), and work left for later becomes a **deferred note** (`kind=deferred`). The next skill that touches the same plan or item picks them up (`yayh backlog open --for=<id>`). Never stop the work for them.
 - **Push and open the PR by default; never ask about it.** A skill that finishes work on a branch pushes it (`git push -u origin <branch>`) and opens its PR, assigned to the owner. `--no-pr` (or `--no-push`) means commit locally and end the report with the exact push and PR commands instead. `--pr` is still accepted and changes nothing. If there's no `origin` remote, or `gh` isn't installed or logged in, don't fail: finish locally, say why, and print the commands. Never force-push.
 - **Confirm only what destroys or leaves the machine:** deleting or overwriting existing work (the harness wipe, `--force` over hand edits), writes to a live site or database, and pushing tags (local tags are fine; a pushed tag is pushed only with `--push-tag`). Pushing a work branch and opening its PR is the default, not a confirmation. Put these in the same single round whenever you can.

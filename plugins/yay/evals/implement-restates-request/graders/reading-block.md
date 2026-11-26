@@ -3,4 +3,4 @@ type: llm
 weight: 2
 ---
 
-The reply contains a restatement (a one-line summary before it is fine) with labelled parts: Reading (the goal), Not doing (what it leaves out) and Done when (an exact check: a command with its expected output, or what you'd see on the checkout page), each Done when followed by its result. Assumed and Watch for may be there too. The restatement is shown, not put to the user as a question.
+The reply contains a restatement with four labelled parts: Reading (the goal), Not doing (what it leaves out), Done when (an exact check: a command with its expected output, or what you'd see on the checkout page) and Model on (an existing piece of code to copy). The Model on part names includes/GiftWrap.php, which already sets a placeholder the same way. The restatement is shown, not put to the user as a question.
