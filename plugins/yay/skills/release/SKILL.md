@@ -1,7 +1,7 @@
 ---
 name: release
-description: Build, check and release a Yay plugin, ending in a bundle to send. Use when the user says "release", "cut a release", "ship 1.4.0", "tag the release", "hotfix release", "build the zip", "package it", "make a build for QA", "send a test build", "check the zip". --bundle makes a test bundle (next version + rc) for QA without releasing. A release checks the Stable tag, versions and changelog, builds and checks every zip, compares the bundle size with the last release, runs the plugins page with the built zip, gets the developer's confirmation, and opens the release PR. --tag-only tags it after merge; --hotfix releases a patch.
-argument-hint: "[major|minor|patch|x.y.z] [--bundle] [--edition=<name>|all] [--wp-tested=X.Y] [--wc-tested=X.Y] [--hotfix] [--tag-only] [--date=YYYY-MM-DD] [--no-build] [--no-ui] [--wporg] [--keep-site] [--dry-run] [--no-pr] [--push-tag] [--draft]"
+description: Build, check and release a Yay plugin, ending in a bundle to send. Use when the user says "release", "cut a release", "ship 1.4.0", "tag the release", "hotfix release", "build the zip", "package it", "make a build for QA", "send a test build", or "check the zip". Covers the release PR, a QA test bundle (--bundle), tagging after merge (--tag-only) and patch releases (--hotfix).
+argument-hint: "[major|minor|patch|x.y.z] [--bundle] [--edition=<name>|all] [--wp-tested=X.Y] [--wc-tested=X.Y] [--hotfix] [--tag-only] [--date=YYYY-MM-DD] [--no-build] [--no-ui] [--wporg] [--keep-site] [--dry-run] [--no-pr|--no-push] [--push-tag] [--draft]"
 allowed-tools: Bash, Read, Write, Edit, AskUserQuestion
 ---
 

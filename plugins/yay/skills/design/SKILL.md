@@ -1,6 +1,6 @@
 ---
 name: design
-description: Design a simple UI/UX for a Yay plugin change that adds or changes something people see - an admin settings page or tab, a list table, a modal, a notice, a product/cart/checkout/My Account element, a block, an email. Use when the user says "design the UI", "how should this screen look", "wireframe", "UX for", "mock it up", or when a brainstorm or plan has UI work and no design. Grounds it in the plugin's existing screens and components, and writes docs/designs/ UX-<n> - the job, where it lives, the flow, ASCII wireframes, every state, the copy, accessibility and acceptance checks - plus an optional HTML mockup.
+description: Design a simple UI/UX for a Yay plugin change that adds or changes something people see - an admin page or tab, a list table, a modal, a notice, a product/cart/checkout/My Account element, a block, an email. Use when the user says "design the UI", "how should this screen look", "wireframe", "UX for", "mock it up", or when a brainstorm or plan has UI work and no design. Writes docs/designs/ UX-<n>, grounded in the plugin's existing screens.
 argument-hint: "<topic|BS-<n>|R-<n>|P-<n>|B-<n>> [--from=<id>] [--quick] [--mockup] [--check] [--commit]"
 allowed-tools: Bash(yayh *), Bash(git *), Bash(open *), Read, Grep, Glob, Write, Edit, AskUserQuestion
 ---
