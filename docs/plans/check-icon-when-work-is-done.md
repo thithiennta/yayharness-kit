@@ -48,7 +48,7 @@ Model on: `yay_verify` in `plugins/yay/lib/verify.sh:32` — it already reads ev
 - **Roadmap:** in the version-page loop, the Status cell shows `✅ ` + status for `done` and `shipped*`. The comparisons and counts keep using `I_st`.
 
 ## Tasks
-- [ ] T1 Let marked Verify items parse: strip a leading result icon in `_yay_verify_items`, and add a test that a marked plan lists the same kinds, commands and expectations, and that `plan check` gives the same result — `plugins/yay/lib/verify.sh`, `tests/unit/test_verify.sh`
+- [x] T1 Let marked Verify items parse: strip a leading result icon in `_yay_verify_items`, and add a test that a marked plan lists the same kinds, commands and expectations, and that `plan check` gives the same result — `plugins/yay/lib/verify.sh`, `tests/unit/test_verify.sh`
   - Reuse: `_vplan` fixture in `tests/unit/test_verify.sh`
 - [ ] T2 Add `--mark` to `yayh verify`: with `--run`, write ✅/❌ for each command item into the plan's Verify section (replacing an old icon, leaving manual items alone). Update the usage line and the `yayh` help — `plugins/yay/lib/verify.sh`, `plugins/yay/bin/yayh`, `tests/unit/test_verify.sh`
   - Reuse: `yay_verify`'s loop and `_yay_verify_items` (`plugins/yay/lib/verify.sh`), `yay_artifact_resolve`

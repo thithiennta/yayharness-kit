@@ -13,6 +13,7 @@ _yay_verify_items() {
     !on || /^<!--/ { next }
     /^[[:space:]]*([-*]|[0-9]+\.)[[:space:]]+[^[:space:]]/ {
       line = $0; sub(/^[[:space:]]*([-*]|[0-9]+\.)[[:space:]]+/, "", line)
+      sub(/^(✅|❌|⚠️|⚠|⏭️|⏭|⬜)[[:space:]]+/, "", line)
       n++; kind = "manual"; cmd = ""; want = ""
       if (substr(line, 1, 1) == "`" && match(line, /^`[^`]+`[[:space:]]*(→|->)[[:space:]]*/)) {
         head = substr(line, 1, RLENGTH); rest = substr(line, RLENGTH + 1)

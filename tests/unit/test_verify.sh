@@ -46,3 +46,14 @@ test_verify_run_passes_and_fails() {
   assert_exit 1 "$YAYH" verify
   assert_exit 1 "$YAYH" verify P-9
 }
+
+test_verify_reads_marked_items() {
+  _vplan
+  local before check_before; before="$("$YAYH" verify P-1)"; check_before="$("$YAYH" plan check P-1 2>&1)"
+  sed -i.bak -e 's/^- `cat/- ✅ `cat/' -e 's/^- `test -f a/- ❌ `test -f a/' -e 's/^- `test -f m/- ⚠️ `test -f m/' \
+    -e 's/^- `grep/- ⏭️ `grep/' -e 's/^- Open/- ⬜ Open/' -e 's/^1\. `true/1. ✅ `true/' "$YAY_REPO/docs/plans/p.md"
+  rm -f "$YAY_REPO/docs/plans/p.md.bak"
+  assert_contains "$(cat "$YAY_REPO/docs/plans/p.md")" "- ✅ \`cat a.txt\`"
+  assert_eq "$before" "$("$YAYH" verify P-1)"
+  assert_eq "$check_before" "$("$YAYH" plan check P-1 2>&1)"
+}
