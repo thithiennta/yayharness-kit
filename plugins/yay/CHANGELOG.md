@@ -2,7 +2,7 @@
 
 `/yay:harness-update` reads this file to tell a repo what changed between its recorded kit version and the installed one. Each entry lists new skills, config keys, template changes and behavior changes.
 
-## Unreleased (0.21.0)
+## 0.21.0 (2026-11-26)
 - **Finished work shows a ✅** (P-4, from BS-3). Reports, plans and version pages mark results with one icon set: ✅ done/pass/clean, ❌ fail, ⚠️ warn or blocked, ⏭️ skipped, ⬜ manual check left for a person, always followed by the word. Comes with the plugin update. The rule is "Mark results" in `reference/asking.md`.
   - `yayh verify P-<n> --run --mark` writes ✅ or ❌ at the start of each command check in the plan, and `/yay:implement` uses it. Marked Verify items still parse as before.
   - `yayh verify --backfill` puts ✅ on the unmarked Verify items of every `done` plan, once, without running them.
