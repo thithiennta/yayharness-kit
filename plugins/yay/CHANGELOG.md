@@ -2,6 +2,12 @@
 
 `/yay:harness-update` reads this file to tell a repo what changed between its recorded kit version and the installed one. Each entry lists new skills, config keys, template changes and behavior changes.
 
+## Unreleased (0.21.0)
+- **Finished work shows a ✅** (P-4, from BS-3). Reports, plans and version pages mark results with one icon set: ✅ done/pass/clean, ❌ fail, ⚠️ warn or blocked, ⏭️ skipped, ⬜ manual check left for a person, always followed by the word. Comes with the plugin update. The rule is "Mark results" in `reference/asking.md`.
+  - `yayh verify P-<n> --run --mark` writes ✅ or ❌ at the start of each command check in the plan, and `/yay:implement` uses it. Marked Verify items still parse as before.
+  - `yayh verify --backfill` puts ✅ on the unmarked Verify items of every `done` plan, once, without running them.
+  - The generated `docs/roadmap/v<x.y.z>.md` tables show `✅ done` and `✅ shipped:<v>`. After the update, `yayh roadmap check` says the version pages are out of date until you run `yayh roadmap render`. To update existing pages, run `yayh roadmap render` and `yayh verify --backfill` on a docs branch and open a PR.
+
 ## 0.20.0 (2026-11-26)
 - **The kit is back to 0.17.0, keeping only the `yayh brief new` fix.** Everything 0.18.0 and 0.19.0 added is removed. Run `/yay:harness-update` to put the 0.17.0 plan template and workflow doc back; the rest comes with the plugin update.
   - Removed: the say-the-job-back block and its stop before big work (`reference/restate.md`), `--interview` on `/yay:brainstorm`, `/yay:plan` and `/yay:roadmap --brief`, the plan's `## Key decisions` section and its `yayh plan check` warning, the restatement on the autopilot decision sheet, and `/yay:implement` waiting for both reviewers before its report.
