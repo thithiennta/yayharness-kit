@@ -46,12 +46,24 @@ _yay_verify_mark() {
   cat "$tmp" > "$1"; rm -f "$tmp"
 }
 
+# yay_verify_backfill -> "marked<TAB>path" for each done plan whose unmarked Verify items got ✅
+yay_verify_backfill() {
+  local root id st ti rel
+  root="$(yay_repo_root)"
+  yay_artifact_list plan --status=done | while IFS="$YAY_TAB" read -r id st ti rel; do
+    [ -n "$rel" ] || continue
+    _yay_verify_mark "$root/$rel" "*${YAY_TAB}✅" && printf 'marked\t%s\n' "$rel"
+  done
+  return 0
+}
+
 # yay_verify <plan> [--run [--mark]] -> TSV: n status command expected detail
 #   without --run: status is cmd | manual (what would run)
 #   with --run:    status is pass | fail | manual; exit 1 when any command check fails
 #   --mark (with --run) writes ✅ or ❌ at the start of each command item in the plan
 yay_verify() {
   local plan="" run=0 mark=0 marks="" a rel f root n kind cmd exp text out code fails=0 status detail
+  [ "${1:-}" != --backfill ] || { yay_verify_backfill; return; }
   for a in "$@"; do case "$a" in --run) run=1 ;; --mark) mark=1 ;; -*) yay_die "usage: yayh verify <plan> [--run [--mark]]" ;; *) plan="$a" ;; esac; done
   [ -n "$plan" ] || yay_die "usage: yayh verify <plan> [--run [--mark]]"
   [ "$mark" = 0 ] || [ "$run" = 1 ] || yay_die "--mark needs --run"

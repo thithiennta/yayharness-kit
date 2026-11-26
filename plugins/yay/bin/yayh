@@ -115,6 +115,7 @@ Artifacts (brainstorms, plans, bugs, backlog)
   verify <plan> [--run [--mark]]   the plan's Verify items: n, cmd|manual, command, expected (TSV);
                                    --run runs the `cmd` → expected ones: pass|fail|manual (exit 1 on a fail);
                                    --mark (with --run) writes ✅ or ❌ at the start of each command item
+  verify --backfill                ✅ on the unmarked Verify items of every done plan: marked, path (TSV)
   id conflicts [base]              ids this branch adds that the base branch already uses
   design check <design>            structure errors and warnings for a UX-<n> (exit 1 on errors)
   backlog open [--for=<ID>] [--kind=decision|deferred]

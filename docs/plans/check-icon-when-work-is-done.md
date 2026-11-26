@@ -53,7 +53,7 @@ Model on: `yay_verify` in `plugins/yay/lib/verify.sh:32` — it already reads ev
 - [x] T2 Add `--mark` to `yayh verify`: with `--run`, write ✅/❌ for each command item into the plan's Verify section (replacing an old icon, leaving manual items alone). Update the usage line and the `yayh` help — `plugins/yay/lib/verify.sh`, `plugins/yay/bin/yayh`, `tests/unit/test_verify.sh`
   - Reuse: `yay_verify`'s loop and `_yay_verify_items` (`plugins/yay/lib/verify.sh`), `yay_artifact_resolve`
   - Callers: `_yay_verify_mark()` → `yay_verify --mark`; `yayh verify --run --mark` → `/yay:implement` step 3 (T6)
-- [ ] T3 Add `yayh verify --backfill`: mark ✅ on every unmarked Verify item of each `done` plan. It prints the changed paths, a second run changes nothing, and plans that aren't `done` stay untouched — `plugins/yay/lib/verify.sh`, `plugins/yay/bin/yayh`, `tests/unit/test_verify.sh`
+- [x] T3 Add `yayh verify --backfill`: mark ✅ on every unmarked Verify item of each `done` plan. It prints the changed paths, a second run changes nothing, and plans that aren't `done` stay untouched — `plugins/yay/lib/verify.sh`, `plugins/yay/bin/yayh`, `tests/unit/test_verify.sh`
   - Reuse: `yay_artifact_list plan` (`plugins/yay/lib/artifact.sh:105`), `_yay_verify_mark()` from T2
   - Callers: `yay_verify_backfill()` → `yayh verify --backfill` → the deferred rollout (Non-goals)
 - [ ] T4 In the version-page renderer, show the Status cell as `✅ <status>` for `done` and `shipped*` items, leaving counts and the `.versions` index plain. Extend the render test — `plugins/yay/lib/roadmap.sh`, `tests/unit/test_roadmap.sh`

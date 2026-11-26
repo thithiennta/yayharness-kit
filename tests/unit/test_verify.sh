@@ -76,3 +76,18 @@ test_verify_mark_writes_icons() {
   assert_eq 0 "$(grep -c '✅ ❌\|❌ ✅' "$f")"
   assert_eq "1	cmd	cat a.txt	ok-file" "$("$YAYH" verify P-1 | sed -n 1p | cut -f1-4)"
 }
+
+test_verify_backfill_marks_done_plans_once() {
+  _vplan
+  local f="$YAY_REPO/docs/plans/p.md" g="$YAY_REPO/docs/plans/q.md" before
+  sed -e 's/^id: P-1/id: P-2/' -e 's/^status: in-progress/status: done/' -e 's/^- `test -f m/- ❌ `test -f m/' "$f" > "$g"
+  before="$(cat "$f")"
+  assert_eq "marked	docs/plans/q.md" "$("$YAYH" verify --backfill)"
+  assert_eq "$before" "$(cat "$f")"
+  assert_contains "$(cat "$g")" "- ✅ \`cat a.txt\` → ok-file"
+  assert_contains "$(cat "$g")" "- ❌ \`test -f missing.txt\`"
+  assert_contains "$(cat "$g")" "- ✅ Open Settings"
+  assert_contains "$(cat "$g")" "1. ✅ \`true\`"
+  assert_eq "" "$("$YAYH" verify --backfill)"
+  assert_eq "6" "$("$YAYH" verify P-2 | wc -l | tr -d ' ')"
+}
