@@ -51,10 +51,10 @@ yay_verify_backfill() {
   local root id st ti rel
   root="$(yay_repo_root)"
   yay_artifact_list plan --status=done | while IFS="$YAY_TAB" read -r id st ti rel; do
-    [ -n "$rel" ] || continue
-    _yay_verify_mark "$root/$rel" "*${YAY_TAB}✅" && printf 'marked\t%s\n' "$rel"
+    rel="${rel:-$ti}"; [ -n "$rel" ] || continue
+    if _yay_verify_mark "$root/$rel" "*${YAY_TAB}✅"; then printf 'marked\t%s\n' "$rel"
+    elif [ $? != 1 ]; then yay_die "could not mark $rel"; fi
   done
-  return 0
 }
 
 # yay_verify <plan> [--run [--mark]] -> TSV: n status command expected detail

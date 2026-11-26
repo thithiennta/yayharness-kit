@@ -89,5 +89,8 @@ test_verify_backfill_marks_done_plans_once() {
   assert_contains "$(cat "$g")" "- ✅ Open Settings"
   assert_contains "$(cat "$g")" "1. ✅ \`true\`"
   assert_eq "" "$("$YAYH" verify --backfill)"
+  assert_ok "$YAYH" verify --backfill
+  sed -e 's/^id: P-1/id: P-3/' -e 's/^status: in-progress/status: done/' -e 's/^title: .*/title:/' "$f" > "$YAY_REPO/docs/plans/r.md"
+  assert_eq "marked	docs/plans/r.md" "$("$YAYH" verify --backfill)"
   assert_eq "6" "$("$YAYH" verify P-2 | wc -l | tr -d ' ')"
 }
