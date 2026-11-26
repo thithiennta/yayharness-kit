@@ -8,7 +8,9 @@
   - **Brainstorm summary:** the problem, what must keep working, then each option with how it works, ✅/⚠️, size and a Data line naming the storage it adds, the recommendation and what would change it, and Open. Reply with a letter to pick an option, "ok" for the recommended one, or "leave it open". `--decide` drops "leave it open".
   - The hard questions move into the summary's Open section, answered in plain words; there's no separate question pop-up when the preview runs.
   - Plan steps are now 6 self-review (on the draft), 7 preview, 8 write it, 9 Trello, 10 report. Brainstorm steps are 5 preview, 6 write it (and record the decision), 7 report.
-  - `--yes` (or "no preview", "just write it") skips the preview on both, and so do autopilot, `--no-ask`, `/yay:plan --check`, `/yay:implement` (from a requirement or with `--explore`) and runs with nobody to answer. Those keep the old single question round.
+  - Only these skip the preview: `--yes`, a request that says "just write it" or "don't ask", `--no-ask`, autopilot, `/yay:plan --check`, and `/yay:implement` (from a requirement or with `--explore`). These keep the old single question round. The skill never guesses that nobody is there from the environment (`claude -p`, no terminal).
+  - Round 1 is always a draft: the skill doesn't stop with "how should I proceed?" questions first. It drafts with defaults and lists the questions under Open. A quick UI design the plan needs is drafted too, and written only after you accept.
+  - The summary keeps code out of Steps, How, Tests and Checked by. Only Surprises cites `file:line`, and only Data names keys.
 
 ## 0.21.0 (2026-11-26)
 - **Finished work shows a ✅** (P-4, from BS-3). Reports, plans and version pages mark results with one icon set: ✅ done/pass/clean, ❌ fail, ⚠️ warn or blocked, ⏭️ skipped, ⬜ manual check left for a person, always followed by the word. Comes with the plugin update. The rule is "Mark results" in `reference/asking.md`.
