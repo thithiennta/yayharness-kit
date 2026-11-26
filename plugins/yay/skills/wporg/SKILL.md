@@ -1,6 +1,6 @@
 ---
 name: wporg
-description: Pre-review a Yay plugin's free zip the way the WordPress.org Plugins Team reviews submissions (Plugin Check gate, a clean-site run and a reviewer pass), write the result as their review email with a checklist ID, file:line and fix on every finding, then fix on a branch. Use when the user says "submit to wp.org", "is it ready for wordpress.org", "review it like the plugin team", "Plugin Check", "trialware", or pastes a review email from plugins@wordpress.org (--email fixes every occurrence and drafts the reply). /yay:release --wporg runs it as a release step.
+description: Pre-review a Yay plugin's free zip the way the WordPress.org Plugins Team reviews submissions (Plugin Check gate, a clean-site run and a reviewer pass), write it as their review email with an ID, file:line and fix on every finding, then fix on a branch. Use when the user says "submit to wp.org", "is it ready for wordpress.org", "review it like the plugin team", "Plugin Check", "trialware", or pastes a review email from plugins@wordpress.org (--email).
 argument-hint: "[--email] [--zip=<path>] [--edition=<e>] [--report-only] [--no-site] [--no-pcp] [--keep-site]"
 allowed-tools: Bash, Read, Grep, Glob, Write, Edit, AskUserQuestion
 ---
