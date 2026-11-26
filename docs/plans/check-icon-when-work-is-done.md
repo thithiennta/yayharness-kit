@@ -68,14 +68,14 @@ Model on: `yay_verify` in `plugins/yay/lib/verify.sh:32` — it already reads ev
 **E2E:** none
 
 ## Verify
-- `./tests/run.sh test_verify` → exit 0 (unit)
-- `./tests/run.sh test_roadmap` → exit 0 (unit)
-- `./tests/run.sh` → exit 0
-- `grep -q 'Mark results' plugins/yay/reference/asking.md && grep -q '✅' plugins/yay/reference/asking.md` → exit 0
-- `grep -n 'Mark results' plugins/yay/skills/implement/SKILL.md plugins/yay/skills/roadmap/SKILL.md plugins/yay/skills/go/SKILL.md` → exit 0
-- `grep -q 'verify P-<n> --run --mark' plugins/yay/skills/implement/SKILL.md` → exit 0
-- `test -z "$(git diff main -- plugins/yay/lib/status.sh plugins/yay/lib/doctor.sh plugins/yay/templates)"` → exit 0
-- Run `/yay:go` in a plugin repo with work in flight: the stage column and any result lines start with an icon followed by the word.
+- ✅ `./tests/run.sh test_verify` → exit 0 (unit)
+- ✅ `./tests/run.sh test_roadmap` → exit 0 (unit)
+- ✅ `./tests/run.sh` → exit 0
+- ✅ `grep -q 'Mark results' plugins/yay/reference/asking.md && grep -q '✅' plugins/yay/reference/asking.md` → exit 0
+- ✅ `grep -n 'Mark results' plugins/yay/skills/implement/SKILL.md plugins/yay/skills/roadmap/SKILL.md plugins/yay/skills/go/SKILL.md` → exit 0
+- ✅ `grep -q 'verify P-<n> --run --mark' plugins/yay/skills/implement/SKILL.md` → exit 0
+- ✅ `test -z "$(git diff main -- plugins/yay/lib/status.sh plugins/yay/lib/doctor.sh plugins/yay/templates)"` → exit 0
+- ⬜ Run `/yay:go` in a plugin repo with work in flight: result cells and result lines start with an icon followed by the word, and stages still to do stay plain.
 
 ## Risks
 - **A parser misreads marked items.** T1 lands first, and its test proves it. Rollback: revert T1–T3. Marked files still read as manual checks, so they don't break, only lose their command checks.
