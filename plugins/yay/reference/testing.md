@@ -43,7 +43,7 @@ For each **risk** in the change (an acceptance criterion, a bug's root cause, a 
 
 ## Verify checks: run by a command, then kept as tests
 
-A plan's **Verify** list proves the plan is done. `yayh verify P-<n> --run` runs every ``- `command` → expected`` item. A manual item is someone clicking, so turn every check a command can make into a command check:
+A plan's **Verify** list proves the plan is done. `yayh verify P-<n> --run` runs every ``- `command` → expected`` item. With `--mark`, it also writes ✅ or ❌ at the start of each one in the plan. A manual item is someone clicking, so turn every check a command can make into a command check:
 
 | To check | Command check |
 |---|---|
