@@ -2,6 +2,11 @@
 
 `/yay:harness-update` reads this file to tell a repo what changed between its recorded kit version and the installed one. Each entry lists new skills, config keys, template changes and behavior changes.
 
+## Unreleased (0.22.0)
+- **`/yay:plan` shows a short plain summary before it writes the plan.** About 15-30 lines in plain words: what it does and when it's done, how it's built, one line per step (risky ones flagged), surprises found in the code, **Data changes** (each option, meta key, table or column added, changed or removed, with its shape, default, upgrade handling and uninstall; exact key names here), the tests, the key checks, what it's not doing, and open decisions. Screens and settings by name, no file or function names. One question, "Write this plan?", carries the hard questions the skill asked before. A typed change is applied and the plan is written, with no second round: the plan can still be changed after it's written. Comes with the plugin update.
+  - The steps are now 6 self-review (on the draft), 7 summary and hard questions, 8 write it, 9 Trello, 10 report.
+  - `--yes` (or "no preview", "just write it") skips the summary, and so do autopilot, `--no-ask`, `--check` and `/yay:implement` from a requirement.
+
 ## 0.21.0 (2026-11-26)
 - **Finished work shows a ✅** (P-4, from BS-3). Reports, plans and version pages mark results with one icon set: ✅ done/pass/clean, ❌ fail, ⚠️ warn or blocked, ⏭️ skipped, ⬜ manual check left for a person, always followed by the word. Comes with the plugin update. The rule is "Mark results" in `reference/asking.md`.
   - `yayh verify P-<n> --run --mark` writes ✅ or ❌ at the start of each command check in the plan, and `/yay:implement` uses it. Marked Verify items still parse as before.
