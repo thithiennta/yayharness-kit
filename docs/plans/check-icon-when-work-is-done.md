@@ -1,7 +1,7 @@
 ---
 id: P-4
 title: Show a check icon when work is done
-status: in-progress
+status: done
 from: BS-3
 roadmap:
 design:
