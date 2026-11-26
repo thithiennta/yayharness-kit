@@ -8,7 +8,7 @@ design:
 trello:
 type: feat
 branch: feat/p-4-show-a-check-icon-when-work-is-done
-pr:
+pr: 55
 editions: [free, pro]
 lane: standard
 created: 2026-11-26
