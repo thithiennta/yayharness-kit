@@ -2,7 +2,7 @@
 
 `/yay:harness-update` reads this file to tell a repo what changed between its recorded kit version and the installed one. Each entry lists new skills, config keys, template changes and behavior changes.
 
-## Unreleased (0.20.0)
+## 0.20.0 (2026-11-26)
 - **The kit is back to 0.17.0, keeping only the `yayh brief new` fix.** Everything 0.18.0 and 0.19.0 added is removed. Run `/yay:harness-update` to put the 0.17.0 plan template and workflow doc back; the rest comes with the plugin update.
   - Removed: the say-the-job-back block and its stop before big work (`reference/restate.md`), `--interview` on `/yay:brainstorm`, `/yay:plan` and `/yay:roadmap --brief`, the plan's `## Key decisions` section and its `yayh plan check` warning, the restatement on the autopilot decision sheet, and `/yay:implement` waiting for both reviewers before its report.
   - Kept: `yayh brief new` works for every roadmap item (it exited 141 for items not near the end of a long roadmap), and the same fix in `yayh git worktree` and `yayh status`.
