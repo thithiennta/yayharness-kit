@@ -94,7 +94,7 @@ For each unticked task in order (or only `--task`):
 ### 4. Finish
 1. Run all of `lint`, `typecheck` and `build` that exist in the config (`yayh run <name>`), and the tests with `yayh test run all` (every configured layer: unit, integration when the tests site is up, and js; it falls back to `commands.test`). For `build` with editions, build each edition the plan touches (`edition=<e>`). Report pre-existing failures separately (compare with the base, as in step 3.2).
 2. **E2E** (when the plan's `**E2E:**` line isn't `none` and `commands.e2e` is set): follow `/yay:e2e P-<n>` steps 1–5 in this worktree. Write the specs, tagged `@P-<n>`. Run `yayh e2e run --grep "@P-<n>|@smoke"` against this worktree's own site (`yayh e2e env start` gives it its own port). Classify any failure: a product bug is yours to fix now, since it's this branch's code. Commit as `test(e2e): P-<n> <flow>` with the `Plan:` trailer. Without Docker, write and commit the specs anyway, and list them as **not run** in the PR. When you're done, stop the site with `yayh e2e env stop`.
-3. Walk through the plan's **Verify** list (it includes the design's Acceptance checks). Run `yayh verify P-<n> --run`: every ``- `command` → expected`` check runs, and a `fail` is a bug in this branch to fix now (or a wrong check, which you correct in the plan, saying so under **Decided**). Do the other checks you can by hand (WP-CLI against `yayh config get site.wpPath`, reading the output). List the checks only a human can do (browser flows) for the PR, and paste the `verify` result into its Verified section.
+3. Walk through the plan's **Verify** list (it includes the design's Acceptance checks). Run `yayh verify P-<n> --run --mark`: every ``- `command` → expected`` check runs and gets ✅ or ❌ in the plan, and a `fail` is a bug in this branch to fix now (or a wrong check, which you correct in the plan, saying so under **Decided**). Do the other checks you can by hand (WP-CLI against `yayh config get site.wpPath`, reading the output), and start each one in the plan with ✅ when it passed or ⬜ when it's left for the reviewer ("Mark results" in `${CLAUDE_PLUGIN_ROOT}/reference/asking.md`). List the checks only a human can do (browser flows) for the PR, and paste the `verify` result into its Verified section.
 4. Run `yayh debug markers`. It must be empty. Then run `yayh code unused <base>` and deal with each symbol it lists: delete it, or call it where the plan needs it. Keep one only when WordPress or WooCommerce calls it by name (an override, a callback named in a string), and say so under **Decided** in the PR.
 5. **Review: correctness, then reuse and comments** (skip with `--no-review`):
    - Run `yayh review diff <base> --plan=P-<n>`.
@@ -136,11 +136,11 @@ Then record the PR number with `yayh fm set <plan> pr <number>`, and commit and 
 ### 6. Report
 Give the plan (and, when step 0 wrote it, that it did, with its task count and any **Decided** planning choices), the notes settled and the notes written or still open (`BL-<n>`, kind, default), the branch, the worktree path, the commits (one line each), the checks and their results, the pre-existing failures, the knowledge updated, the PR URL, and the manual checks left for the reviewer. End with the **Next** line (`reference/asking.md`): `yayh next P-<n>` (the plan is done, so this is the most urgent other work).
 
-The reviews get a section of their own, one line per reviewer, even when a reviewer found nothing. Never merge the two into one list:
+Mark the checks and the review lines as "Mark results" says (`reference/asking.md`). The reviews get a section of their own, one line per reviewer, even when a reviewer found nothing. Never merge the two into one list:
 ```
 **Reviews**
-- Correctness (`yay:bug-reviewer`, with the risk-3 task reviews): <each finding: fixed, or answered with the reason, or parked as BL-<n>>, or "clean"
-- Reuse and comments (`yay:code-reviewer`): <each finding, the same way>, or "clean"
+- ✅ Correctness (`yay:bug-reviewer`, with the risk-3 task reviews): clean, or each finding: ✅ fixed, ⚠️ answered with the reason, or ⏭️ parked as BL-<n>
+- ✅ Reuse and comments (`yay:code-reviewer`): clean, or each finding, the same way
 ```
 
 ## Don'ts

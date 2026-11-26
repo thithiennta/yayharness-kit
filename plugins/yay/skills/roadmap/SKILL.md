@@ -56,7 +56,7 @@ Commit by path with `docs(roadmap): <summary>` (the `roadmap` scope is always al
 1. `yayh roadmap status` gives: horizon, current sprint, counts per section and per target version (open, in-progress, shipped, dropped), slipped items, open bugs by severity, and ready or in-progress plans.
 2. `yayh roadmap check` for structure problems, and `yayh roadmap sync --dry-run` for items whose status lags behind their brainstorm or plan. That includes items now `done`: all their plans are merged into the base, but not released yet.
 3. Report, in this order:
-   - the current sprint, its goal line, and each of its items with status
+   - the current sprint, its goal line, and each of its items with status, marked as "Mark results" says (`${CLAUDE_PLUGIN_ROOT}/reference/asking.md`)
    - slipped items (sprint ended, not shipped)
    - the `velocity` line (dev-days done per closed sprint, and the average that is the suggested capacity), else the `pace` line, when there is one
    - a sprint that ended and isn't closed (`roadmap check` warns): suggest `/yay:roadmap --close`

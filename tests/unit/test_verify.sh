@@ -46,3 +46,51 @@ test_verify_run_passes_and_fails() {
   assert_exit 1 "$YAYH" verify
   assert_exit 1 "$YAYH" verify P-9
 }
+
+test_verify_reads_marked_items() {
+  _vplan
+  local before check_before; before="$("$YAYH" verify P-1)"; check_before="$("$YAYH" plan check P-1 2>&1)"
+  sed -i.bak -e 's/^- `cat/- ✅ `cat/' -e 's/^- `test -f a/- ❌ `test -f a/' -e 's/^- `test -f m/- ⚠️ `test -f m/' \
+    -e 's/^- `grep/- ⏭️ `grep/' -e 's/^- Open/- ⬜ Open/' -e 's/^1\. `true/1. ✅ `true/' "$YAY_REPO/docs/plans/p.md"
+  rm -f "$YAY_REPO/docs/plans/p.md.bak"
+  assert_contains "$(cat "$YAY_REPO/docs/plans/p.md")" "- ✅ \`cat a.txt\`"
+  assert_eq "$before" "$("$YAYH" verify P-1)"
+  assert_eq "$check_before" "$("$YAYH" plan check P-1 2>&1)"
+}
+
+test_verify_mark_writes_icons() {
+  _vplan
+  local f="$YAY_REPO/docs/plans/p.md" head
+  sed -i.bak 's/^- Open/- ⬜ Open/' "$f"; rm -f "$f.bak"
+  head="$(sed -n '1,/^## Verify/p' "$f")"
+  assert_exit 1 "$YAYH" verify P-1 --mark
+  "$YAYH" verify P-1 --run --mark >/dev/null; assert_eq 0 $?
+  assert_contains "$(cat "$f")" "- ✅ \`cat a.txt\` → ok-file"
+  assert_contains "$(cat "$f")" "1. ✅ \`true\` → exit 0"
+  assert_contains "$(cat "$f")" "- ⬜ Open Settings"
+  assert_contains "$(cat "$f")" "<!-- exact checks -->"
+  assert_eq "$head" "$(sed -n '1,/^## Verify/p' "$f")"
+  printf 'changed\n' > "$YAY_REPO/a.txt"
+  "$YAYH" verify P-1 --run --mark >/dev/null; assert_eq 1 $?
+  assert_contains "$(cat "$f")" "- ❌ \`cat a.txt\` → ok-file"
+  assert_eq 0 "$(grep -c '✅ ❌\|❌ ✅' "$f")"
+  assert_eq "1	cmd	cat a.txt	ok-file" "$("$YAYH" verify P-1 | sed -n 1p | cut -f1-4)"
+}
+
+test_verify_backfill_marks_done_plans_once() {
+  _vplan
+  local f="$YAY_REPO/docs/plans/p.md" g="$YAY_REPO/docs/plans/q.md" before
+  sed -e 's/^id: P-1/id: P-2/' -e 's/^status: in-progress/status: done/' -e 's/^- `test -f m/- ❌ `test -f m/' "$f" > "$g"
+  before="$(cat "$f")"
+  assert_eq "marked	docs/plans/q.md" "$("$YAYH" verify --backfill)"
+  assert_eq "$before" "$(cat "$f")"
+  assert_contains "$(cat "$g")" "- ✅ \`cat a.txt\` → ok-file"
+  assert_contains "$(cat "$g")" "- ❌ \`test -f missing.txt\`"
+  assert_contains "$(cat "$g")" "- ✅ Open Settings"
+  assert_contains "$(cat "$g")" "1. ✅ \`true\`"
+  assert_eq "" "$("$YAYH" verify --backfill)"
+  assert_ok "$YAYH" verify --backfill
+  sed -e 's/^id: P-1/id: P-3/' -e 's/^status: in-progress/status: done/' -e 's/^title: .*/title:/' "$f" > "$YAY_REPO/docs/plans/r.md"
+  assert_eq "marked	docs/plans/r.md" "$("$YAYH" verify --backfill)"
+  assert_eq "6" "$("$YAYH" verify P-2 | wc -l | tr -d ' ')"
+}
