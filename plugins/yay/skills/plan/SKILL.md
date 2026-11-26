@@ -1,6 +1,6 @@
 ---
 name: plan
-description: Write or review a Yay plugin implementation plan. Use when the user says "plan this", "write a plan", "break this down", "review the plan", before any non-trivial change, or when /yay:fix escalates. Turns a brainstorm, roadmap item, bug or request into docs/plans/ P-<n> (goal, tasks naming their files, Tests and Verify checks), shown first as a short plain summary. --check reviews one; --trello adds the tasks to Trello.
+description: Write or review a Yay plugin implementation plan. Use when the user says "plan this", "write a plan", "break this down", "review the plan", before any non-trivial change, or when /yay:fix escalates. Turns a brainstorm, roadmap item, bug or request into docs/plans/ P-<n> (goal, tasks naming their files, Tests and Verify checks), previewed as a plain summary and discussed until you accept. --check reviews one; --trello adds the tasks to Trello.
 argument-hint: "<topic|BS-<n>|R-<n>|B-<n>|UX-<n>|P-<n>> [--from=<id>] [--check] [--split] [--type=feat|fix|chore|refactor|perf] [--tests=auto|none] [--edition=<name>|all] [--lane=small|standard] [--yes] [--commit] [--trello]"
 allowed-tools: Bash(yayh *), Bash(git *), Read, Grep, Glob, Write, Edit, Agent, AskUserQuestion, mcp__trello__trelloReadBoard, mcp__trello__trelloReadList, mcp__trello__trelloReadCard, mcp__trello__trelloReadChecklist, mcp__trello__trelloReadMember, mcp__trello__trelloWriteCard, mcp__trello__trelloWriteChecklist
 ---
@@ -9,7 +9,7 @@ allowed-tools: Bash(yayh *), Bash(git *), Read, Grep, Glob, Write, Edit, Agent, 
 
 Arguments: `$ARGUMENTS`
 
-A plan is the contract `/yay:implement` follows task by task. The format is in `${CLAUDE_PLUGIN_ROOT}/reference/artifacts.md` (Plan). This skill writes only the plan file (new), or edits a plan that isn't `in-progress` or later. Before writing, it shows a short plain summary of how the plan goes (step 7).
+A plan is the contract `/yay:implement` follows task by task. The format is in `${CLAUDE_PLUGIN_ROOT}/reference/artifacts.md` (Plan). This skill writes only the plan file (new), or edits a plan that isn't `in-progress` or later. Before writing, it shows a plain summary of the plan and discusses it with the person until they accept (step 7).
 
 ## Options
 
@@ -23,7 +23,7 @@ A plan is the contract `/yay:implement` follows task by task. The format is in `
 | `--tests=auto\|none` | `auto` (default; `ask` is accepted as the same): pick the tests yourself, one per risk at the right layer, and ask only if the repo's rules require approval for tests. `none`: write `**Tests:** none` and verify by manual checks. |
 | `--edition=<e>` | Which editions the plan touches. Default: inferred from where the code lives. |
 | `--lane=small\|standard` | How much plan the work needs. Default: picked in step 2 (see **Lanes**). |
-| `--yes` | Skip the summary (step 7) and write the plan straight away. Plain words that mean the same thing work too: "no preview", "just write it". Hard questions are still asked, in one round. |
+| `--yes` | Skip the preview (step 7) and write the plan straight away. Plain words that mean the same thing work too: "no preview", "just write it". Hard questions are still asked, in one round. |
 | `--commit` | Commit the plan when you're on a non-base branch (with its `docs/assets/P-<n>` screenshots, if any). |
 | `--trello` | Optional. After the plan is written, add its tasks to Trello as a checklist. Off unless given. See step 8. |
 
@@ -41,7 +41,7 @@ When a small plan turns out bigger than that, switch it to standard (`yayh fm se
 ## Steps
 
 1. **Source.** Run `yayh artifact resolve <id>` and read it:
-   - **Brainstorm:** use its decision. If its `status` isn't `decided`, plan its recommended option, and make "plan option <X>?" a question in step 7's first round.
+   - **Brainstorm:** use its decision. If its `status` isn't `decided`, plan its recommended option, and make "plan option <X>?" an Open item in step 7's preview.
    - **Bug:** use its root cause. If it isn't `root-caused`, suggest `/yay:debug` first.
    - **Design (`UX-<n>`):** plan from the design's own source (its `from:`), and set the plan's `design: UX-<n>`.
    - **Acceptance:** whatever the source, when the work has a roadmap item, read its `acceptance` (`yayh roadmap get R-<n> acceptance`). It's what done means to whoever scheduled it: the Goal states it, and Verify checks each part of it. If the item has a brief (`yayh brief path R-<n>`), read it first: it's the product source of truth (`${CLAUDE_PLUGIN_ROOT}/reference/briefs.md`, For developers' skills). The Goal starts from its In one line, its Out of scope becomes Non-goals, and **every Done when check becomes a Verify check** (`yayh plan check` warns when Verify has fewer). When it's missing, write the Goal's "done means…" yourself and say so in the report.
@@ -72,7 +72,7 @@ When a small plan turns out bigger than that, switch it to standard (`yayh fm se
    - **Tests:** list the risks in the change (acceptance criteria, branches of logic, data written, hooks touched). Give each one the **first layer down the ladder** in `${CLAUDE_PLUGIN_ROOT}/reference/testing.md` that can prove it: unit, integration, js, e2e or manual. Add a second layer only for a second, named risk. Check `yayh test status` and the **Coverage** table in `docs/knowledge/testing.md`: extend an existing test class rather than adding a new one, and mark a layer that isn't set up `(not set up: /yay:test-init)`.
      - Write them on the `**Tests:**` line as `[unit] <test_name> (<file>) — <risk>`, separated by `;`. Use `[integration]`, `[js]` or `[manual]` the same way. Browser-only risks go on the **E2E** line instead.
      - With a statechart (the design's or the Approach's), each transition that stores data, touches money or messages a customer is a Tests item, and so is the same event arriving twice.
-     - A typical plan has 1–4 tests, mostly unit. Decide this yourself. Only when the repo's rules require approval for tests (the project block or `.claude/rules/`) do they become step 7's question.
+     - A typical plan has 1–4 tests, mostly unit. Decide this yourself. Only when the repo's rules require approval for tests (the project block or `.claude/rules/`) do they become an Open item in step 7.
    - **E2E** (only when `yayh config get commands.e2e` is set): pick the acceptance criteria that **only a browser can prove**, by the test in `${CLAUDE_PLUGIN_ROOT}/reference/e2e.md` ("When a flow deserves a spec"). Usually that's 0–2: a customer-facing flow, or a JS-rendered admin screen that must save and reload. Read the **Flows** table in `docs/knowledge/e2e.md` first: when the change touches a flow that already has a spec, name that flow (its spec gets extended), and a touched `candidate` row is a strong reason to add it. Write them on the `**E2E:**` line as `<flow>: <the outcome to assert>`, separated by `;`, or write `**E2E:** none`. Decide this yourself; it's not a question.
    - **Verify:** exact checks, each with the command or the UI path, the input, and the result that means it passed. Write every check a command can do as ``- `<command>` → <expected>``, where expected is `exit 0` / `exit 1` or text the output must contain (for example ``- `wp option get giftly_settings --format=json` → "max_length":200``). `yayh verify P-<n> --run` runs those, so done is proven, not claimed. Copy the checks from the `## Checks` section of `docs/knowledge/conventions.md` that apply to the files the plan touches. **A check a command can make is a command check**: state through WP-CLI (`wp option get`, `wp db query "SELECT …"`, `wp eval`), a REST response through `rest_do_request()`, and front-end markup through `curl -s` (recipes in `${CLAUDE_PLUGIN_ROOT}/reference/testing.md`, "Verify checks"). A command check that writes data removes it again, so the list can run twice. Browser and judgement checks stay as plain items, each ending in what you should see. When the action stores something, the item also gives the command that shows the stored data. With a design, its **Acceptance** checks go here, and the browser-only ones are candidates for the E2E line. Cover every edition the plan touches. A Verify item covered by a test says its layer: `(unit)`, `(integration)`, `(js)` or `(e2e)`.
 6. **Self-review the draft.** Up to here the plan is a draft in this conversation, not a file. Review it as a skeptical senior reviewer:
@@ -84,10 +84,11 @@ When a small plan turns out bigger than that, switch it to standard (`yayh fm se
    - Does every Findings item end in a task, a Non-goal or a note? A finding nothing acts on is lost.
 
    Fix what you find in the draft.
-7. **Preview and hard questions** (`${CLAUDE_PLUGIN_ROOT}/reference/asking.md`). Before writing the file, show a short summary of how the plan goes, so a person sees it at a glance. It's a summary, not a review gate: details can be changed any time after the plan is written (`/yay:plan P-<n>`). With `--yes`, in `--check` mode, or when nobody can answer (autopilot, `--no-ask`, a non-interactive run), skip the summary and follow the asking rules for the hard questions: one round, or none.
+7. **Preview** (`${CLAUDE_PLUGIN_ROOT}/reference/preview.md`). Before writing the file, show the draft as a plain summary and discuss it with the person until they accept: answer their questions, apply their changes, and show the summary again whenever the draft changes. The loop rules, and when it's skipped (`--yes`, `--check`, autopilot, nobody to answer), are in `preview.md`.
    - **The summary** goes in your reply, about 15-30 lines of plain words. Name screens, settings and data the way a merchant or the team would ("the Gift message setting", "the cart page"), not file or function names. The one exception is **Data changes**: developers need the exact storage, so it gives every option, meta key, table or column the plan adds, changes or removes, with its shape, its default, and what happens to existing sites and on uninstall. It lists every one, not just the main one. No `Reuse:` or `Callers:` lines:
      ```
-     Plan: <title> (<small|standard>, <n> tasks)
+     Plan preview, nothing written yet: <title> (<small|standard>, <n> tasks)
+     Changed: <one line per change since the last summary>   (round 2 on)
      What it does: <the user-visible outcome, 1-2 lines>
      Done when: <what someone sees or checks to call it finished>
      How it's built: <2-3 lines: the approach, and the existing feature it copies>
@@ -106,14 +107,14 @@ When a small plan turns out bigger than that, switch it to standard (`yayh fm se
      Not doing: <1-3 things>
      Open: <decisions left, with what the plan does for now, or none>
      ```
-   - **The question.** Ask one AskUserQuestion: "Write this plan?", with **Write it (Recommended)** first and a note that a change can be typed as Other. Add up to 2 hard questions to the same call:
-     - **Tests to include** (multiSelect, with the proposed tests as options), but only when the repo's rules say tests need approval (the project block or `.claude/rules/`). Otherwise decide yourself, and keep the tests that guard a real risk.
-     - **The single biggest open decision**, if one is left (which brainstorm option, or a design choice). Put your pick first.
-   - **A typed change** is applied to the draft (open any new file it touches, redo the tasks and checks it affects), then write the plan. Don't show the summary again. "Stop" or "cancel" ends the run with nothing written. No answer counts as **Write it**; say so under **Decided**.
+   - **Open** holds the hard questions, each with the default the draft follows:
+     - **Tests to include**, but only when the repo's rules say tests need approval (the project block or `.claude/rules/`). Otherwise decide yourself, and keep the tests that guard a real risk.
+     - **The single biggest open decision**, if one is left (which brainstorm option, or a design choice).
+   - **Prompt:** `→ Reply "write it" when it's right, or ask or change anything.` Accepting goes to step 8. When the preview is skipped, ask these hard questions in one AskUserQuestion (at most 3, your pick first), or none.
 8. **Write it.**
    - `yayh artifact new plan "<title>" from=<id> roadmap=<R-n or empty> type=<type> [lane=small]`, then fill in every section from the accepted draft.
    - With `--split`, create one plan per shippable slice, each with `from:` pointing at the source.
-   - Run `yayh plan check <P-n>` and fix every `error`. Fix the `warn`s too, unless there's a reason not to. If a fix changes what the summary said, say so in the report.
+   - Run `yayh plan check <P-n>` and fix every `error`. Fix the `warn`s too, unless there's a reason not to. If a fix changes what the accepted summary said, say so in the report.
    - When `yayh plan check` has no errors and no hard decision is still unanswered, mark the plan ready yourself: `yayh fm set <file> status ready`.
 
    **Park what's still open.** A decision that can't be made now, and isn't worth the question round, becomes a decision note: `yayh artifact new backlog "<the question>" kind=decision from=P-<n> default="<what the plan does for now>" [affects="<other P-/R-ids>"]`. Plan the default, and add the line `Open: BL-<n> <question> (default: …)` under `## Risks`. Work you leave out of scope that someone will want later becomes `kind=deferred from=P-<n>`; name it under **Non-goals** as `BL-<n>`. Neither one stops the plan or keeps it `draft`.
@@ -122,11 +123,11 @@ When a small plan turns out bigger than that, switch it to standard (`yayh fm se
    - One check item per task, `T<n> <what>`, in order; tasks already ticked are checked.
    - Save the card URL with `yayh fm set <plan> trello <url>`. Revising a plan that has `trello:` updates that checklist instead of adding one.
    - `--check` never syncs. Trello not connected: say so; the plan is unaffected.
-10. **Report.** Give the file, any change made from the summary, the task count, the Tests and E2E lines, any open risks, the notes settled into the plan, the notes written or left open (`BL-<n>`, kind, default), and end with the **Next** line (`reference/asking.md`), usually `/yay:implement P-<n>`.
+10. **Report.** Give the file, the preview rounds and what changed in them, the task count, the Tests and E2E lines, any open risks, the notes settled into the plan, the notes written or left open (`BL-<n>`, kind, default), and end with the **Next** line (`reference/asking.md`), usually `/yay:implement P-<n>`.
 
 ### Picking up notes
 For each row of `yayh backlog open --for=<id>`:
-- **decision:** decide it now if the code, the source artifact, an answer in this round, or work finished since (its `from:` plan is done, the item it waited on shipped) settles it. Write the answer with `yayh backlog settle BL-<n> decided "<answer>"`, then plan the answer instead of the default. If the default was **already built** by a finished plan and the answer differs, the change is a task in this plan when it touches the same code. Otherwise, write a `kind=deferred` note for the change. A decision that still can't be made stays open: plan its default and reference it under `## Risks` as above. A decision only the user can make, that's expensive to get wrong, can be one of step 7's questions.
+- **decision:** decide it now if the code, the source artifact, an answer in this round, or work finished since (its `from:` plan is done, the item it waited on shipped) settles it. Write the answer with `yayh backlog settle BL-<n> decided "<answer>"`, then plan the answer instead of the default. If the default was **already built** by a finished plan and the answer differs, the change is a task in this plan when it touches the same code. Otherwise, write a `kind=deferred` note for the change. A decision that still can't be made stays open: plan its default and reference it under `## Risks` as above. A decision only the user can make, that's expensive to get wrong, can be an Open item in step 7.
 - **deferred:** if the work fits this plan's goal, add it as tasks and run `yayh backlog settle BL-<n> planned P-<n>`. If it doesn't fit, leave it open, and say so in the report.
 
 A note that's become pointless (the code it named is gone, the item was dropped) is closed with `yayh backlog settle BL-<n> dropped "<why>"`. Settling edits the note's file. Before a branch exists, that's allowed only for an untracked note. A tracked note is settled by `/yay:implement` on the branch, so here write `Settles: BL-<n> decided "<answer>"` (or `planned P-<n>`) under the plan's `## Risks` for it. List every note you settled, or left open, in the report.
