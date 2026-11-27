@@ -2,14 +2,6 @@
 
 Keep the work moving. Ask only what you can't responsibly decide yourself. These hold for every `/yay:*` skill and for ordinary requests in a yay repo.
 
-- **Restate before you build from words.** When a request asks for a code change in plain text (no plan, no bug report), even a one-line one, write this block in your reply before the first edit, show it rather than asking for approval, and open your final report with it (each Done when followed by its result):
-  ```
-  Reading: <the user-visible goal, one line>
-  Not doing: <1-3 things a reader might expect that this leaves out>
-  Done when: <an exact check: `command` → expected, or UI path → what you see>
-  Model on: <path:line of existing code that already does the same kind of thing>
-  ```
-  It becomes the round's question only when the request has two plausible readings, or no check can say when it's done: give your reading first, marked "(Recommended)". With nobody to ask, take the likely reading and list it under **Decided**. `Model on: none` is allowed when nothing similar exists; say so. A plan or bug report already is the restatement, so skip this when one exists.
 - **At most one round of 1–3 questions, and only the hardest ones.** A question is worth asking only if the decision is expensive to undo, or is one only the user can make: what customers see, scope, what ships, which design to commit to. Ask them all together in one AskUserQuestion, early, with the recommended option first, marked "(Recommended)".
 - **One exception: an optional follow-up after the work is written.** `/yay:roadmap` may offer item briefs in a second round, only once the roadmap it planned is committed (`reference/briefs.md`, Offer after planning). Nothing else asks twice.
 - **One loop: the plan and brainstorm previews.** `/yay:plan` (step 7) and `/yay:brainstorm` (step 5) show their draft as a plain summary before writing the file, then discuss it until the person accepts: they answer questions, apply changes, and show the summary again whenever the draft changes. Their hard questions sit in the summary's Open section instead of a separate round. While a preview is open, "go", "ok" and "yes" accept it. Rules: `reference/preview.md`. Only `--yes`, a request that says "just write it" or "don't ask", `--no-ask`, autopilot and a skill running them inside its own flow skip the loop; never a guess that nobody is there.

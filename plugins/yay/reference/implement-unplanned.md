@@ -2,10 +2,10 @@
 
 Read by `/yay:implement` when its argument is a requirement, or an `R-`/`BS-`/`B-<n>` with no plan made from it. The other steps are in `skills/implement/SKILL.md`.
 
-## Restate it, pick the lane, then plan it
+## Pick the lane, then plan it
 Skip this when the argument is a plan: a `P-<n>`, or text that `yayh artifact resolve` finds under `docs/plans/`.
 
-**Restate it first.** Before the lane and before any edit, write the **Reading** block (`${CLAUDE_PLUGIN_ROOT}/reference/asking.md`, "Restate before you build from words"): Reading, Not doing, Done when, Model on. For an `R-`, `BS-` or `B-<n>` source, take it from the source (the item's acceptance is Done when; with a brief, `yayh brief path R-<n>`, its In one line is Reading, its Out of scope is Not doing and its Done when checks are Done when) and fill only what's missing. Most items have no brief, no design and no definition of done: that's normal, never a reason to stop. Infer what's missing from the item's title, `why` and the code, and list it under **Decided**. Open the `Model on` code before writing any: the change follows its structure. A request with two plausible readings makes the reading the step 1 question. The block feeds what comes next: a small or standard plan's Goal, Non-goals, Verify and `Model on:` line, or the tiny lane's PR body.
+**Read the source first.** For an `R-`, `BS-` or `B-<n>`, read it: the item's acceptance is what done means, and with a brief (`yayh brief path R-<n>`) its In one line, Out of scope and Done when checks are the product source of truth. Most items have no brief, no design and no definition of done: that's normal, never a reason to stop. Infer what's missing from the item's title, `why` and the code, and list it under **Decided**. Find the existing code that already does the same kind of thing and follow its structure. A request with two plausible readings makes the reading the step 1 question, with your reading as the recommended answer.
 
 **Pick the lane** from the requirement and the code it touches (or take `--lane`), and say which one under **Decided**. Check the repo's mode with `yayh config get workflow.strictness standard`. In a `strict` repo there is no tiny lane and no small plan: every change gets a standard plan.
 - **tiny:** one or two files, about 30 changed lines or fewer, no customer-visible decision, and no data, storage or settings change. A label, a typo, a guard clause, a small compat fix. **No plan file.** Go to **Tiny lane** below.
@@ -33,5 +33,5 @@ An obvious approach (one sensible way to do it) skips this, even with a roadmap 
 2. Branch as in the skill's step 2.1–2.2, with a branch type that fits the change (`fix`, `chore`, `feat`). With no plan, pass `--id=R-<n>` or `--id=B-<n>` when the change came from one, and no `--id` for a bare requirement. There's nothing to carry or set.
 3. Make the change. Verify as in the skill's step 3.2: lint, plus the existing tests that cover those files. Add a test only for a real risk, at the cheapest layer.
 4. Commit: `<type>(<scope>): <summary>`, with `Roadmap: R-<n>` or `Fixes: B-<n>` when the change came from one. Then the summary leads with that id too (`feat(admin): R-12 <summary>`), and so does the PR title.
-5. Finish with the skill's step 4.1 (the checks), 4.4 (debug markers) and 4.5 (review), then step 5. The PR body says "tiny lane, no plan", and puts the **Reading** block (Reading, Not doing, Done when, Model on) in place of the plan link, with the result of each Done when check.
+5. Finish with the skill's step 4.1 (the checks), 4.4 (debug markers) and 4.5 (review), then step 5. The PR body says "tiny lane, no plan", what changed, and how it was checked, with the result.
 6. If the change grows past the tiny limits while you work, stop and write a small plan whose ticked T1 is what's done. Then continue from the skill's step 1.
