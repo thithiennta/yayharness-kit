@@ -7,7 +7,7 @@ from:
 roadmap:
 type: refactor
 branch: refactor/p-7-clean-up-the-brainstorm-skill-and-drop-options
-pr:
+pr: 66
 editions: [free, pro]
 created: 2026-11-27
 ---
