@@ -1,8 +1,8 @@
 ---
 name: roadmap
 description: Plan, re-plan or report a Yay plugin roadmap (docs/roadmap/), schedule items into sprints, and pin items to the version they ship in. Use when the user says "roadmap", "plan the next sprints", "what should we build next", "sprint status", "where are we", "add to the roadmap", "what goes in 1.5.0", "next minor", "write a brief for R-5", "spec this item for the devs", or "describe what this feature is". Also writes item briefs (docs/briefs/) with --brief.
-argument-hint: "[--status] [--brief[=R-<n>] \"<notes>\"] [--close[=<n>]] [--horizon=<YYYY-MM-DD|<n>sprints|eoq|eoy>] [--sprint-length=2w] [--start=YYYY-MM-DD] [--capacity=<dev-days/sprint>] [--freeze=YYYY-MM-DD..YYYY-MM-DD] [--focus=\"<theme>\"] [--web] [--add=\"<title>[; <title>…]\" [--sprint=<n|later>] [--size=S|M|L]] [--target=<x.y.z|patch|minor|major>] [--retarget=R-<n>:<x.y.z|none>] [--move=R-<n>:<n|later>] [--drop=R-<n>] [--multi-agent] [--plugins=<a,b|all>] [--rounds=1|2] [--publish] [--trello] [--dry-run] [--no-pr] [--draft]"
-allowed-tools: Bash(yayh *), Bash(git *), Bash(gh *), Read, Grep, Glob, Write, Edit, Agent, AskUserQuestion, WebSearch, WebFetch, Workflow, Skill, Artifact, mcp__trello__trelloReadBoard, mcp__trello__trelloReadList, mcp__trello__trelloReadCard, mcp__trello__trelloReadMember, mcp__trello__trelloWriteList, mcp__trello__trelloWriteCard
+argument-hint: "[--status] [--brief[=R-<n>] \"<notes>\"] [--close[=<n>]] [--horizon=<YYYY-MM-DD|<n>sprints|eoq|eoy>] [--sprint-length=2w] [--start=YYYY-MM-DD] [--capacity=<dev-days/sprint>] [--freeze=YYYY-MM-DD..YYYY-MM-DD] [--focus=\"<theme>\"] [--web] [--add=\"<title>[; <title>…]\" [--sprint=<n|later>] [--size=S|M|L]] [--target=<x.y.z|patch|minor|major>] [--retarget=R-<n>:<x.y.z|none>] [--move=R-<n>:<n|later>] [--drop=R-<n>] [--multi-agent] [--plugins=<a,b|all>] [--rounds=1|2] [--publish] [--dry-run] [--no-pr] [--draft]"
+allowed-tools: Bash(yayh *), Bash(git *), Bash(gh *), Read, Grep, Glob, Write, Edit, Agent, AskUserQuestion, WebSearch, WebFetch, Workflow, Skill, Artifact
 ---
 
 # /yay:roadmap
@@ -36,7 +36,6 @@ Always edit through `yayh roadmap` where a command exists (`add`, `set`, `move`)
 | `--retarget=R-<n>:<x.y.z\|none>` | Quick edit: move an item to another version, or clear its target. Repeatable. |
 | `--multi-agent` / `--plugins=a,b\|all` / `--rounds=1\|2` | Co-plan several plugins. See `reference/roadmap-extras.md`. |
 | `--publish` | Publish the roadmap as a private page. See `reference/roadmap-extras.md`. |
-| `--trello` | Optional. Also mirror the sprints and items to a Trello board. Off unless given. See `reference/roadmap-extras.md`. |
 | `--brief[=R-<n>] "<notes>"` | Write an **item brief**: what one item is (flow, rules, out of scope, done when), for the developers, in `docs/briefs/`. No id: add the item first. See `${CLAUDE_PLUGIN_ROOT}/reference/briefs.md`. Briefs are also offered after every plan, version plan and `--add` (same file, **Offer after planning**). |
 | `--dry-run` | Show the proposed roadmap and change nothing. |
 | `--no-pr`, `--draft` | As in `/yay:implement`: the PR is opened by default; `--no-pr` finishes locally and prints the commands; draft PR. |
@@ -103,8 +102,6 @@ Small changes, on a branch as above, then `yayh roadmap check`, **one** commit a
 
 Commit: `docs(roadmap): add R-<n> <title>` (several: `add R-5..R-7 for 1.5.0`, or `add R-5, R-8`) / `move R-<n> to sprint <n>` / `target R-<n> to 1.5.0` / `drop R-<n>`. Mixed edits get one commit that sums them up.
 
-With `--trello`, sync only the item that changed (`reference/roadmap-extras.md`, Trello).
-
 After an `--add` is committed, offer briefs for the new items (`${CLAUDE_PLUGIN_ROOT}/reference/briefs.md`, **Offer after planning**).
 
 ## Plan (default)
@@ -136,10 +133,9 @@ After an `--add` is committed, offer briefs for the new items (`${CLAUDE_PLUGIN_
    - New items: `yayh roadmap add "<title>" sprint=<n|later> size=… "why=…" "acceptance=…" ["editions=free, pro"] [from=…] ["depends=R-<a>, R-<b>"] [target=<x.y.z>]`. It prints the id. Every item you schedule into a sprint gets an `acceptance` (one line: what a user can see or do when it's done, plus the edge case that matters most); `roadmap check` warns about a scheduled, unplanned item without one, so add it to existing items too (`yayh roadmap set R-<n> acceptance "…"`). Every dependency you scheduled around goes in `depends=` (and `yayh roadmap set R-<n> depends "…"` for existing items), because `/yay:autopilot` and `yayh status` order work by it. Write `editions` with the config's edition names, comma and space separated.
    - Backlog ideas that became items: `yayh fm set docs/backlog/<file> status promoted:R-<n>`. A deferred note that became an item: `yayh fm set <file> affects "[R-<n>]"`, so the item's plan picks it up (it stays `open` until a plan takes it).
    - `yayh roadmap check` must have no errors.
-7. **Trello** (only with `--trello`): sync before committing, so the saved card URLs go in the same commit. See `reference/roadmap-extras.md`.
-8. **Commit and PR**: `docs(roadmap): plan to <horizon>`, as above.
-9. **Report** the sprint table with the new ids, what slipped and where it went, what was promoted, the Trello cards (with `--trello`), the PR link, and end with the **Next** line (`reference/asking.md`), usually the top row of `yayh status` (`/yay:brainstorm --from=R-<n>` for the first item of the current sprint).
-10. **Offer briefs** for the items this plan added or scheduled (`${CLAUDE_PLUGIN_ROOT}/reference/briefs.md`, **Offer after planning**).
+7. **Commit and PR**: `docs(roadmap): plan to <horizon>`, as above.
+8. **Report** the sprint table with the new ids, what slipped and where it went, what was promoted, the PR link, and end with the **Next** line (`reference/asking.md`), usually the top row of `yayh status` (`/yay:brainstorm --from=R-<n>` for the first item of the current sprint).
+9. **Offer briefs** for the items this plan added or scheduled (`${CLAUDE_PLUGIN_ROOT}/reference/briefs.md`, **Offer after planning**).
 
 ## Version plan (`--target=<v>` without `--add`)
 
@@ -153,15 +149,15 @@ Plan one release instead of the whole horizon.
    - **Out of scope:** what people might expect and where it goes instead, plus "Cut first if late: R-<a>, R-<b>" from step 3.
    - **Risks:** what could go wrong for merchants or shoppers, its impact, and what limits it.
    - **Open questions:** each with the proposal the work follows until someone answers. Your own hard calls from step 3 go here too when they can wait.
-5. **Write and commit** as in Plan steps 6–8 (`docs(roadmap): plan <v>`); every item in scope carries `target=<v>`, and the release brief rides in the same commit (`git add -- docs/roadmap`).
+5. **Write and commit** as in Plan steps 6–7 (`docs(roadmap): plan <v>`); every item in scope carries `target=<v>`, and the release brief rides in the same commit (`git add -- docs/roadmap`).
 6. **Report** the version's table (id, title, size, sprint, status), its earliest release sprint, the cut candidates, the open questions, and **Next**: `/yay:autopilot --target=<v>` to build it all, or `/yay:brainstorm --from=R-<n>` for the first item.
 7. **Offer briefs** for the version's items that have none (`${CLAUDE_PLUGIN_ROOT}/reference/briefs.md`, **Offer after planning**).
 
 `--status --target=<v>` is read-only: the version's items with status and sprint (`docs/roadmap/v<v>.md`, or `yayh roadmap list --target=<v>`), what's left to build, the item whose sprint ends last (it holds the release back), the target counts from `yayh roadmap status`, and `yayh roadmap brief <v> --check`: the release criteria not yet ticked and the open questions (or that the version has no brief yet: `/yay:roadmap --target=<v>` writes one).
 
-## Multi-agent, publish and Trello
+## Multi-agent and publish
 
-`--multi-agent`, `--publish` and `--trello` are described in `${CLAUDE_PLUGIN_ROOT}/reference/roadmap-extras.md`. Read it only when one of them is given.
+`--multi-agent` and `--publish` are described in `${CLAUDE_PLUGIN_ROOT}/reference/roadmap-extras.md`. Read it only when one of them is given.
 
 ## Don'ts
 - Never renumber, reuse or delete an `R-<n>`. Dropped items stay with `status: dropped`.

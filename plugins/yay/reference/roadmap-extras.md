@@ -1,4 +1,4 @@
-# /yay:roadmap: vision, unclear items, legacy conversion, multi-agent, publish and Trello
+# /yay:roadmap: vision, unclear items, legacy conversion, multi-agent and publish
 
 Read by `/yay:roadmap` only when the run needs one of these. The main flow is in `skills/roadmap/SKILL.md`.
 
@@ -64,12 +64,3 @@ One read-only owner agent per plugin researches its repo; the owners then read e
 1. Load the `artifact-design` skill, then build one HTML page from the committed roadmap(s): the current sprint first, then a timeline of sprints with item cards (id, title, size, status colour), Later, open critical and high bugs, and for multi-agent runs the shared initiatives and one tab per plugin. Write it to the session scratchpad, not the repo.
 2. If the roadmap's front-matter (`yayh roadmap file`) has `published: <url>` (or `hub:` for a portfolio), republish to that URL with the Artifact tool. Otherwise publish a new private page and save its URL with `yayh fm set "$(yayh roadmap file)" published <url>` (`hub` in every plugin of a portfolio), committed with the roadmap.
 3. If the Artifact tool isn't available, say so and leave the HTML file's path.
-
-## Trello (`--trello`)
-
-Optional, and only when the flag is given. The contract (board setup, list and card mapping, re-runs) is `${CLAUDE_PLUGIN_ROOT}/reference/trello.md`.
-1. Find the board (`trello.board`), or ask for it once.
-2. For every sprint heading in the horizon and `Later`: find or create its list.
-3. For every item in those sections: create its card, or update and move the one in its `trello:` bullet. Shipped cards are marked done, dropped ones archived. Save new card URLs with `yayh roadmap set R-<n> trello <url>`, then `yayh roadmap check`.
-4. `--status` and `--dry-run` never sync. With `--multi-agent`, each plugin uses its own `trello.board`; a plugin with none is skipped (say so).
-5. Trello not connected: say so and carry on (the roadmap is still written and committed).
