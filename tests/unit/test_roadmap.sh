@@ -279,19 +279,19 @@ EOT
   printf '%s\n' "$r"
 }
 
-test_queue_sprint_orders_by_depends_and_sets_stages() {
+test_queue_orders_by_depends_and_sets_stages() {
   export YAY_REPO; YAY_REPO="$(_qrepo)"
   assert_eq "R-2	done	-	-	-	Cart speed
 R-3	decide	BS-1	-	yayreturns:R-9	Coupon UX
 R-1	brainstorm	-	R-3	-	Express checkout
 R-4	brainstorm	-	-	R-7	Import
-R-5	implement	P-1	-	-	Gift wrap" "$("$YAYH" roadmap queue --sprint=1)"
+R-5	implement	P-1	-	-	Gift wrap" "$("$YAYH" roadmap queue R-1 R-2 R-3 R-4 R-5)"
 }
 
-test_queue_plans_ready_and_continue() {
+test_queue_plans_and_continue() {
   export YAY_REPO; YAY_REPO="$(_qrepo)"
   assert_eq "R-5	implement	P-1	-	-	Gift wrap
-P-2	implement	P-2	-	-	Loose plan" "$("$YAYH" roadmap queue --ready)"
+P-2	implement	P-2	-	-	Loose plan" "$("$YAYH" roadmap queue P-1 P-2)"
   assert_eq "R-6	continue	P-3	-	-	Wishlist" "$("$YAYH" roadmap queue P-3)"
   assert_exit 1 "$YAYH" roadmap queue P-99
   assert_exit 1 "$YAYH" roadmap queue
@@ -315,8 +315,6 @@ test_target_add_list_set_and_queue() {
   assert_eq "R-3 R-5" "$("$YAYH" roadmap list --target=1.5.0 | cut -f1 | tr '\n' ' ' | sed 's/ $//')"
   assert_eq "R-6" "$("$YAYH" roadmap list --target=1.6.0 --sprint=later | cut -f1)"
   assert_eq "" "$("$YAYH" roadmap list --target=9.9.9)"
-  # queue builds what a version needs
-  assert_eq "R-3 R-5" "$("$YAYH" roadmap queue --target=1.5.0 | cut -f1 | tr '\n' ' ' | sed 's/ $//')"
   # bad targets are refused; none clears
   assert_exit 1 "$YAYH" roadmap add "Bad" target=soon
   assert_exit 1 "$YAYH" roadmap set R-3 target v1.5
@@ -451,7 +449,7 @@ test_split_reads_hand_edits_and_render_refreshes_the_index() {
 test_split_status_and_queue_work() {
   export YAY_REPO; YAY_REPO="$(_rsplit)"
   assert_contains "$("$YAYH" roadmap status --today=2026-11-12)" "roadmap	docs/roadmap/README.md	horizon=2026-12-07"
-  assert_eq "R-3" "$("$YAYH" roadmap queue --sprint=2 | cut -f1)"
+  assert_eq "R-3" "$("$YAYH" roadmap queue R-3 | cut -f1)"
   assert_contains "$("$YAYH" status --today=2026-11-12)" "R-1"
 }
 

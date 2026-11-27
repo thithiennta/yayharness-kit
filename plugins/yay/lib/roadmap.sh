@@ -806,7 +806,7 @@ $(yay_worktree_roots)
 EOT
 }
 
-# yay_roadmap_queue [R-n|P-n...] [--sprint=n|current|later] [--ready] [--today=YYYY-MM-DD]
+# yay_roadmap_queue R-n|P-n...
 #   -> TSV in build order: id stage artifact after waits title
 # An item with two or more live plans (/yay:plan --split) gives one row per plan, id
 # R-<n>/P-<m>, in plan order: each one after the plan before it,
@@ -816,30 +816,14 @@ EOT
 # after: dependencies inside this queue (comma-separated, or -), built first.
 # waits: unmet dependencies outside this queue (other plugins, items not in scope), or -.
 yay_roadmap_queue() {
-  local a ids="" today sprint="" ready="" target="" cur arts f
-  today="$(yay_today)"
+  local a ids="" arts f
   for a in "$@"; do
     case "$a" in
-      --sprint=*) sprint="${a#--sprint=}" ;; --ready) ready=1 ;; --today=*) today="${a#--today=}" ;;
-      --target=*) target="${a#--target=}" ;;
       R-[0-9]*|P-[0-9]*) ids="$ids $a" ;;
-      *) yay_die "usage: yayh roadmap queue [R-n|P-n...] [--sprint=n|current|later] [--target=x.y.z] [--ready]" ;;
+      *) yay_die "usage: yayh roadmap queue R-n|P-n..." ;;
     esac
   done
-  if [ -n "$target" ]; then
-    ids="$ids $(yay_roadmap_list --target="$target" | cut -f1 | tr '\n' ' ')"
-  fi
   arts="$(_yay_queue_artifacts)"
-  if [ "$sprint" = current ]; then
-    cur="$(yay_roadmap_current "$today" 2>/dev/null)" || yay_die "no sprint contains $today"
-    sprint="$(printf '%s' "$cur" | cut -f1)"
-  fi
-  if [ -n "$sprint" ]; then
-    ids="$ids $(yay_roadmap_list --sprint="$sprint" | cut -f1 | tr '\n' ' ')"
-  fi
-  if [ -n "$ready" ]; then
-    ids="$ids $(printf '%s\n' "$arts" | awk -F '\t' '$1 == "plan" && $3 == "ready" { print $2 }' | tr '\n' ' ')"
-  fi
   # A plan that belongs to a roadmap item stands for that item.
   local norm="" id r
   for id in $ids; do
@@ -850,7 +834,7 @@ yay_roadmap_queue() {
     esac
     case " $norm " in *" $id "*) ;; *) norm="$norm $id" ;; esac
   done
-  [ -n "$norm" ] || yay_die "nothing to queue: name R-<n>/P-<n> items, --sprint, --target or --ready"
+  [ -n "$norm" ] || yay_die "nothing to queue: name R-<n> or P-<n> items"
   f="$(yay_roadmap_file)"
   local rows="" st ti deps stage art pst
   for id in $norm; do

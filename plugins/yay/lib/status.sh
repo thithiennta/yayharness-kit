@@ -154,7 +154,7 @@ yay_status() {
       _row "$pri" "$scope" "$qid" "$stage" "$(_yay_st_stage_next "$stage" "$art" "$qid")" "$qti$extra"
       _cover "$qid" "$art" "${qid%%/*}"
     done <<EOT
-$( (yay_roadmap_queue $ids --today="$today") 2>/dev/null || true)
+$( (yay_roadmap_queue $ids) 2>/dev/null || true)
 EOT
   fi
 
@@ -208,13 +208,13 @@ yay_next() {
   printf '%s\n' "$nx"
 }
 
-# _yay_next_for <ID> [--today=] -> the command for that piece of work, or nothing.
+# _yay_next_for <ID> -> the command for that piece of work, or nothing.
 _yay_next_for() {
   local id="$1"; shift
   local arts row k st plan
   case "$id" in
     R-[0-9]*)
-      row="$(yay_roadmap_queue "$id" "$@" 2>/dev/null | sed -n 1p)" || return 0
+      row="$(yay_roadmap_queue "$id" 2>/dev/null | sed -n 1p)" || return 0
       [ -n "$row" ] || return 0
       _yay_st_stage_next "$(printf '%s' "$row" | cut -f2)" "$(printf '%s' "$row" | cut -f3)" "$id"
       return 0 ;;
