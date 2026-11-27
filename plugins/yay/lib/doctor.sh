@@ -49,6 +49,18 @@ yay_doctor() {
       if command -v python3 >/dev/null 2>&1; then _yay_doc ok python3 "$(python3 --version 2>&1 | sed 's/^Python //') (for /yay:wporg)"
       else _yay_doc warn python3 "needed by /yay:wporg" "brew install python3"; fi
     fi
+    # /yay:woo-check runs pinned PHPCS, PHPStan and gitleaks from the kit cache: only for Woo extensions.
+    if yay_config_get requires.wc >/dev/null 2>&1; then
+      local t miss=""
+      for t in php composer python3; do
+        command -v "$t" >/dev/null 2>&1 || _yay_doc warn "$t" "needed by /yay:woo-check" "brew install $t"
+      done
+      if command -v python3 >/dev/null 2>&1; then
+        miss="$(yay_woocheck_tools 2>/dev/null | awk -F'\t' '$3 != "ok" { printf "%s%s", sep, $1; sep = ", " }')" || true
+        if [ -z "$miss" ]; then _yay_doc ok woo-check-tools "PHPCS, PHPStan and gitleaks in $(yay_woocheck_cache)"
+        else _yay_doc warn woo-check-tools "missing: $miss" "yayh woo-check tools --install"; fi
+      fi
+    fi
   else
     _yay_doc warn harness "not set up in this repo (no .yay/config.json)" "/yay:harness-init (one person, then merge the PR)"
   fi

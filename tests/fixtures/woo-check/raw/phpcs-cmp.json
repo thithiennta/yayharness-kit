@@ -1,0 +1,1 @@
+{"totals":{"errors":1,"warnings":0,"fixable":0},"files":{"@ROOT@/woo-planted.php":{"errors":1,"warnings":0,"messages":[{"message":"The nullsafe operator is not present in PHP version 7.4 or earlier","source":"PHPCompatibility.Syntax.NewNullsafeOperator.Found","severity":5,"fixable":false,"type":"ERROR","line":18,"column":10}]}}}

@@ -287,3 +287,46 @@ test_guide_for_team_keeps_the_plain_rules_and_allows_12_steps() {
   assert_fails "$YAYH" report new guide "Other guide" --for=boss
   assert_fails "$YAYH" report new idea "An idea" --for=devs
 }
+
+test_check_kind_has_its_sections() {
+  export YAY_REPO; YAY_REPO="$(mk_repo)"
+  local f out rc=0
+  f="$("$YAYH" report new check "Release 3.2.0 check")"
+  assert_eq "check" "$("$YAYH" fm get "$YAY_REPO/$f" kind)"
+  out="$("$YAYH" report check "$f" 2>&1)" || rc=$?
+  assert_eq 1 "$rc" "the empty template fails"
+  assert_contains "$out" "error: '## What blocks the release' is empty"
+  f="$("$YAYH" report new check "Kiểm tra bản 3.2.0" --lang=vi)"
+  assert_contains "$(cat "$YAY_REPO/$f")" "## Chặn phát hành"
+  cat > "$YAY_REPO/.yay/reports/check-good.md" <<'MD'
+---
+kind: check
+lang: en
+title: Release 3.2.0 check
+author: test
+date: 2026-11-27
+---
+# Release 3.2.0 check
+
+## In one line
+The 3.2.0 build has one security problem that blocks the release. I'm fixing it today. Nothing needed from you.
+
+## Result
+- Security: failed, one problem
+- Malware: passed
+- Code checks: warnings only
+
+## What blocks the release
+- A shop manager could delete exchange rates without the right permission
+
+## Other things to fix
+- Five small code warnings, none that customers would notice
+
+## What's next
+- I fix the permission check today and run the check again
+
+## For developers
+- SEC2 includes/class-rates.php:88, full report in release/bundles/yaycurrency-woo-check-3.2.0/report.md
+MD
+  assert_ok "$YAYH" report check check-good
+}

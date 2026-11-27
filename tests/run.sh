@@ -57,9 +57,11 @@ _cover() { # path -> test file basenames, or ALL
     plugins/yay/lib/*.sh) echo "test_$(basename "$1")" ;;
     plugins/yay/hooks/*) echo test_hooks.sh ;;
     plugins/yay/skills/wporg/scripts/*) echo test_wporg.sh ;;
+    plugins/yay/skills/woo-check/scripts/*|plugins/yay/skills/woo-check/tools/*) echo test_woocheck.sh ;;
     plugins/yay/templates/artifacts/*) printf '%s\n' test_artifact.sh test_backlog.sh test_design.sh ;;
     plugins/yay/templates/tests/*) echo test_tests.sh ;;
     plugins/yay/templates/e2e/*) echo test_e2e.sh ;;
+    plugins/yay/templates/report/*) echo test_report.sh ;;
     plugins/yay/templates/*) echo test_harness.sh ;;
   esac
 }

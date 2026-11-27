@@ -1,0 +1,12 @@
+# gitleaks config for /yay:woo-check: the default rules, minus hex digests.
+# A sha1 or sha256 in a manifest or lock file is a checksum, not a secret, but the
+# generic-api-key rule flags it (YayLoyalty's release-manifest.json, 2026-11-27).
+title = "yay woo-check"
+
+[extend]
+useDefault = true
+
+[[allowlists]]
+description = "hex digests (sha1, sha256) are checksums, not secrets"
+regexTarget = "secret"
+regexes = ['''^[a-f0-9]{40}$''', '''^[a-f0-9]{64}$''']

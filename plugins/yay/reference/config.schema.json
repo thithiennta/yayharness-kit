@@ -369,6 +369,20 @@
         }
       }
     },
+    "wooCheck": {
+      "type": "object",
+      "additionalProperties": false,
+      "description": "/yay:woo-check: the QIT-style static checks of a WooCommerce extension",
+      "properties": {
+        "phpstanLevel": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 10,
+          "default": 2,
+          "description": "PHPStan level for STAN1, default 2 (QIT's default)"
+        }
+      }
+    },
     "workflow": {
       "type": "object",
       "description": "How strictly the workflow applies here (reference/config.md).",
