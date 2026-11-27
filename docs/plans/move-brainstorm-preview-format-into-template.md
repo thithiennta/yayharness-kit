@@ -24,6 +24,9 @@ The `/yay:brainstorm` preview format (the summary rules, the format block and th
 - [x] T3 Same split for `/yay:plan`: move step 7's "The summary" bullet, the format block and the prompt line word for word into `skills/plan/preview-summary.md`, and point step 7 at it. Step 7 keeps the Open bullet (it also says what to ask when the preview is skipped) and the accept rule. Extend the T2 changelog entry to name both skills. — `plugins/yay/skills/plan/preview-summary.md` (new), `plugins/yay/skills/plan/SKILL.md`, `plugins/yay/CHANGELOG.md`
   Reuse: the T1 pointer form `${CLAUDE_PLUGIN_ROOT}/skills/brainstorm/preview-summary.md` [risk: 1]
 
+- [x] T4 Remove what the templates made redundant in `reference/preview.md`: the naming, first-line and `Changed:` rules in "Each round" step 1 (step 1 now points at the skill's `preview-summary.md`), the plan prompt quoted in step 3, and "each skill defines its own summary" (now names where it lives). The two details only `preview.md` had move into the templates first: no commands in Checked by (with its examples), and Data lines never name the functions that write the data. This also ends a clash: `preview.md` allowed `file:line` only under Surprises, the brainstorm template allows it in Must keep. — `plugins/yay/reference/preview.md`, `plugins/yay/skills/plan/preview-summary.md`, `plugins/yay/skills/brainstorm/preview-summary.md`, `plugins/yay/CHANGELOG.md`
+  Reuse: n/a [risk: 1]
+
 **Tests:** none
 
 ## Verify
@@ -38,3 +41,5 @@ The `/yay:brainstorm` preview format (the summary rules, the format block and th
 - ✅ `grep -c 'Plan preview, nothing written yet' plugins/yay/skills/plan/preview-summary.md` → 1
 - ✅ `grep -c 'skills/plan/preview-summary.md' plugins/yay/skills/plan/SKILL.md` → exit 0
 - ✅ `PATH="$PWD/plugins/yay/bin:$PATH" claude plugin eval plugins/yay --case plan-previews-first --runs 1 --ablation none --judge-model sonnet --scaffold --allow-tools Bash Write Edit --trust-plugin --no-publish` scores 1.00, and the trace shows `skills/plan/preview-summary.md` being read.
+- `grep -c 'not `php tests/run.php`' plugins/yay/reference/preview.md` → exit 1
+- `grep -c 'not `php tests/run.php`' plugins/yay/skills/plan/preview-summary.md` → 1

@@ -2,7 +2,7 @@
 
 The summary `/yay:plan` shows in step 7. The loop rules are in `reference/preview.md`, and what goes in **Open** is in step 7.
 
-**The summary** goes in your reply, about 15-30 lines of plain words. Name screens, settings and data the way a merchant or the team would ("the Gift message setting", "the cart page"), not file, class, function or test-file names, even in Steps and Tests (`file:line` only under Surprises). The one exception is **Data changes**: developers need the exact storage, so it gives every option, meta key, table or column the plan adds, changes or removes, with its shape, its default, and what happens to existing sites and on uninstall. It lists every one, not just the main one. No `Reuse:` or `Callers:` lines:
+**The summary** goes in your reply, about 15-30 lines of plain words. Name screens, settings and data the way a merchant or the team would ("the Gift message setting", "the cart page"), not file, class, function or test-file names, and no commands, even in Steps, How it's built, Tests and Checked by ("the unit tests pass", not `php tests/run.php`; "the saved order shows the same text", not `wp eval …`). `file:line` only under Surprises. The one exception is **Data changes**: developers need the exact storage, so it gives every option, meta key, table or column the plan adds, changes or removes, with its shape, its default, and what happens to existing sites and on uninstall, never the functions that write it. It lists every one, not just the main one. No `Reuse:` or `Callers:` lines:
 
 ```
 Plan preview, nothing written yet: <title> (<small|standard>, <n> tasks)
