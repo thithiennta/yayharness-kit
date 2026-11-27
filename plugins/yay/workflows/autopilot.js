@@ -108,7 +108,7 @@ const RESOLVED = {
 
 function preparePrompt(it) {
   const start = {
-    brainstorm: `There is no brainstorm yet. Follow ${KIT}/skills/brainstorm/SKILL.md with \`--from=${it.id}\` (no --decide, no --commit). Then plan its recommended option.`,
+    brainstorm: `There is no brainstorm yet. Follow ${KIT}/skills/brainstorm/SKILL.md with \`--from=${it.id}\`. Then plan its recommended option.`,
     decide: `${it.artifact} is an open brainstorm. Read it, and plan its recommended option (don't change the brainstorm's status: the decision sheet does that).`,
     plan: `${it.artifact} is a decided brainstorm. Plan its decision.`,
   }[it.stage]
