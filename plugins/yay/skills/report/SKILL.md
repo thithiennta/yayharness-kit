@@ -1,7 +1,7 @@
 ---
 name: report
 description: Write a short, plain report a developer shares with the lead or team - an idea, a summary of what they've done, a feature pitch, or a how-to guide - readable in a minute. Use when the user says "report", "write this up for the lead", "share my idea", "summarise what I did", "status for the boss", "pitch this feature", "write a guide for", "how do I explain to the team how to…", or wants to turn notes, a branch or a plan into something to send.
-argument-hint: "<idea|done|feature|guide> [topic or notes] [--for=team|devs] [--from=<P-n|R-n|branch>] [--lang=en|vi] [--text] [--max-words=N]"
+argument-hint: "<idea|done|feature|guide|check> [topic or notes] [--for=team|devs] [--from=<P-n|R-n|branch|check folder>] [--lang=en|vi] [--text] [--max-words=N]"
 allowed-tools: Bash(yayh *), Bash(git *), Bash(gh *), Bash(open *), Read, Grep, Glob, Write, Edit, Agent, AskUserQuestion, Artifact
 ---
 
@@ -21,9 +21,10 @@ The kit does the hard part of keeping reports clean: the agent writes **text onl
 | `done` | Summarise what you've done: results, what users notice, what's next. |
 | `feature` | Pitch a feature: who it's for, what they'd see, why, size, questions. |
 | `guide` | Show someone how to do something: before you start, numbered steps, how to check it worked, what to do if it goes wrong. |
+| `check` | Share the result of a check (`/yay:woo-check`, and any check that writes a report folder): the verdict, what blocks the release, what else to fix, what's next. |
 | `--for=team\|devs` | Guides only: who follows it. `team` (default) is support, a lead or a store owner, with every plain-language rule. `devs` is developers: commands, paths and setting names are allowed in backticks or a code block under their step, and the jargon warnings are off. |
-| `[topic or notes]` | What it's about, or the user's raw notes. Without a kind, pick it from the words ("I finished…" is `done`, "customers want…" is `feature`, "how to…" or "steps to…" is `guide`, with `devs` when it runs commands or touches the code, anything else is `idea`). |
-| `--from=<id\|branch>` | Ground it in a plan, roadmap item, brainstorm, bug or branch: read it, and for `done` read the branch's commits and PR. |
+| `[topic or notes]` | What it's about, or the user's raw notes. Without a kind, pick it from the words ("I finished…" is `done`, "customers want…" is `feature`, "how to…" or "steps to…" is `guide`, with `devs` when it runs commands or touches the code, "check results" or "kết quả kiểm tra" is `check`, anything else is `idea`). |
+| `--from=<id\|branch\|folder>` | Ground it in a plan, roadmap item, brainstorm, bug or branch: read it, and for `done` read the branch's commits and PR. For `check`, a check's report folder: read its `report.md`, `areas.tsv` and `findings.tsv`. |
 | `--lang=en\|vi` | The language the **reader** reads. Default: `language` from `.yay/config.json` or `.yay/local.json` (`yayh config get language en`), then English. The developer's notes can be in either language; the report is written in this one. |
 | `--text` | Paste-ready text only, no page. |
 | `--max-words=N` | Raise or lower the word limit: 300 in English, 450 in Vietnamese (each syllable counts as a word); a guide gets 400 and 600. The developers section and code blocks never count. |
@@ -40,6 +41,7 @@ The kit does the hard part of keeping reports clean: the agent writes **text onl
    - **Plain words:** no file names, class or function names, hooks, internal ids (`P-4`, `#231`) or jargon (endpoint, payload, refactor, cron…). If an id matters, say what it is.
    - **No decoration:** no emoji, symbols, colors, tables, images or HTML. Use bold at most once or twice, for the one thing the reader must not miss.
    - **For developers** is the only place for technical detail: files, code, ids, the PR link. It's optional, always last, under 200 words, and the page folds it away. Leave it out when nobody needs it.
+   - **A check** turns a technical report into what it means for the store. Each finding becomes what it lets someone do or what customers would notice ("a shop manager could read other customers' orders"), never the rule name. Blockers come first; baselined problems are a count. Check IDs, `file:line`, tool names and the report's path go only under For developers. A run where everything passed is one line and "Nothing needed from you".
    - **A guide** is steps the reader follows, so it lives or dies on being followable:
      - One action per numbered step, in the order they do it, up to 12 steps. Name what they click or type exactly as it appears on screen ("Settings › Gift wrap › Enable").
      - After a step where something should happen, say what they see. End with **Check it worked**, and keep **If it goes wrong** to the 1–3 problems people really hit.

@@ -54,3 +54,16 @@ p=sys.argv[1]; c=json.load(open(p)); c["plugin"]["wporgSlug"]=json.loads(sys.arg
   local out; out="$(PATH="$d" "$YAYH" doctor)"
   assert_contains "$out" "warn	python3	needed by /yay:wporg	brew install python3"
 }
+
+test_doctor_woo_tools() {
+  export YAY_REPO; YAY_REPO="$(fixture_repo bare merged)"
+  command -v python3 >/dev/null 2>&1 || { _pass; return; }
+  _requires_wc() { python3 -I -c 'import json,sys
+p=sys.argv[1]; c=json.load(open(p)); c["requires"]["wc"]=json.loads(sys.argv[2]); json.dump(c,open(p,"w"))' "$YAY_REPO/.yay/config.json" "$1"; }
+  _requires_wc null
+  assert_not_contains "$(YAY_CACHE_DIR="$T_TMP/no-cache.$RANDOM" "$YAYH" doctor)" "woo-check" "no line when not a Woo extension"
+  _requires_wc '"8.0"'
+  assert_contains "$(YAY_CACHE_DIR="$T_TMP/no-cache.$RANDOM" "$YAYH" doctor)" "warn	woo-check-tools	missing: phpcs, phpstan, gitleaks	yayh woo-check tools --install"
+  local d; d="$(_path_without composer)"
+  assert_contains "$(PATH="$d" YAY_CACHE_DIR="$T_TMP/no-cache.$RANDOM" "$YAYH" doctor)" "warn	composer	needed by /yay:woo-check	brew install composer"
+}

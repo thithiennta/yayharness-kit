@@ -1,9 +1,9 @@
 # shellcheck shell=bash
 # Reports a developer shares with the lead or the team (/yay:report): an idea, a
-# summary of what's done, a feature idea, a how-to guide. They live in .yay/reports/, never in the
+# summary of what's done, a feature idea, a how-to guide, the result of a check. They live in .yay/reports/, never in the
 # repo. The agent writes markdown only; render owns the look, check owns the words.
 
-YAY_REPORT_KINDS="idea done feature guide"
+YAY_REPORT_KINDS="idea done feature guide check"
 YAY_REPORT_LANGS="en vi"
 
 _report_kind_ok() { yay_in_list "$1" "$(printf '%s\n' $YAY_REPORT_KINDS)" || yay_die "unknown report kind '$1' ($YAY_REPORT_KINDS)"; }
@@ -20,6 +20,8 @@ _report_sections() {
     vi:feature) printf '%s\n' "Tóm tắt" "Dành cho ai" "Người dùng sẽ thấy gì" "Vì sao đáng làm" "Quy mô" "Câu hỏi" ;;
     en:guide)   printf '%s\n' "In one line" "Before you start" "Steps" "Check it worked" "If it goes wrong" ;;
     vi:guide)   printf '%s\n' "Tóm tắt" "Chuẩn bị" "Các bước" "Kiểm tra" "Nếu gặp lỗi" ;;
+    en:check)   printf '%s\n' "In one line" "Result" "What blocks the release" "Other things to fix" "What's next" ;;
+    vi:check)   printf '%s\n' "Tóm tắt" "Kết quả" "Chặn phát hành" "Cần sửa thêm" "Tiếp theo" ;;
   esac
 }
 
@@ -63,7 +65,7 @@ yay_report_new() {
     case "$a" in --lang=*) lang="${a#--lang=}" ;; --for=*) aud="${a#--for=}" ;; -*) yay_die "unknown option $a" ;;
       *) if [ -z "$kind" ]; then kind="$a"; elif [ -z "$title" ]; then title="$a"; else yay_die "one title only (quote it)"; fi ;; esac
   done
-  [ -n "$kind" ] && [ -n "$title" ] || yay_die "usage: yayh report new <idea|done|feature|guide> \"<title>\" [--lang=en|vi] [--for=team|devs]"
+  [ -n "$kind" ] && [ -n "$title" ] || yay_die "usage: yayh report new <idea|done|feature|guide|check> \"<title>\" [--lang=en|vi] [--for=team|devs]"
   [ -n "$lang" ] || lang="$(yay_config_get language en 2>/dev/null || echo en)"
   _report_kind_ok "$kind"; _report_lang_ok "$lang"
   if [ "$kind" = guide ]; then

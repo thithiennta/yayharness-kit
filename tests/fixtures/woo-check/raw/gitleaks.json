@@ -1,0 +1,1 @@
+[{"RuleID":"stripe-access-token","Description":"Found a Stripe Access Token, posing a risk to payment processing services and sensitive financial data.","StartLine":4,"EndLine":4,"Match":"sk_live_REDACTED","Secret":"sk_live_REDACTED","File":"@ROOT@/includes/settings.php","Fingerprint":"x"}]

@@ -20,6 +20,7 @@ YAY_LIB_DIR="$YAY_KIT_ROOT/lib"
 . "$YAY_LIB_DIR/release.sh"
 . "$YAY_LIB_DIR/bundle.sh"
 . "$YAY_LIB_DIR/wporg.sh"
+. "$YAY_LIB_DIR/woocheck.sh"
 . "$YAY_LIB_DIR/roadmap.sh"
 . "$YAY_LIB_DIR/code.sh"
 . "$YAY_LIB_DIR/review.sh"
@@ -124,7 +125,7 @@ Artifacts (brainstorms, plans, bugs, backlog)
                                    close a decision or deferred note (this checkout)
 
 Reports (/yay:report: shared with the lead or team, kept in .yay/reports/, never committed)
-  report new <idea|done|feature|guide> "<title>" [--lang=en|vi] [--for=team|devs]
+  report new <idea|done|feature|guide|check> "<title>" [--lang=en|vi] [--for=team|devs]
                                    a markdown report from the kind's template (language: --lang,
                                    else language, else en; --for: guides only, devs allows code); prints the path
   report check <report> [--max-words=N]
@@ -247,6 +248,14 @@ Versions, changelog, build
   wporg theme-site <zip> out=<dir> [--keep] [--no-tc]
                                    the Theme Directory's runtime checks for a theme: Theme Check (TC), clean
                                    activation (F5), the pages a theme renders and debug.log (C1); writes site.tsv
+  woo-check tools [--install]      the pinned PHPCS, PHPStan and gitleaks in the kit cache: tool, version, ok|missing, path
+  woo-check static <zip|dir> out=<dir> [repo=<root>] [--only=sec,stan,cmp,mal,val]
+                                   QIT-style checks of a built zip: security (SEC), PHPStan (STAN), PHP compatibility
+                                   (CMP), malware (MAL), WooCommerce declarations (VAL); writes findings.tsv, areas.tsv
+                                   and raw/, prints areas.tsv (exit 1 when SEC or MAL is Failed, 3 when nothing ran)
+  woo-check baseline <out> [--update]
+                                   mark rows in .yay/woo-check-baseline.tsv as BASE, list GONE rows; --update rewrites
+                                   it from <out> (never SEC5 or MAL2)
   build zip [edition=e] [version=v] newest zip matching package.output
   build check <zip> [edition=e] [version=v]
                                    PASS/WARN/FAIL per check; exit 1 on any FAIL
@@ -529,6 +538,14 @@ case "$cmd" in
       site) yay_wporg_site "$@" ;;
       theme-site) yay_wporg_theme_site "$@" ;;
       *) yay_die "usage: yayh wporg site|theme-site <zip> out=<dir> [--keep] [--no-pcp|--no-tc]" ;;
+    esac ;;
+  woo-check)
+    sub="${1:-}"; shift || true
+    case "$sub" in
+      tools) yay_woocheck_tools "$@" ;;
+      static) yay_woocheck_static "$@" ;;
+      baseline) yay_woocheck_baseline "$@" ;;
+      *) yay_die "usage: yayh woo-check tools|static|baseline" ;;
     esac ;;
   build)
     sub="${1:-}"; shift || true

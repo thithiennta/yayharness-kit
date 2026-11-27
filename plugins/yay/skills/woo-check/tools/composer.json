@@ -1,0 +1,26 @@
+{
+    "name": "yaycommerce/yay-woo-check-tools",
+    "description": "The tools /yay:woo-check runs, pinned by composer.lock. Installed into the kit cache, never into a plugin.",
+    "type": "project",
+    "license": "proprietary",
+    "require": {
+        "squizlabs/php_codesniffer": "^3.13",
+        "wp-coding-standards/wpcs": "^3.1",
+        "phpcompatibility/phpcompatibility-wp": "^2.1",
+        "dealerdirect/phpcodesniffer-composer-installer": "^1.0",
+        "phpstan/phpstan": "^2.1",
+        "phpstan/extension-installer": "^1.4",
+        "szepeviktor/phpstan-wordpress": "^2.0",
+        "php-stubs/woocommerce-stubs": "*"
+    },
+    "config": {
+        "allow-plugins": {
+            "dealerdirect/phpcodesniffer-composer-installer": true,
+            "phpstan/extension-installer": true
+        },
+        "platform": {
+            "php": "7.4"
+        },
+        "sort-packages": true
+    }
+}
