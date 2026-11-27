@@ -915,13 +915,13 @@ EOP
     rows="$rows$id	$stage	$art	${deps:--}	-	$ti
 "
   done
-  # Split depends into in-run (after) and outside (waits, unless already shipped), then order.
+  # Split depends into in-queue (after) and outside (waits, unless already shipped), then order.
   local shipped
   shipped="$(yay_roadmap_list | awk -F '\t' '$2 ~ /^shipped/ || $2 == "dropped" || $2 == "done" { print $1 }' | tr '\n' ' ')"
   printf '%s' "$rows" | awk -F '\t' -v OFS='\t' -v shipped=" $shipped " '
     function live(k) { return stg[k] != "done" && stg[k] != "dropped" }
     function add(i, x) { after[i] = after[i] (after[i] == "" ? "" : ",") x }
-    { n++; id[n] = $1; stg[n] = $2; art[n] = $3; dep[n] = $4; ti[n] = $6; inrun[$1] = 1; idx[$1] = n
+    { n++; id[n] = $1; stg[n] = $2; art[n] = $3; dep[n] = $4; ti[n] = $6; inq[$1] = 1; idx[$1] = n
       if ((p = index($1, "/")) > 0) { g = substr($1, 1, p - 1); grp[g] = grp[g] " " n } }
     END {
       for (i = 1; i <= n; i++) {
@@ -929,7 +929,7 @@ EOP
         if (dep[i] != "-") {
           m = split(dep[i], d, ",")
           for (j = 1; j <= m; j++) {
-            if (d[j] in inrun) { if (live(idx[d[j]])) add(i, d[j]) }
+            if (d[j] in inq) { if (live(idx[d[j]])) add(i, d[j]) }
             else if (d[j] in grp) { q = split(grp[d[j]], mm, " "); for (r = 1; r <= q; r++) if (mm[r] != "" && live(mm[r])) add(i, id[mm[r]]) }
             else if (index(shipped, " " d[j] " ") == 0) waits[i] = waits[i] (waits[i] == "" ? "" : ",") d[j]
           }

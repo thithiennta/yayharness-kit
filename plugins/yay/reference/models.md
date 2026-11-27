@@ -47,7 +47,7 @@ A step's value is a tier name, `inherit` (the session's model), or an inline `{ 
 
 ## Size bump
 
-`prepare`, `implement`, `review` and `task` act on a roadmap item, so the item's size moves their tier along `veryfast → fast → balanced → deep`. The move is `models.sizeBump` (default `{ "S": -1, "M": 0, "L": 1 }`), clamped at both ends. `balanced` therefore becomes `fast` for an S item and `deep` for an L item. A step set to `inherit`, an inline object, or a task's tier tag is never bumped.
+`review` and `task` act on a roadmap item, so the item's size moves their tier along `veryfast → fast → balanced → deep`. The move is `models.sizeBump` (default `{ "S": -1, "M": 0, "L": 1 }`), clamped at both ends. `balanced` therefore becomes `fast` for an S item and `deep` for an L item. A step set to `inherit`, an inline object, or a task's tier tag is never bumped.
 
 ## Resolving
 
