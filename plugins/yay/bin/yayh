@@ -174,7 +174,7 @@ Roadmap (docs/roadmap/: README.md + one file per sprint; or one docs/roadmap.md)
                                    velocity and the lessons dated in it; writes a Closed: line and the velocity
   roadmap velocity                 dev-days done per closed sprint: last, average of the last 3, count
   roadmap peers                    sibling plugin folders (dir, name, slug, harnessed, path)
-  roadmap queue [R-n|P-n...] [--sprint=n|current|later] [--target=x.y.z] [--ready]
+  roadmap queue R-n|P-n...
                                    build order: id, stage, artifact, after, waits, title
 
 Code (reuse before you write)
