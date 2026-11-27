@@ -306,18 +306,6 @@ test_queue_sees_plans_carried_into_worktrees_and_cycles_fail() {
   assert_exit 1 "$YAYH" roadmap queue R-1 R-3
 }
 
-test_queue_reviews_a_plan_an_interrupted_run_built() {
-  export YAY_REPO; YAY_REPO="$(_qrepo)"
-  local p="$YAY_REPO/docs/plans/gift-wrap.md"
-  "$YAYH" fm set "$p" status done >/dev/null
-  assert_eq "R-5	done	P-1	-	-	Gift wrap" "$("$YAYH" roadmap queue R-5)"
-  "$YAYH" fm set "$p" reviewed pending >/dev/null
-  assert_eq "R-5	review	P-1	-	-	Gift wrap" "$("$YAYH" roadmap queue R-5)"
-  assert_eq "/yay:autopilot R-5" "$("$YAYH" next R-5)"
-  "$YAYH" fm set "$p" reviewed yes >/dev/null
-  assert_eq "R-5	done	P-1	-	-	Gift wrap" "$("$YAYH" roadmap queue R-5)"
-}
-
 test_target_add_list_set_and_queue() {
   export YAY_REPO; YAY_REPO="$(_rrepo)"
   assert_eq "R-5" "$("$YAYH" roadmap add "Gift messages" sprint=2 size=S target=1.5.0 "why=merchants asked")"

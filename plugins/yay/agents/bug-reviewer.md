@@ -1,6 +1,6 @@
 ---
 name: bug-reviewer
-description: Read-only correctness reviewer for a Yay plugin branch. Finds logic bugs, WordPress security gaps (nonces, capabilities, escaping, sanitizing, SQL), WooCommerce compatibility breaks (HPOS, block checkout), Pro code reaching Free, and data that upgrades or uninstall would lose. Used by /yay:implement, /yay:fix and autopilot before the PR, next to yay:code-reviewer. Flags only, never edits.
+description: Read-only correctness reviewer for a Yay plugin branch. Finds logic bugs, WordPress security gaps (nonces, capabilities, escaping, sanitizing, SQL), WooCommerce compatibility breaks (HPOS, block checkout), Pro code reaching Free, and data that upgrades or uninstall would lose. Used by /yay:implement and /yay:fix before the PR, next to yay:code-reviewer. Flags only, never edits.
 tools: Read, Grep, Glob, Bash
 model: inherit
 ---

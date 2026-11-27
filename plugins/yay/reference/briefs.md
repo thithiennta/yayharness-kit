@@ -1,6 +1,6 @@
 # Item briefs
 
-A brief says what one roadmap item **is**, so developers, and Claude in brainstorm, design, plan and autopilot, don't have to guess. The product manager owns it. How to build it stays with the developers. The shape is in `artifacts.md` (Item brief). It's not the release brief (`docs/roadmap/release-<v>.md`, one per version).
+A brief says what one roadmap item **is**, so developers, and Claude in brainstorm, design and plan, don't have to guess. The product manager owns it. How to build it stays with the developers. The shape is in `artifacts.md` (Item brief). It's not the release brief (`docs/roadmap/release-<v>.md`, one per version).
 
 `/yay:roadmap` writes briefs two ways: **on request** (`--brief`) and **offered after planning** (below). Either way, every brief goes through the same steps.
 
@@ -32,7 +32,7 @@ A brief says what one roadmap item **is**, so developers, and Claude in brainsto
 Once `/yay:roadmap` has **written and committed** a plan, a version plan or `--add` items, briefs are offered for what it just scheduled. It never happens before then: the schedule is settled first.
 
 1. **Candidates:** every item this run added or scheduled with no brief yet (`yayh brief path R-<n>` exits 3), of any size. No candidates: no offer.
-2. **When not to offer:** with nobody to ask (`--no-ask`, autopilot, `--multi-agent`, a non-interactive run), in `--status`, `--close` and `--dry-run`. There, the report's Next line names `/yay:roadmap --brief=R-<n>` for the candidates instead.
+2. **When not to offer:** with nobody to ask (`--multi-agent`, a non-interactive run), in `--status`, `--close` and `--dry-run`. There, the report's Next line names `/yay:roadmap --brief=R-<n>` for the candidates instead.
 3. **The offer**, one AskUserQuestion, after the report of what was written: "The roadmap is written. Write briefs for these items now?" Options: all candidates (Recommended, naming them), only the first sprint's (when the candidates span sprints), "Pick in chat", "Not now". With "Not now", the run ends with the `--brief` commands as Next.
 4. **Draft all, then ask once.** For the chosen items, do steps 1–3 above for every brief first. Then ask **one** round for all of them together: at most 4 questions, on the gaps that would change the most work (usually in the bigger items), each question naming its item ("R-5 Gift wrap: …"). Every other gap goes under that brief's Open questions.
 5. Then steps 5–7 for each brief. Run the cold readers in parallel, one Agent per brief. Commit them all in one commit (`docs(roadmap): brief R-3, R-5, R-6`) on the same branch, and push it to the open roadmap PR.

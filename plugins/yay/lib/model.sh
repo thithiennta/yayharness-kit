@@ -1,9 +1,9 @@
 # shellcheck shell=bash
 # Model and effort routing per step. See reference/models.md.
 
-YAY_MODEL_STEPS="scout web-research feasibility reader revise resolve review hypothesis portfolio-research cowork prepare implement synthesis task"
+YAY_MODEL_STEPS="scout web-research feasibility reader review hypothesis portfolio-research cowork synthesis task"
 YAY_MODEL_ORDER="veryfast fast balanced deep"   # a size bump moves along this order
-YAY_MODEL_SIZED="prepare implement review task" # steps that act on a sized roadmap item
+YAY_MODEL_SIZED="review task"                  # steps that act on a sized roadmap item
 YAY_MODEL_MODELS="sonnet opus"
 YAY_MODEL_EFFORTS="low medium high xhigh max"
 YAY_MODEL_FALLBACK="balanced"                   # Opus medium: whatever can't be determined runs here
@@ -23,7 +23,6 @@ _yay_model_keys() {
 _yay_model_default_step() {
   case "$1" in
     scout|web-research|feasibility|reader) echo veryfast ;;
-    revise|resolve) echo fast ;;
     synthesis) echo deep ;;
     task) echo inherit ;;
     *) echo "$YAY_MODEL_FALLBACK" ;;

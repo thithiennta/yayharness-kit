@@ -65,15 +65,6 @@ yayh next R-12                             # the next step for one item (R-, P-,
 /yay:implement P-4                         # its own worktree + branch, a commit per task, PR assigned to you
 ```
 
-**A whole sprint, unattended**
-```text
-/yay:autopilot --sprint=current            # brainstorm + plan every item, ONE decision sheet, then build each on its own branch
-/yay:autopilot R-3 R-5 --parallel=2        # independent items two at a time; dependents stack on their dependency's branch
-/yay:autopilot --ready --no-pr             # build every ready plan, keep the branches local
-/yay:autopilot --sprint=3 --plan-only      # plans only: answer the sheet now, build later with /yay:autopilot --ready
-```
-Re-running the same command resumes: each item's stage comes from its brainstorm and plan. A blocked item stops only itself and what depends on it.
-
 **A bug**
 ```text
 /yay:debug "Coupon field disappears after changing shipping"   # root cause with file:line evidence → B-7
@@ -157,7 +148,7 @@ Findings are fixed, or answered in the PR's "Review" section.
 
 ### Correctness review before every PR
 
-Before each PR from `/yay:implement`, `/yay:fix` and `/yay:autopilot`, a second read-only agent, `yay:bug-reviewer`, reads the diff and the plan's goal, and nothing else. It looks for:
+Before each PR from `/yay:implement` and `/yay:fix`, a second read-only agent, `yay:bug-reviewer`, reads the diff and the plan's goal, and nothing else. It looks for:
 - logic bugs
 - security gaps: nonces, capabilities, escaping, sanitizing, `$wpdb->prepare`
 - WooCommerce compatibility: HPOS, block checkout, the PHP floor
@@ -172,7 +163,7 @@ Skills ask at most **one round of 1–3 questions**, and only the hardest ones: 
 
 ### Parked decisions and later work
 
-Planning and building never stop for a call nobody can make yet. Claude builds a sensible default and writes a **decision note**, `BL-<n>` in `docs/backlog/` with `kind: decision` and the `default:` it built. Work found along the way that the plan doesn't cover becomes a **deferred note** (`kind: deferred`). Before `/yay:plan`, `/yay:implement`, `/yay:fix` or `/yay:autopilot` works on a plan, it runs `yayh backlog open --for=<id>` and settles the notes it now can into the plan: a decided answer replaces the default, and deferred work that fits becomes tasks. The rest stays open for the next plan that touches the same work. To answer one yourself, run `yayh backlog settle BL-<n> decided "<answer>"`, and the next plan on that item builds your answer. The PR lists every note under "Open decisions and later work".
+Planning and building never stop for a call nobody can make yet. Claude builds a sensible default and writes a **decision note**, `BL-<n>` in `docs/backlog/` with `kind: decision` and the `default:` it built. Work found along the way that the plan doesn't cover becomes a **deferred note** (`kind: deferred`). Before `/yay:plan`, `/yay:implement` or `/yay:fix` works on a plan, it runs `yayh backlog open --for=<id>` and settles the notes it now can into the plan: a decided answer replaces the default, and deferred work that fits becomes tasks. The rest stays open for the next plan that touches the same work. To answer one yourself, run `yayh backlog settle BL-<n> decided "<answer>"`, and the next plan on that item builds your answer. The PR lists every note under "Open decisions and later work".
 
 ## 5. Git rules (hooks enforce these)
 
@@ -209,7 +200,6 @@ When a hook blocks something, its message says why and what to do instead. Claud
 | `/yay:design` | `--from=BS-<n>\|R-<n>\|P-<n>`, `--quick`, `--mockup`, `--check` |
 | `/yay:plan` | `--from=BS-<n>`, `--check`, `--tests=auto\|none` |
 | `/yay:implement` | `P-<n>`, `"<requirement>"` or `R-<n>` (plans it first; `--explore` brainstorms first too), `--lane=tiny\|small\|standard`, `--task=T3`, `--continue`, `--no-pr`, `--draft` |
-| `/yay:autopilot` | `--sprint=current`, `R-<n>…`, `--ready`, `--parallel=N`, `--plan-only`, `--no-ask`, `--no-pr` |
 | `/yay:debug` | `--area=<path>`, `--bisect=<good-ref>`, `--repro`, `--report-only` |
 | `/yay:fix` | `B-<n>`, `--hotfix`, `--test`, `--no-pr` |
 | `/yay:changelog` | `--dry-run`, `--since=<tag>` |

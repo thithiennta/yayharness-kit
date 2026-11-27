@@ -37,7 +37,6 @@ Route by what the user wants, not by keywords. Pass the user's own words on as t
 | a how-to for someone else: "write a guide for support on…", "how do I explain to the team how to…" | `/yay:report guide "<their notes>"` (`--for=devs` when it's for developers) |
 | a plan, "break this down" | `/yay:plan "<topic>"` or `--from=<id>` |
 | something built or changed: "add…", "make…", "rename…", "build R-12" | `/yay:implement "<requirement>"` or `<id>` (it picks the lane: tiny, small or standard). Add `--explore` when they say "from scratch", "explore first" or "end to end", or ask to compare approaches. |
-| a whole sprint, a version or many items done | `/yay:autopilot` (`--sprint=current`, `--target=<x.y.z>`, or the ids) |
 | to know why something breaks: a symptom, an error, a log | `/yay:debug "<symptom>"` |
 | a bug fixed: a `B-<n>`, or a bug whose cause is already clear | `/yay:fix B-<n>`; an unexplained bug goes to `/yay:debug` first |
 | tests for a behaviour, or failing tests explained | `/yay:test "<behaviour>"` / `--triage` |

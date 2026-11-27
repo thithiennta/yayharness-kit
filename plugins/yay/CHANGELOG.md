@@ -3,6 +3,15 @@
 `/yay:harness-update` reads this file to tell a repo what changed between its recorded kit version and the installed one. Each entry lists new skills, config keys, template changes and behavior changes.
 
 ## Unreleased (0.22.0)
+- **`/yay:autopilot` is gone.** Build each item with `/yay:brainstorm` → `/yay:plan` → `/yay:implement`, or `/yay:implement R-<n>` (with `--explore` when the approach isn't obvious). Removed with it:
+  - the skill and its workflow (`workflows/autopilot.js`, the `yay-autopilot` workflow)
+  - the decision sheet and `--no-ask`
+  - the plan's `reviewed:` field, and the `review` stage in `yayh roadmap queue`, `yayh status` and `yayh next`. A `reviewed:` line in an existing plan is ignored, so delete it whenever.
+  - the model routing steps `revise`, `resolve`, `prepare` and `implement`. If `.yay/config.json` or `.yay/local.json` sets one under `models.steps`, delete it: `yayh config validate` now reports it as an unknown step.
+  - Its mentions in the managed CLAUDE.md block, `docs/yay-workflow.md`, `/yay:go`, `/yay:roadmap`, the preview and asking rules, and `yay:bug-reviewer`.
+  - `/yay:roadmap`'s version plan now ends with `Next: /yay:brainstorm --from=R-<n>`.
+  - A split plan's other slices are listed as `/yay:implement P-<n>` each.
+  - Comes with the plugin update. Run `/yay:harness-update` to refresh the CLAUDE.md block and `docs/yay-workflow.md`.
 - **`/yay:brainstorm` drops `--options`, `--decide` and `--commit`** (P-7). Nothing used them. Pick an option in the preview instead of `--decide`, ask for a number of options in words, and say "commit it" when you want the file committed. A skipped preview (`--yes`) always writes the brainstorm as `open`. The skill is about a fifth shorter; the preview looks the same. `--quick` now says the preview still runs, and starting from a bug or a backlog note has its own line. New brainstorm files have `Risks:` and `Editions:` lines on each option. Comes with the plugin update.
 - **The plan and brainstorm preview formats have their own files** (P-6, from BS-4). The summary shape and the prompt line moved out of `/yay:plan` step 7 and `/yay:brainstorm` step 5 into `skills/plan/preview-summary.md` and `skills/brainstorm/preview-summary.md`, which each skill reads before it shows the preview. `reference/preview.md` now holds only the loop rules (the naming rules it repeated live in the templates). The previews you see are the same. Comes with the plugin update.
 - **Trello sync is gone.** `/yay:plan --trello` and `/yay:roadmap --trello` are removed, with `reference/trello.md`, the `trello.board` and `trello.list` config keys and the plan template's `trello:` field. Existing `trello:` lines in plans and roadmap items are left alone and ignored; delete `trello` from `.yay/config.json` or `.yay/local.json` if you set it. Comes with the plugin update.
@@ -12,7 +21,7 @@
   - **Brainstorm summary:** the problem, what must keep working, then each option with how it works, ✅/⚠️, size and a Data line naming the storage it adds, the recommendation and what would change it, and Open. Reply with a letter to pick an option, "ok" for the recommended one, or "leave it open". `--decide` drops "leave it open".
   - The hard questions move into the summary's Open section, answered in plain words; there's no separate question pop-up when the preview runs.
   - Plan steps are now 6 self-review (on the draft), 7 preview, 8 write it, 9 report. Brainstorm steps are 5 preview, 6 write it (and record the decision), 7 report.
-  - Only these skip the preview: `--yes`, a request that says "just write it" or "don't ask", `--no-ask`, autopilot, `/yay:plan --check`, and `/yay:implement` (from a requirement or with `--explore`). These keep the old single question round. The skill never guesses that nobody is there from the environment (`claude -p`, no terminal).
+  - Only these skip the preview: `--yes`, a request that says "just write it" or "don't ask", `/yay:plan --check`, and `/yay:implement` (from a requirement or with `--explore`). These keep the old single question round. The skill never guesses that nobody is there from the environment (`claude -p`, no terminal).
   - Round 1 is always a draft: the skill doesn't stop with "how should I proceed?" questions first. It drafts with defaults and lists the questions under Open. A quick UI design the plan needs is drafted too, and written only after you accept.
   - The summary keeps code out of Steps, How, Tests and Checked by. Only Surprises cites `file:line`, and only Data names keys.
 

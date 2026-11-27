@@ -98,7 +98,7 @@ Goal: each agent step runs on a model and effort that fits it (cheap fan-out on 
 - [x] T12.2 Skills pass the resolved model and effort on every Agent spawn; autopilot and roadmap-portfolio workflows take `yayh model table --json` and route each `agent()` ⟵ T12.1
 - [x] T12.3 Per-task delegation: plan tasks may carry `[tier: …]`, `/yay:implement` delegates tagged tasks, `plan check` rejects unknown tiers; `reference/models.md` ⟵ T12.1
 - [x] T12.4 Unit tests (`test_model.sh`) ⟵ all
-- Not yet run live: an autopilot run with routing on, and an implement run with a tagged task.
+- Not yet run live: an implement run with a tagged task. (The autopilot half went with `/yay:autopilot` in 0.22.0.)
 
 ## P11 UI/UX design ✅ ⟵ P10
 Goal: a change that people will see gets a small design before it's planned: the smallest UI that does the job, in the plugin's existing screens and components, with every state and its copy written down.
@@ -112,7 +112,7 @@ Goal: a decision that can't be made while planning or building, or work that sho
 - [x] T10.1 Backlog `kind: idea|decision|deferred` with `from`, `affects`, `default`, `decision`, `settled`; `yayh backlog open [--for=<ID>] [--kind=]` (plan ↔ roadmap item ↔ source, every worktree) and `yayh backlog settle`; `yayh plan check` warns about open notes
 - [x] T10.2 Plan, implement, fix and autopilot (skill and workflow) write notes rather than stopping, and pick them up before working on a plan; roadmap reads deferred notes; workflow rule, asking rules, PR template, artifacts contract
 - [x] T10.3 Unit tests (`test_backlog.sh`)
-- Not yet run live: an autopilot run where a sheet answer settles a tracked note through a `Settles:` line.
+- Not yet run live: moot since 0.22.0, when `/yay:autopilot` and its decision sheet were removed.
 
 ## P9 Tests: unit, integration, JS, and a layer per task ✅ ⟵ P8
 - [x] T9.1 `lib/tests.sh` + `yayh test status|detect|scaffold|run|list`: PHPUnit + Brain Monkey unit, the WP/Woo test suite in wp-env's tests site (its own DB; the dev site's would be wiped), JS runner by package.json
