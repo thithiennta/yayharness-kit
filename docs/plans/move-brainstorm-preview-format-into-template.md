@@ -7,7 +7,7 @@ from: BS-4
 roadmap:
 type: docs
 branch: docs/p-6-move-the-brainstorm-preview-format-into-its-ow
-pr:
+pr: 64
 editions: [free, pro]
 created: 2026-11-27
 ---
