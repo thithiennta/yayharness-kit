@@ -1,6 +1,6 @@
 schema_version: "1.1"
 name: plan-from-request
-tags: [plan,trigger]
+tags: [plan,trigger,asking]
 runs: 2
 context:
   scaffold_script: scaffold.sh
