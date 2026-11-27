@@ -1,7 +1,7 @@
 ---
 id: P-7
 title: Clean up the brainstorm skill and drop --options, --decide and --commit
-status: in-progress
+status: done
 lane: small
 from:
 roadmap:
@@ -53,5 +53,5 @@ created: 2026-11-27
 - ✅ `claude plugin validate plugins/yay` → exit 0
 - ✅ `PATH="$PWD/plugins/yay/bin:$PATH" claude plugin eval plugins/yay --case brainstorm-previews-first --runs 1 --ablation none --judge-model sonnet --scaffold --allow-tools Bash Write Edit --trust-plugin --no-publish` scores 1.00.
 - ✅ In a plugin repo, `/yay:brainstorm <topic> --yes` writes a `status: open` brainstorm with no preview, and each option has Risks and Editions lines. (Checked with a one-off eval case on the Giftly scaffold, not committed: BS-1 written `open`, no preview, Risks and Editions filled.)
-- `grep -c 'Skip its preview (step 5)' plugins/yay/reference/implement-unplanned.md` → 1
-- `grep -c '"no preview"' plugins/yay/skills/brainstorm/SKILL.md` → 1
+- ✅ `grep -c 'Skip its preview (step 5)' plugins/yay/reference/implement-unplanned.md` → 1
+- ✅ `grep -c '"no preview"' plugins/yay/skills/brainstorm/SKILL.md` → 1
