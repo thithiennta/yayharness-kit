@@ -41,5 +41,5 @@ The `/yay:brainstorm` preview format (the summary rules, the format block and th
 - ✅ `grep -c 'Plan preview, nothing written yet' plugins/yay/skills/plan/preview-summary.md` → 1
 - ✅ `grep -c 'skills/plan/preview-summary.md' plugins/yay/skills/plan/SKILL.md` → exit 0
 - ✅ `PATH="$PWD/plugins/yay/bin:$PATH" claude plugin eval plugins/yay --case plan-previews-first --runs 1 --ablation none --judge-model sonnet --scaffold --allow-tools Bash Write Edit --trust-plugin --no-publish` scores 1.00, and the trace shows `skills/plan/preview-summary.md` being read.
-- `grep -c 'not `php tests/run.php`' plugins/yay/reference/preview.md` → exit 1
-- `grep -c 'not `php tests/run.php`' plugins/yay/skills/plan/preview-summary.md` → 1
+- ✅ `grep -c 'php tests/run.php' plugins/yay/reference/preview.md` → exit 1
+- ✅ `grep -c 'php tests/run.php' plugins/yay/skills/plan/preview-summary.md` → 1
