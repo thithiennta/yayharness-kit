@@ -36,7 +36,7 @@ created: 2026-11-27
     - `--quick` means two options and no subagents; the preview still runs
     - step 1 gets one line each for a bug (its root cause and fix options are the starting point) and a backlog note (its question and default become the Problem and option A)
   - **Template:** add `- Risks:` and `- Editions:` to each option in the brainstorm template.
-- [ ] T3 Changelog entry under Unreleased (0.22.0): the three removed options and what to do instead, and the new Risks and Editions lines. — `plugins/yay/CHANGELOG.md` [risk: 1]
+- [x] T3 Changelog entry under Unreleased (0.22.0): the three removed options and what to do instead, and the new Risks and Editions lines. — `plugins/yay/CHANGELOG.md` [risk: 1]
 
 **Tests:** none
 
