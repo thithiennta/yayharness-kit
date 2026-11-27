@@ -2,7 +2,7 @@
 
 `/yay:harness-update` reads this file to tell a repo what changed between its recorded kit version and the installed one. Each entry lists new skills, config keys, template changes and behavior changes.
 
-## Unreleased (0.22.0)
+## 0.22.0 (2026-11-28)
 - **`/yay:autopilot` is gone.** Build each item with `/yay:brainstorm` → `/yay:plan` → `/yay:implement`, or `/yay:implement R-<n>` (with `--explore` when the approach isn't obvious). Removed with it:
   - the skill and its workflow (`workflows/autopilot.js`, the `yay-autopilot` workflow)
   - the decision sheet and `--no-ask`
