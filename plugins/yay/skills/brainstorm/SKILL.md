@@ -1,7 +1,7 @@
 ---
 name: brainstorm
 description: Explore options for a Yay plugin change before planning. Use when the user says "brainstorm", "explore options", "how should we approach", or starts a roadmap item, backlog idea or unclear fix. Grounds 2-4 options in the code with tradeoffs and sizes, recommends one, previews them in plain words and discusses until you pick, then records docs/brainstorms/ BS-<n>.
-argument-hint: "<topic> [--from=R-<n>|BL-<n>|B-<n>] [--options=2-4] [--quick] [--research] [--decide] [--yes] [--commit]"
+argument-hint: "<topic> [--from=R-<n>|BL-<n>|B-<n>] [--quick] [--research] [--yes]"
 allowed-tools: Bash(yayh *), Bash(git *), Read, Grep, Glob, Write, Edit, Agent, AskUserQuestion, WebSearch
 ---
 
@@ -17,12 +17,9 @@ Turn a topic into a recorded decision: a `BS-<n>` file that `/yay:plan` builds o
 |---|---|
 | `<topic>` | What to explore, in a few words. Optional when `--from` names the source. |
 | `--from=R-<n>\|BL-<n>\|B-<n>` | Start from a roadmap item, backlog idea or bug. Read it, and record it in `from:`. |
-| `--options=N` | How many options to develop (2–4, default 3). |
 | `--quick` | One pass, no subagents: two options and a recommendation. Fine for small, clear choices. |
 | `--research` | Also look outside the repo, for how WooCommerce core or common plugins solve this, or the relevant WP/WC APIs, using WebSearch. Cite the sources. |
-| `--decide` | The preview must end in a picked option: "leave it open" isn't offered. When the preview is skipped, ask the user to pick an option in one round (at most 3 questions) and record it (`status: decided`). |
-| `--yes` | Skip the preview (step 5) and write the brainstorm straight away, `status: open` unless `--decide`. Plain words work too: "no preview", "just write it". |
-| `--commit` | Commit the file when you're on a non-base branch (`docs(plan): add BS-<n> …`), with its `docs/assets/BS-<n>` screenshots, if any. |
+| `--yes` | Skip the preview (step 5) and write the brainstorm straight away, `status: open`. Plain words work too: "no preview", "just write it". |
 
 ## Steps
 
@@ -33,7 +30,7 @@ Turn a topic into a recorded decision: a `BS-<n>` file that `/yay:plan` builds o
    - WooCommerce surfaces: block vs classic checkout, HPOS, emails
    - existing data and options that must keep working
    - hard rules
-3. **Develop the options.** Each option says how it works (citing files and hooks), pros, cons, risks, the edition split, and a size (S/M/L). Make them really different approaches, not variations on one. With `--research`, add what you learned, with links. For big topics, you may run one `Explore` agent per option in parallel to check feasibility in the code, with the Agent tool's `model` and `effort` both set from `yayh model resolve feasibility` (model routing: `${CLAUDE_PLUGIN_ROOT}/reference/models.md`).
+3. **Develop the options:** 2-4, only as many as are really different. Each option says how it works (citing files and hooks), pros, cons, risks, the edition split, and a size (S/M/L). Make them really different approaches, not variations on one. With `--research`, add what you learned, with links. For big topics, you may run one `Explore` agent per option in parallel to check feasibility in the code, with the Agent tool's `model` and `effort` both set from `yayh model resolve feasibility` (model routing: `${CLAUDE_PLUGIN_ROOT}/reference/models.md`).
 4. **Recommend.** Pick one and say why in a paragraph, plus what would change your mind. Be honest when two are close.
 5. **Preview** (`${CLAUDE_PLUGIN_ROOT}/reference/preview.md`). Before writing the file, show the draft as a plain summary and discuss it with the person until they accept: answer their questions, apply their changes, and show the summary again whenever the draft changes (an option added, dropped or reworked, the recommendation moved, a data line changed). The loop rules, and when it's skipped (only `--yes`, "just write it" or "don't ask", autopilot, or another skill's flow such as `/yay:implement --explore`; never a guess about the environment), are in `preview.md`.
    - **The summary:** read `${CLAUDE_PLUGIN_ROOT}/skills/brainstorm/preview-summary.md` and show the summary in exactly that format, ending with its prompt line.
@@ -43,8 +40,8 @@ Turn a topic into a recorded decision: a `BS-<n>` file that `/yay:plan` builds o
    - A screenshot attached to the request (a UI to match, a bug, a layout): record it and keep it as in `${CLAUDE_PLUGIN_ROOT}/reference/artifacts.md` (Screenshots).
    - Fill in every section from the accepted draft: Problem, Constraints, Options, Recommendation, and Open questions (what only a human can answer: product intent, pricing tier, support load). Answers given in the preview go into Recommendation or the option they shape, not Open questions.
    - **Decided:** set `yayh fm set <file> decision "<option letter and name>"` and `yayh fm set <file> status decided`, and write any conditions the person gave into Recommendation.
-   - **Preview skipped:** with `--decide`, ask one AskUserQuestion whose first question is the options as choices, the recommended one first and marked "(Recommended)", plus at most 2 open questions the choice depends on, then record the decision as above. Without `--decide`, leave it `open`.
-7. **Report.** Give the file, the preview rounds and what changed in them, the recommendation and the decision (if made), the open questions, and end with the **Next** line (`reference/asking.md`), usually `/yay:plan --from=BS-<n>`.
+   - **Preview skipped:** leave it `open`.
+7. **Report.** Give the file, the preview rounds and what changed in them, the recommendation and the decision (if made), the open questions, and end with the **Next** line (`reference/asking.md`), usually `/yay:plan --from=BS-<n>`. If the arguments named a removed option, say so in one line: `--decide` and `--options` are gone (pick in the preview, or ask for a number of options), and so is `--commit` (say "commit it").
 
 ## Don'ts
 - Don't write a plan here: no task lists and no file-by-file changes. That's `/yay:plan`.

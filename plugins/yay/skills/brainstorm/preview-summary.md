@@ -20,4 +20,4 @@ Recommend: <letter>, because <why>. I'd switch to <letter> if <what would change
 Open: <questions only a human can answer, each with the default, or none>
 ```
 
-**Prompt:** end the summary with `→ Reply with a letter to pick it, "ok" for <recommended letter>, "leave it open", or ask or change anything.` Leave out "leave it open" with `--decide`.
+**Prompt:** end the summary with `→ Reply with a letter to pick it, "ok" for <recommended letter>, "leave it open", or ask or change anything.`

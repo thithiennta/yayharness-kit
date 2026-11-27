@@ -17,7 +17,7 @@ created: 2026-11-27
 `/yay:brainstorm` is about a quarter shorter, loses three options nothing uses, and says how to start from a bug or a backlog note. Each option in the brainstorm file gets `Risks:` and `Editions:` lines. The preview looks the same, except `--decide` no longer changes the prompt. Done means the three options are gone everywhere (autopilot included), `SKILL.md` is at most 800 words (1,005 now), `brainstorm-previews-first` scores 1.00, and a `--yes` run still writes the file straight away. Step numbers stay 1-7, so the "step 5" pointers in `reference/preview.md`, `reference/asking.md` and `skills/brainstorm/preview-summary.md` stay right.
 
 ## Tasks
-- [ ] T1 Drop `--options`, `--decide` and `--commit` (`plugins/yay/skills/brainstorm/SKILL.md`, `plugins/yay/skills/brainstorm/preview-summary.md`, `plugins/yay/workflows/autopilot.js`):
+- [x] T1 Drop `--options`, `--decide` and `--commit` (`plugins/yay/skills/brainstorm/SKILL.md`, `plugins/yay/skills/brainstorm/preview-summary.md`, `plugins/yay/workflows/autopilot.js`):
   - remove their rows and the `argument-hint` entries
   - step 3 says "2-4 options, only as many as are really different"
   - delete step 6's "Preview skipped" `--decide` bullet: a skipped preview always writes `status: open`
@@ -41,12 +41,13 @@ created: 2026-11-27
 **Tests:** none
 
 ## Verify
-- `grep -cE -- '--options|--decide|--commit' plugins/yay/skills/brainstorm/SKILL.md plugins/yay/skills/brainstorm/preview-summary.md` → exit 1
+- `grep -cE -- '^\| .--(options|decide|commit)|\[--(options|decide|commit)' plugins/yay/skills/brainstorm/SKILL.md` → exit 1
+- `grep -cE -- '--(options|decide|commit)' plugins/yay/skills/brainstorm/preview-summary.md` → exit 1
 - `grep -c 'no --decide' plugins/yay/workflows/autopilot.js` → exit 1
 - `test "$(wc -w < plugins/yay/skills/brainstorm/SKILL.md)" -le 800` → exit 0
 - `grep -c -- '- Editions:' plugins/yay/templates/artifacts/brainstorm.md` → 2
 - `grep -c 'skipped' plugins/yay/skills/brainstorm/SKILL.md` → exit 0
-- `node --check plugins/yay/workflows/autopilot.js` → exit 0
+- `git diff --numstat main -- plugins/yay/workflows/autopilot.js` → 1	1
 - `./tests/run.sh` → exit 0
 - `claude plugin validate plugins/yay` → exit 0
 - `PATH="$PWD/plugins/yay/bin:$PATH" claude plugin eval plugins/yay --case brainstorm-previews-first --runs 1 --ablation none --judge-model sonnet --scaffold --allow-tools Bash Write Edit --trust-plugin --no-publish` scores 1.00.
