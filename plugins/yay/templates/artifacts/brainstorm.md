@@ -19,12 +19,16 @@ created: {{today}}
 - How:
 - Pros:
 - Cons:
+- Risks:
+- Editions:
 - Size: S | M | L
 
 ### B.
 - How:
 - Pros:
 - Cons:
+- Risks:
+- Editions:
 - Size: S | M | L
 
 ## Recommendation

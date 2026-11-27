@@ -25,7 +25,7 @@ created: 2026-11-27
   - the `--yes` row drops "unless `--decide`"
   - step 7 says, in one line, when the arguments named a removed option and what to do instead (pick in the preview; say "commit it")
   - the autopilot prompt drops "(no --decide, no --commit)"
-- [ ] T2 Tighten the rest, and fill the gaps (`plugins/yay/skills/brainstorm/SKILL.md`, `plugins/yay/templates/artifacts/brainstorm.md`):
+- [x] T2 Tighten the rest, and fill the gaps (`plugins/yay/skills/brainstorm/SKILL.md`, `plugins/yay/templates/artifacts/brainstorm.md`):
   - **Remove:**
     - the intro's repeat of step 5 and of the second Don't, and its `artifacts.md` pointer
     - step 5's description of the loop, which `reference/preview.md` already holds (keep the skip list, which gates the loop)
