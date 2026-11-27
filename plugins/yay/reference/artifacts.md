@@ -29,7 +29,7 @@ Slugs are lowercase words joined by `-`, at most 50 characters (`yayh slug "<tex
 
 `/yay:brainstorm`, `/yay:plan` and `/yay:debug` run before any branch exists, so they only **create new files** (`yayh artifact new …`) in the current checkout, uncommitted. They never edit tracked files there. `/yay:implement` and `/yay:fix` create the worktree, then move those files into it (`yayh artifact carry <worktree> <files>`). Status changes to existing tracked files (the roadmap item, an older brainstorm) happen inside the branch. That way every artifact is committed with the work it describes.
 
-When you're already on a non-base branch, a skill may commit its new artifact there, if asked (`--commit`).
+When you're already on a non-base branch, a skill may commit its new artifact there, if asked (`--commit`, or in words such as "commit it").
 
 ## Screenshots
 

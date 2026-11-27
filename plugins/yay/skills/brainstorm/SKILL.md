@@ -32,7 +32,7 @@ Turn a topic into a recorded decision: a new `BS-<n>` file that `/yay:plan` buil
    - hard rules
 3. **Develop the options:** 2-4 really different approaches, not variations on one, and only as many as really exist. Each option says how it works (citing files and hooks), pros, cons, risks, the edition split, and a size (S/M/L). With `--research`, add what you learned, with links. For big topics, you may check feasibility with one `Explore` agent per option, in parallel, its `model` and `effort` both from `yayh model resolve feasibility` (`${CLAUDE_PLUGIN_ROOT}/reference/models.md`).
 4. **Recommend.** Pick one and say why in a paragraph, plus what would change your mind. Be honest when two are close.
-5. **Preview.** Before writing the file, run the preview loop in `${CLAUDE_PLUGIN_ROOT}/reference/preview.md`. It's skipped only with `--yes`, "just write it" or "don't ask", autopilot, or another skill's flow such as `/yay:implement --explore`; never on a guess about the environment.
+5. **Preview.** Before writing the file, run the preview loop in `${CLAUDE_PLUGIN_ROOT}/reference/preview.md`. It's skipped only with `--yes`, `--no-ask`, "no preview", "just write it" or "don't ask", autopilot, or another skill's flow such as `/yay:implement --explore`; never on a guess about the environment.
    - **The summary:** read `${CLAUDE_PLUGIN_ROOT}/skills/brainstorm/preview-summary.md` and show the summary in exactly that format, ending with its prompt line.
    - **Accepting:** picking an option, or "ok", "go", "write it" for the recommended one, accepts as **decided**. "Leave it open" accepts as **open**.
 6. **Write it.**

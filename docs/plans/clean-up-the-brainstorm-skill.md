@@ -36,19 +36,22 @@ created: 2026-11-27
     - `--quick` means two options and no subagents; the preview still runs
     - step 1 gets one line each for a bug (its root cause and fix options are the starting point) and a backlog note (its question and default become the Problem and option A)
   - **Template:** add `- Risks:` and `- Editions:` to each option in the brainstorm template.
+  - After review: step 5's skip list names `--no-ask` and "no preview" again (the `--yes` row used to), `reference/implement-unplanned.md` tells `--explore` to skip the brainstorm's preview, not its gone question round, and `reference/artifacts.md` lets a skill commit its artifact when asked in words, not only with `--commit`. — `plugins/yay/reference/implement-unplanned.md`, `plugins/yay/reference/artifacts.md`
 - [x] T3 Changelog entry under Unreleased (0.22.0): the three removed options and what to do instead, and the new Risks and Editions lines. — `plugins/yay/CHANGELOG.md` [risk: 1]
 
 **Tests:** none
 
 ## Verify
-- `grep -cE -- '^\| .--(options|decide|commit)|\[--(options|decide|commit)' plugins/yay/skills/brainstorm/SKILL.md` → exit 1
-- `grep -cE -- '--(options|decide|commit)' plugins/yay/skills/brainstorm/preview-summary.md` → exit 1
-- `grep -c 'no --decide' plugins/yay/workflows/autopilot.js` → exit 1
-- `test "$(wc -w < plugins/yay/skills/brainstorm/SKILL.md)" -le 800` → exit 0
-- `grep -c -- '- Editions:' plugins/yay/templates/artifacts/brainstorm.md` → 2
-- `grep -c 'skipped' plugins/yay/skills/brainstorm/SKILL.md` → exit 0
-- `git diff --numstat main -- plugins/yay/workflows/autopilot.js` → 1	1
-- `./tests/run.sh` → exit 0
-- `claude plugin validate plugins/yay` → exit 0
-- `PATH="$PWD/plugins/yay/bin:$PATH" claude plugin eval plugins/yay --case brainstorm-previews-first --runs 1 --ablation none --judge-model sonnet --scaffold --allow-tools Bash Write Edit --trust-plugin --no-publish` scores 1.00.
-- In a plugin repo, `/yay:brainstorm <topic> --yes` writes a `status: open` brainstorm with no preview, and each option has Risks and Editions lines.
+- ✅ `grep -cE -- '^\| .--(options|decide|commit)|\[--(options|decide|commit)' plugins/yay/skills/brainstorm/SKILL.md` → exit 1
+- ✅ `grep -cE -- '--(options|decide|commit)' plugins/yay/skills/brainstorm/preview-summary.md` → exit 1
+- ✅ `grep -c 'no --decide' plugins/yay/workflows/autopilot.js` → exit 1
+- ✅ `test "$(wc -w < plugins/yay/skills/brainstorm/SKILL.md)" -le 800` → exit 0
+- ✅ `grep -c -- '- Editions:' plugins/yay/templates/artifacts/brainstorm.md` → 2
+- ✅ `grep -c 'skipped' plugins/yay/skills/brainstorm/SKILL.md` → exit 0
+- ✅ `git diff --numstat main -- plugins/yay/workflows/autopilot.js` → 1	1
+- ✅ `./tests/run.sh` → exit 0
+- ✅ `claude plugin validate plugins/yay` → exit 0
+- ✅ `PATH="$PWD/plugins/yay/bin:$PATH" claude plugin eval plugins/yay --case brainstorm-previews-first --runs 1 --ablation none --judge-model sonnet --scaffold --allow-tools Bash Write Edit --trust-plugin --no-publish` scores 1.00.
+- ✅ In a plugin repo, `/yay:brainstorm <topic> --yes` writes a `status: open` brainstorm with no preview, and each option has Risks and Editions lines. (Checked with a one-off eval case on the Giftly scaffold, not committed: BS-1 written `open`, no preview, Risks and Editions filled.)
+- `grep -c 'Skip its preview (step 5)' plugins/yay/reference/implement-unplanned.md` → 1
+- `grep -c '"no preview"' plugins/yay/skills/brainstorm/SKILL.md` → 1
