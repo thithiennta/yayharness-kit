@@ -2,7 +2,7 @@
 
 The summary `/yay:brainstorm` shows in step 5. The loop rules are in `reference/preview.md`.
 
-**The summary** goes in your reply, about 15-30 lines of plain words. Name screens, settings and flows the way a merchant or the team would, not file, class or function names (`file:line` only when a Must keep needs it). Each option's **Data** line is the exception: it names the exact option, meta key, table or column the option adds or changes, never the functions that write it, because where data lives is often what separates the options and what's hardest to undo. Full shapes, upgrades and uninstall belong in the plan.
+**The summary** goes in your reply, about 15-30 lines of plain words. Name screens, settings and flows the way a merchant or the team would, not file, class or function names, commands or test file paths ("check the saved order", not `wp eval …`). `file:line` only when a Must keep needs it. Each option's **Data** line is the exception: it names the exact option, meta key, table or column the option adds or changes, never the functions that write it, because where data lives is often what separates the options and what's hardest to undo. Full shapes, upgrades and uninstall belong in the plan.
 
 ```
 Brainstorm preview, nothing written yet: <title> (from <id>)
