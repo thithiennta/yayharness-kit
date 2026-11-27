@@ -140,7 +140,7 @@ Goal: measure quality, so every later change can show it helped. *(8 / 8)*
 - what: `workflow.strictness: relaxed | standard | strict`, read by the hooks, by `plan check` and by the lane choice.
 
 ### R-18 Reviews survive an interrupted autopilot run
-- status: shipped in 0.5.0
+- status: shipped in 0.5.0; removed in 0.22.0 with `/yay:autopilot`
 - size: S
 - why: in the yaycheckout pilot, the build was killed after P-1's implement step marked the plan `done`. On resume, the queue showed P-1 as `done`, so its two reviews never ran.
 - what: record the review on the plan (`reviewed:` front-matter, set by autopilot's resolve step), and give a `done` plan without it the stage `review`, so autopilot runs the reviewers.

@@ -797,8 +797,6 @@ _yay_queue_artifacts() {
       [ -f "$f" ] || continue
       case "$f" in */plans/*) kind=plan ;; *) kind=bs ;; esac
       st="$(yay_fm_get "$f" status 2>/dev/null || echo -)"
-      # autopilot built it, but its reviews haven't run yet (an interrupted run)
-      [ "$kind:$st" != plan:done ] || [ "$(yay_fm_get "$f" reviewed 2>/dev/null || true)" != pending ] || st=review
       printf '%s\t%s\t%s\t%s\t%s\n' "$kind" \
         "$(yay_fm_get "$f" id 2>/dev/null || echo -)" "$st" \
         "$(yay_fm_get "$f" roadmap 2>/dev/null || echo -)" "$(yay_fm_get "$f" from 2>/dev/null || echo -)"
@@ -811,13 +809,12 @@ EOT
 # yay_roadmap_queue [R-n|P-n...] [--sprint=n|current|later] [--ready] [--today=YYYY-MM-DD]
 #   -> TSV in build order: id stage artifact after waits title
 # An item with two or more live plans (/yay:plan --split) gives one row per plan, id
-# R-<n>/P-<m>, in plan order: each one after the plan before it (stacked on its branch),
+# R-<n>/P-<m>, in plan order: each one after the plan before it,
 # and an item that depends on R-<n> runs after all of them.
 # stage: brainstorm (nothing yet) | decide (open brainstorm) | plan (decided brainstorm)
-#        | implement (draft or ready plan) | continue (plan in progress)
-#        | review (autopilot built it, its reviews didn't run: `reviewed: pending`) | done | dropped
-# after: dependencies inside this run (comma-separated, or -), built first.
-# waits: unmet dependencies outside this run (other plugins, items not in scope), or -.
+#        | implement (draft or ready plan) | continue (plan in progress) | done | dropped
+# after: dependencies inside this queue (comma-separated, or -), built first.
+# waits: unmet dependencies outside this queue (other plugins, items not in scope), or -.
 yay_roadmap_queue() {
   local a ids="" today sprint="" ready="" target="" cur arts f
   today="$(yay_today)"
@@ -867,7 +864,7 @@ yay_roadmap_queue() {
         # A split item: one row per live plan (each copy counted once, at its most advanced status).
         local plans np prev pid pst2 k
         plans="$(printf '%s\n' "$arts" | awk -F '\t' -v i="$id" '
-          function rank(s) { return (s == "done" || s == "review") ? 4 : s == "in-progress" ? 3 : s == "ready" ? 2 : s == "draft" ? 1 : 0 }
+          function rank(s) { return s == "done" ? 4 : s == "in-progress" ? 3 : s == "ready" ? 2 : s == "draft" ? 1 : 0 }
           $1 == "plan" && ($4 == i || $5 == i) && $3 != "dropped" { if (!($2 in st) || rank($3) > rank(st[$2])) st[$2] = $3 }
           END { for (p in st) { n = p; sub(/^P-/, "", n); print n "\t" p "\t" st[p] } }' | sort -n | cut -f2,3)"
         np="$(printf '%s' "$plans" | grep -c . || true)"
@@ -877,7 +874,7 @@ yay_roadmap_queue() {
           while IFS="$YAY_TAB" read -r pid pst2; do
             [ -n "$pid" ] || continue
             k=$((k + 1))
-            case "$pst2" in done) stage=done ;; review) stage=review ;; in-progress) stage=continue ;; *) stage=implement ;; esac
+            case "$pst2" in done) stage=done ;; in-progress) stage=continue ;; *) stage=implement ;; esac
             local d2; d2="$(printf '%s' "$deps${prev:+,$prev}" | tr ',' '\n' | sed 's/^[[:space:]]*//;s/[[:space:]]*$//' | { grep . || true; } | tr '\n' ',' | sed 's/,$//')"
             rows="$rows$id/$pid	$stage	$pid	${d2:--}	-	$ti ($pid, plan $k of $np)
 "
@@ -889,7 +886,7 @@ EOP
         fi
         # the most advanced plan for the item, else its brainstorm
         pst="$(printf '%s\n' "$arts" | awk -F '\t' -v i="$id" '
-          function rank(s) { return (s == "done" || s == "review") ? 4 : s == "in-progress" ? 3 : s == "ready" ? 2 : s == "draft" ? 1 : 0 }
+          function rank(s) { return s == "done" ? 4 : s == "in-progress" ? 3 : s == "ready" ? 2 : s == "draft" ? 1 : 0 }
           $1 == "plan" && ($4 == i || $5 == i) && $3 != "dropped" && rank($3) >= best { best = rank($3); out = $2 "\t" $3 }
           END { print out }')"
         if [ -z "$pst" ]; then
@@ -908,7 +905,6 @@ EOP
     case "$st:$pst" in
       shipped*|done:*|*:*"	done") stage=done ;;
       dropped:*) stage=dropped ;;
-      *:*"	review") stage=review ;;
       *:bs:*"	decided") stage=plan ;;
       *:bs:*) stage=decide ;;
       *:*"	in-progress") stage=continue ;;

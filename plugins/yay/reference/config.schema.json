@@ -391,13 +391,13 @@
         "steps": {
           "type": "object",
           "description": "step -> a tier name, inherit, or an inline { model, effort }",
-          "propertyNames": { "enum": ["scout", "web-research", "feasibility", "reader", "revise", "resolve", "review", "hypothesis", "portfolio-research", "cowork", "prepare", "implement", "synthesis", "task"] },
+          "propertyNames": { "enum": ["scout", "web-research", "feasibility", "reader", "review", "hypothesis", "portfolio-research", "cowork", "synthesis", "task"] },
           "additionalProperties": { "oneOf": [ { "type": "string" }, { "type": "object", "additionalProperties": false, "properties": { "model": { "enum": ["sonnet", "opus"] }, "effort": { "enum": ["low", "medium", "high", "xhigh", "max"] } } } ] }
         },
         "sizeBump": {
           "type": "object",
           "additionalProperties": false,
-          "description": "tier shift per roadmap size, for prepare, implement, review and task",
+          "description": "tier shift per roadmap size, for review and task",
           "properties": {
             "S": { "type": "integer", "default": -1 },
             "M": { "type": "integer", "default": 0 },

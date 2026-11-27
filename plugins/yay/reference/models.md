@@ -23,28 +23,22 @@ Each step that runs a subagent can use a different model and reasoning effort. `
 | `web-research` | `/yay:roadmap --web` research agent | `veryfast` |
 | `feasibility` | `/yay:brainstorm` Explore agent per option | `veryfast` |
 | `reader` | `/yay:report` cold reader: reads only the finished report, as the lead | `veryfast` |
-| `revise` | autopilot: apply decision-sheet answers | `fast` |
-| `resolve` | autopilot: fix review findings, push, PR | `fast` |
-| `review` | `yay:bug-reviewer` and `yay:code-reviewer` (implement, fix, autopilot) | `balanced` |
+| `review` | `yay:bug-reviewer` and `yay:code-reviewer` (implement, fix) | `balanced` |
 | `hypothesis` | `/yay:debug` hypothesis checkers | `balanced` |
 | `portfolio-research` | `/yay:roadmap --multi-agent` owner research | `balanced` |
 | `cowork` | `/yay:roadmap --multi-agent` co-work round | `balanced` |
-| `prepare` | autopilot: brainstorm and plan an item | `balanced` |
-| `implement` | autopilot: build an item | `balanced` |
 | `synthesis` | `/yay:roadmap --multi-agent` final schedule | `deep` |
 | `task` | `/yay:implement` per-task delegation | `inherit` |
 
-The rule behind the defaults: spend where a mistake spreads downstream (a plan, the only review of an unattended build), and save where a step only gathers facts the main session checks anyway.
+The rule behind the defaults: spend where a mistake spreads downstream (a plan, the review before a PR), and save where a step only gathers facts the main session checks anyway.
 
 These are the built-in defaults. Override any step in `.yay/config.json` (or `.yay/local.json`); for example, to send every step back to the session's model:
 ```json
 "models": {
   "steps": {
     "scout": "inherit", "web-research": "inherit", "feasibility": "inherit", "reader": "inherit",
-    "revise": "inherit", "resolve": "inherit",
     "review": "inherit", "hypothesis": "inherit",
     "portfolio-research": "inherit", "cowork": "inherit",
-    "prepare": "inherit", "implement": "inherit",
     "synthesis": "inherit", "task": "inherit"
   }
 }

@@ -5,7 +5,7 @@
 ## When it runs
 **Always, unless one of these says to skip it:**
 - `--yes`, or the request says so in words: "just write it", "no preview", "don't ask", "don't ask me anything", "use your judgment and write it".
-- `--no-ask`, autopilot, or `/yay:plan --check`.
+- `/yay:plan --check`.
 - Another skill runs these steps inside its own flow (`/yay:implement` from a requirement or with `--explore`).
 
 **Don't decide from the environment.** A `claude -p` run, a missing terminal, a sandbox or a tool that isn't allowed doesn't mean nobody will answer. Only the list above skips the preview. Don't ask the person whether to preview, and don't add an Open item about it.

@@ -83,7 +83,7 @@ When a small plan turns out bigger than that, switch it to standard (`yayh fm se
    - Does every Findings item end in a task, a Non-goal or a note? A finding nothing acts on is lost.
 
    Fix what you find in the draft.
-7. **Preview** (`${CLAUDE_PLUGIN_ROOT}/reference/preview.md`). Before writing the file, show the draft as a plain summary and discuss it with the person until they accept: answer their questions, apply their changes, and show the summary again whenever the draft changes. The loop rules, and when it's skipped (only `--yes`, "just write it" or "don't ask", `--check`, autopilot, or another skill's flow; never a guess about the environment), are in `preview.md`.
+7. **Preview** (`${CLAUDE_PLUGIN_ROOT}/reference/preview.md`). Before writing the file, show the draft as a plain summary and discuss it with the person until they accept: answer their questions, apply their changes, and show the summary again whenever the draft changes. The loop rules, and when it's skipped (only `--yes`, "just write it" or "don't ask", `--check`, or another skill's flow; never a guess about the environment), are in `preview.md`.
    - **The summary:** read `${CLAUDE_PLUGIN_ROOT}/skills/plan/preview-summary.md` and show the summary in exactly that format, ending with its prompt line.
    - **Open** holds the hard questions, each with the default the draft follows:
      - **Tests to include**, but only when the repo's rules say tests need approval (the project block or `.claude/rules/`). Otherwise decide yourself, and keep the tests that guard a real risk.

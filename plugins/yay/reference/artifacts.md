@@ -87,7 +87,7 @@ Goal: checkout speed before BFCM.
 - size: L
 ```
 - Sections are `## Sprint <n> (<start> → <end>)` (dates are `YYYY-MM-DD`, sprints in order and not overlapping), then `## Later`.
-- Items are `### R-<n> Title` with `- key: value` bullets (no front-matter, because many items share one file). `status` and `size` are required. Optional: `why`, `acceptance` (what a user can see or do when it's done: the plan's Goal and Verify start from it, and `roadmap check` warns about a scheduled item still `todo` or `brainstorming` without one), `editions`, `target` (the plugin version it should ship in, `x.y.z`; `yayh roadmap list --target=`, `/yay:autopilot --target=`), `from`, `started` and `built` (dates: set when the item goes `in-progress`, and by `/yay:implement` when its plan is done; `yayh roadmap pace` compares them with the size), `note` (e.g. why it was dropped), and `shared` and `depends` (cross-plugin work).
+- Items are `### R-<n> Title` with `- key: value` bullets (no front-matter, because many items share one file). `status` and `size` are required. Optional: `why`, `acceptance` (what a user can see or do when it's done: the plan's Goal and Verify start from it, and `roadmap check` warns about a scheduled item still `todo` or `brainstorming` without one), `editions`, `target` (the plugin version it should ship in, `x.y.z`; `yayh roadmap list --target=`), `from`, `started` and `built` (dates: set when the item goes `in-progress`, and by `/yay:implement` when its plan is done; `yayh roadmap pace` compares them with the size), `note` (e.g. why it was dropped), and `shared` and `depends` (cross-plugin work).
 - `status` is one of `todo` (on the roadmap, not started), `brainstorming[:BS-<n>]`, `planned-in:P-<n>`, `in-progress`, `done`, `shipped:<version>`, `dropped`. `/yay:roadmap` syncs it from brainstorms and plans (`yayh roadmap sync`), `/yay:implement` sets `in-progress`, and `/yay:release` sets `shipped:<version>`. `done` means merged but not released yet: every plan for the item reads `status: done` on the base branch. It counts as finished for its sprint (never slipped), and setting it adds `- merged: <date>`, which ends the item's `pace` record in place of `built`.
 - **Closed sprints** (`/yay:roadmap --close`, `yayh roadmap close <n>`) get a `Closed: YYYY-MM-DD · <done>/<planned> dev-days` line under their Goal and a `#### Sprint review` block at the end, with Done, Slipped, Keep and Change lines. The front-matter `velocity: [7, 6.5]` keeps the done dev-days of each closed sprint, and `yayh roadmap velocity` averages the last 3. `roadmap check` warns when the last sprint that ended more than 3 days ago isn't closed.
 - `size`: S (≤ 2 days), M (≤ 1 week), L (more).
@@ -130,7 +130,6 @@ type: feat                      # branch type for /yay:implement (feat fix chore
 lane: small                     # optional: small plans need only Goal, Tasks and Verify (default standard)
 branch: feat/express-checkout   # set by /yay:implement
 pr:                             # PR number, set by /yay:implement
-reviewed:                       # autopilot only: pending once built, yes once both reviews are handled
 editions: [free, pro]
 created: 2026-11-10
 ```
@@ -184,7 +183,7 @@ Three kinds share the folder and the `BL` ids:
 
 Body: the question and its options (decision), or what's left and where it would go (deferred), and why it waited.
 
-**Notes are picked up again.** Before working on a plan, `/yay:plan`, `/yay:implement`, `/yay:fix` and `/yay:autopilot` run `yayh backlog open --for=<id>`. It lists the open notes whose `from:` or `affects:` is that plan, its roadmap item or its source, from this checkout and every worktree. Each one is either settled into the plan (`yayh backlog settle BL-n decided "<answer>"`, or `planned P-n` when the plan takes the work as a task) or left open, on purpose, for later. Deferred work that lands without a plan, through `/yay:fix` or a tiny change, is closed with `yayh backlog settle BL-n done "<commit or PR>"`. `yayh plan check` warns about every open note that touches the plan. Settling a note edits its file, so it's committed on the branch that settles it, like any tracked artifact.
+**Notes are picked up again.** Before working on a plan, `/yay:plan`, `/yay:implement` and `/yay:fix` run `yayh backlog open --for=<id>`. It lists the open notes whose `from:` or `affects:` is that plan, its roadmap item or its source, from this checkout and every worktree. Each one is either settled into the plan (`yayh backlog settle BL-n decided "<answer>"`, or `planned P-n` when the plan takes the work as a task) or left open, on purpose, for later. Deferred work that lands without a plan, through `/yay:fix` or a tiny change, is closed with `yayh backlog settle BL-n done "<commit or PR>"`. `yayh plan check` warns about every open note that touches the plan. Settling a note edits its file, so it's committed on the branch that settles it, like any tracked artifact.
 
 ### Archive: `docs/archive.md`
 ```markdown
