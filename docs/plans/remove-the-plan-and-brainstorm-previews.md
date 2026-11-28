@@ -7,7 +7,7 @@ from:
 roadmap:
 type: refactor
 branch: refactor/p-8-remove-the-plan-and-brainstorm-previews-and-tr
-pr:
+pr: 70
 editions: [free, pro]
 created: 2026-11-28
 ---
