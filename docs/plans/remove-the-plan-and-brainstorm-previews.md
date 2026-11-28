@@ -17,7 +17,7 @@ created: 2026-11-28
 `/yay:plan` and `/yay:brainstorm` write their file straight away, with no preview loop. The plan skill self-reviews, asks its hard questions in one round, then writes, and its report lists the plan's data changes in plain words (keys, default, upgrade, uninstall). The brainstorm skill writes BS-n as `open`, shows each option in a line or two with the recommendation, then asks one AskUserQuestion to pick (recommended first, plus at most 2 open questions); the answer sets it `decided`, and "don't ask" leaves it `open`. Done means `reference/preview.md` and both `preview-summary.md` files are gone, nothing in skills, reference or agents points to them, the two preview eval cases are removed, and `skills/brainstorm/SKILL.md` is at most about 450 words (798 now).
 
 ## Tasks
-- [ ] T1 Plan skill without the preview (`plugins/yay/skills/plan/SKILL.md`, `plugins/yay/skills/plan/preview-summary.md` deleted):
+- [x] T1 Plan skill without the preview (`plugins/yay/skills/plan/SKILL.md`, `plugins/yay/skills/plan/preview-summary.md` deleted):
   - remove the `--yes` row, the intro's preview sentence and "previewed … until you accept" in the description
   - step 1: a brainstorm that isn't `decided` becomes "plan option <X>?" in step 7's question round
   - step 3 UI: a drafted design is written in step 8, no waiting
