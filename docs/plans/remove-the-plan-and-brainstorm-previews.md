@@ -27,7 +27,7 @@ created: 2026-11-28
   - remove the `--yes` row and step 5's preview; the description no longer says it previews
   - new flow: write the file `open`, then show each option in 1-2 lines with the recommendation, then one AskUserQuestion to pick (recommended first, marked "(Recommended)", plus at most 2 open questions the choice depends on); the answer sets `decision` and `status decided`; "don't ask" or no answer leaves it `open`
   - trim: step 2's checklist down to editions and existing data; step 3's "really different, pros, cons" wording (the template holds the fields); the Explore agents per option; step 4's "be honest"; step 7's removed-flags line and "preview rounds"; the Don't that repeats step 3
-- [ ] T3 Shared rules, evals and changelog (`plugins/yay/reference/preview.md` deleted, `plugins/yay/reference/asking.md`, `plugins/yay/reference/implement-unplanned.md`, `plugins/yay/evals/brainstorm-previews-first/` and `plugins/yay/evals/plan-previews-first/` deleted, `plugins/yay/evals/README.md`, `plugins/yay/CHANGELOG.md`) [risk: 1]:
+- [x] T3 Shared rules, evals and changelog (`plugins/yay/reference/preview.md` deleted, `plugins/yay/reference/asking.md`, `plugins/yay/reference/implement-unplanned.md`, `plugins/yay/evals/brainstorm-previews-first/` and `plugins/yay/evals/plan-previews-first/` deleted, `plugins/yay/evals/README.md`, `plugins/yay/CHANGELOG.md`) [risk: 1]:
   - asking rules: drop the "One loop" bullet; the exception bullet also names `/yay:brainstorm`'s pick question after the file is written
   - implement-unplanned: "Skip its preview (step 5)" becomes "Skip its question round", and "summary or its question round (step 7)" becomes "question round (step 7)"
   - eval README: drop the two cases' rows (score history stays)

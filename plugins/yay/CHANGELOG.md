@@ -2,6 +2,12 @@
 
 `/yay:harness-update` reads this file to tell a repo what changed between its recorded kit version and the installed one. Each entry lists new skills, config keys, template changes and behavior changes.
 
+## Unreleased (0.23.0)
+- **`/yay:plan` and `/yay:brainstorm` no longer preview their draft** (P-8). They write the file straight away; `--yes` is gone with the preview, and `reference/preview.md` and both `preview-summary.md` files are removed.
+  - `/yay:plan` asks its hard questions (tests when the repo's rules need approval, the one biggest open decision) in one round, then writes the plan. Its report now lists the data changes in plain words: each key, its default, upgrades and uninstall.
+  - `/yay:brainstorm` writes `BS-<n>` as `open`, shows each option in a line or two with the recommendation, then asks one question to pick; the pick sets it `decided`, and "don't ask" leaves it `open`. The skill is about 40% shorter: no Explore agent per option, and a shorter constraint list (editions and existing data).
+  - The eval cases `plan-previews-first` and `brainstorm-previews-first` are removed. Comes with the plugin update.
+
 ## 0.22.0 (2026-11-28)
 - **`/yay:autopilot` is gone.** Build each item with `/yay:brainstorm` → `/yay:plan` → `/yay:implement`, or `/yay:implement R-<n>` (with `--explore` when the approach isn't obvious). Removed with it:
   - the skill and its workflow (`workflows/autopilot.js`, the `yay-autopilot` workflow)
