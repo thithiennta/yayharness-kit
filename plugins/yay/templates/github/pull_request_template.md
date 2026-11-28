@@ -22,6 +22,9 @@
 <!-- Numbered steps a reviewer can follow on a test site: where to click or which command, the input, and what they should see. Include one edge case. -->
 1.
 
+## Decided
+<!-- The choices made where the plan was silent, one line each. "none" if none. -->
+
 ## Open decisions and later work
 <!-- Backlog notes this branch wrote, left open or settled: BL-<n>, the question or the work, and the default built. "none" if none. -->
 
