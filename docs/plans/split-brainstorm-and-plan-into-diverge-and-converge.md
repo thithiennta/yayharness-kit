@@ -7,7 +7,7 @@ from: BS-5
 roadmap:
 type: refactor
 branch: refactor/p-9-split-brainstorm-and-plan-into-diverge-and-con
-pr:
+pr: 71
 editions: [free, pro]
 created: 2026-11-28
 ---
