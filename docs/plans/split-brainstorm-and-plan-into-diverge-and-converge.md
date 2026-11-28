@@ -50,15 +50,15 @@ Done means:
 - [x] T5 Evals and changelog (`plugins/yay/evals/plan-from-request/graders/plan-format.md`, `plugins/yay/evals/README.md`, `plugins/yay/CHANGELOG.md`) [size: S] [after: T4] [risk: 1]
 
 ## Verify
-- `test ! -e plugins/yay/templates/artifacts/plan-small.md` → exit 0
-- `test "$(wc -w < plugins/yay/skills/plan/SKILL.md)" -le 900` → exit 0
-- `grep -rlE 'Reuse:|Callers:|\*\*Tests:\*\*|\*\*E2E:\*\*|## Findings|Non-goals' plugins/yay/skills plugins/yay/reference plugins/yay/templates plugins/yay/lib` → exit 1
-- `grep -c '^## Direction' plugins/yay/templates/artifacts/brainstorm.md` → 1
-- `grep -c 'Unreleased (0.23.0)' plugins/yay/CHANGELOG.md` → 1
-- `./tests/run.sh` → exit 0 (unit)
-- `claude plugin validate plugins/yay` → exit 0
-- In a plugin repo, `/yay:brainstorm "<rough idea>"` asks challenge questions first, writes BS-n with Direction and Discarded, then asks the pick.
-- In a plugin repo, `/yay:plan --from=BS-n` writes a plan with only Goal, Tasks (each with its files and a size), Verify and Risks, and asks nothing when BS-n is decided.
+- ✅ `test ! -e plugins/yay/templates/artifacts/plan-small.md` → exit 0
+- ✅ `test "$(wc -w < plugins/yay/skills/plan/SKILL.md)" -le 900` → exit 0
+- ✅ `grep -rlE 'Reuse:|Callers:|\*\*Tests:\*\*|\*\*E2E:\*\*|## Findings|Non-goals' plugins/yay/skills plugins/yay/reference plugins/yay/templates plugins/yay/lib` → exit 1
+- ✅ `grep -c '^## Direction' plugins/yay/templates/artifacts/brainstorm.md` → 1
+- ✅ `grep -c 'Unreleased (0.23.0)' plugins/yay/CHANGELOG.md` → 1
+- ✅ `./tests/run.sh` → exit 0 (unit)
+- ✅ `claude plugin validate plugins/yay` → exit 0
+- ⬜ In a plugin repo, `/yay:brainstorm "<rough idea>"` asks challenge questions first, writes BS-n with Direction and Discarded, then asks the pick.
+- ⬜ In a plugin repo, `/yay:plan --from=BS-n` writes a plan with only Goal, Tasks (each with its files and a size), Verify and Risks, and asks nothing when BS-n is decided.
 
 ## Risks
 - **Plan evals score lower once the reuse and test-layer rules are gone.** Roll back by reverting the PR. The rules come back from git.
