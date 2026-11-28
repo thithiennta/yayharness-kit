@@ -9,7 +9,7 @@ allowed-tools: Bash(yayh *), Bash(git *), Read, Grep, Glob, Write, Edit, AskUser
 
 Arguments: `$ARGUMENTS`
 
-Diverge: look at the problem and the range of answers, then choose a direction. "What if…?", with no commitments yet. The output is a `BS-<n>` file: the direction and why. It can be opinionated, and most ideas get thrown away. Breaking it into tasks is `/yay:plan`'s job. This skill writes **only** that file.
+Diverge: look at the problem and the range of answers, then choose a direction. "What if…?", with no commitments yet. The output is a `BS-<n>` file: the direction and why. It can be opinionated, and most ideas get thrown away. Breaking it into tasks is `/yay:plan`'s job. This skill writes **only** that file: a new one, or the brainstorm it continues.
 
 ## Options
 
@@ -37,4 +37,3 @@ Diverge: look at the problem and the range of answers, then choose a direction. 
 
 ## Don'ts
 - Don't write a plan here: no task lists, no file-by-file changes.
-- Don't edit tracked docs such as the roadmap or an older brainstorm.

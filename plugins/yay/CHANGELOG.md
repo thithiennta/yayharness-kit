@@ -2,6 +2,11 @@
 
 `/yay:harness-update` reads this file to tell a repo what changed between its recorded kit version and the installed one. Each entry lists new skills, config keys, template changes and behavior changes.
 
+## Unreleased (0.23.1)
+- **`/yay:plan` drops `--edition`, and `/yay:brainstorm` can continue an existing brainstorm.** Comes with the plugin update.
+  - `--edition` never reached the plan file: a new plan's `editions:` always listed every configured edition, and it still does. Edit that line by hand when a plan touches fewer.
+  - `/yay:brainstorm` already offered to continue a brainstorm on the same topic but also said not to edit an older one. It now writes either a new `BS-<n>` or the one it continues, and nothing else.
+
 ## 0.23.0 (2026-11-28)
 - **`/yay:brainstorm` diverges and `/yay:plan` converges** (P-9, from BS-5). Comes with the plugin update. Run `/yay:harness-update` to refresh the `yay-workflow` rule and `docs/yay-workflow.md`.
   - `/yay:brainstorm` checks the assumptions behind the request. For a rough idea it first asks up to 3 questions that change the direction. It tries 2-4 directions against the code and throws most away. New files have Problem, Direction (the one to build, its size and why), Discarded (one line each), Risks and edge cases, and Open questions. Then it asks you to pick. Older brainstorms still read.
