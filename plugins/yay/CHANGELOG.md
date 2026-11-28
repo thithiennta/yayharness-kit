@@ -2,7 +2,7 @@
 
 `/yay:harness-update` reads this file to tell a repo what changed between its recorded kit version and the installed one. Each entry lists new skills, config keys, template changes and behavior changes.
 
-## Unreleased (0.23.0)
+## 0.23.0 (2026-11-28)
 - **`/yay:brainstorm` diverges and `/yay:plan` converges** (P-9, from BS-5). Comes with the plugin update. Run `/yay:harness-update` to refresh the `yay-workflow` rule and `docs/yay-workflow.md`.
   - `/yay:brainstorm` checks the assumptions behind the request. For a rough idea it first asks up to 3 questions that change the direction. It tries 2-4 directions against the code and throws most away. New files have Problem, Direction (the one to build, its size and why), Discarded (one line each), Risks and edge cases, and Open questions. Then it asks you to pick. Older brainstorms still read.
   - `/yay:plan` makes no design choices. An undecided brainstorm gets the pick question. A request with two really different ways to build it is sent to `/yay:brainstorm`. A plan is now Goal, Tasks, Verify (the acceptance criteria) and Risks. Each task names its files and takes `[size: S|M|L]` and `[after: T<n>]` next to `[risk:]` and `[tier:]`. A check a test proves ends with its layer, `(unit)`, `(integration)`, `(js)` or `(e2e)`, and `/yay:implement`, `/yay:test` and `/yay:e2e` write those tests. The skill is 900 words, down from 3,000. `--tests` and `--lane` are gone.
