@@ -1,7 +1,7 @@
 # shellcheck shell=bash
 # Model and effort routing per step. See reference/models.md.
 
-YAY_MODEL_STEPS="scout web-research feasibility reader review hypothesis portfolio-research cowork synthesis task"
+YAY_MODEL_STEPS="scout web-research reader review hypothesis portfolio-research cowork synthesis task"
 YAY_MODEL_ORDER="veryfast fast balanced deep"   # a size bump moves along this order
 YAY_MODEL_SIZED="review task"                  # steps that act on a sized roadmap item
 YAY_MODEL_MODELS="sonnet opus"
@@ -22,7 +22,7 @@ _yay_model_keys() {
 # Built-in tier per step (reference/models.md). task stays inline unless a plan tags it.
 _yay_model_default_step() {
   case "$1" in
-    scout|web-research|feasibility|reader) echo veryfast ;;
+    scout|web-research|reader) echo veryfast ;;
     synthesis) echo deep ;;
     task) echo inherit ;;
     *) echo "$YAY_MODEL_FALLBACK" ;;

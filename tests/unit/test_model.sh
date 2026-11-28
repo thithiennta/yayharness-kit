@@ -8,7 +8,7 @@ _mrepo() { # a repo whose config routes some steps
   "schemaVersion": 1,
   "models": {
     "steps": {
-      "scout": "veryfast", "feasibility": "fast", "review": "balanced",
+      "scout": "veryfast", "web-research": "fast", "review": "balanced",
       "synthesis": "deep", "cowork": { "model": "sonnet", "effort": "high" }
     }
   }
@@ -41,12 +41,12 @@ test_undetermined_falls_back_to_opus_medium() {
 import json,sys
 p=sys.argv[1]; c=json.load(open(p))
 c["models"]["steps"]["hypothesis"]="nope"
-c["models"]["steps"]["feasibility"]={"effort":"low"}
+c["models"]["steps"]["web-research"]={"effort":"low"}
 c["models"]["tiers"]={"half":{"model":"sonnet"}}
 json.dump(c,open(p,"w"))
 PY
   assert_eq "$om" "$(_r hypothesis 2>/dev/null)"                       # unknown tier in config
-  assert_eq '{"model":"opus","effort":"low"}' "$(_r feasibility)"       # inline without a model
+  assert_eq '{"model":"opus","effort":"low"}' "$(_r web-research)"       # inline without a model
   assert_eq '{"model":"sonnet","effort":"medium"}' "$(_r task --tier=half)"  # tier without an effort
   assert_contains "$("$YAYH" model table)" "hypothesis	balanced	opus	medium"
   assert_contains "$("$YAYH" model table --json)" '"fallback":"balanced"'
@@ -55,7 +55,7 @@ PY
 test_tier_lookup_and_inline_object() {
   export YAY_REPO; YAY_REPO="$(_mrepo)"
   assert_eq '{"model":"sonnet","effort":"medium"}' "$(_r scout)"
-  assert_eq '{"model":"opus","effort":"low"}' "$(_r feasibility)"
+  assert_eq '{"model":"opus","effort":"low"}' "$(_r web-research)"
   assert_eq '{"model":"opus","effort":"medium"}' "$(_r review)"
   assert_eq '{"model":"opus","effort":"high"}' "$(_r synthesis)"
   assert_eq '{"model":"sonnet","effort":"high"}' "$(_r cowork)"
@@ -95,7 +95,7 @@ c["models"]["steps"]["reader"]="cheap"
 json.dump(c,open(p,"w"))
 PY
   assert_eq '{"model":"sonnet","effort":"low"}' "$(_r reader)"
-  assert_eq '{"model":"opus","effort":"medium"}' "$(_r feasibility)"   # fast keeps its built-in model
+  assert_eq '{"model":"opus","effort":"medium"}' "$(_r web-research)"   # fast keeps its built-in model
   assert_eq '{"model":"sonnet","effort":"low"}' "$(_r task --tier=cheap)"
 }
 
@@ -103,7 +103,7 @@ test_local_json_wins() {
   export YAY_REPO; YAY_REPO="$(_mrepo)"
   printf '{"models":{"steps":{"review":"veryfast"}}}\n' > "$YAY_REPO/.yay/local.json"
   assert_eq '{"model":"sonnet","effort":"medium"}' "$(_r review)"
-  assert_eq '{"model":"opus","effort":"low"}' "$(_r feasibility)" # the rest still from config.json
+  assert_eq '{"model":"opus","effort":"low"}' "$(_r web-research)" # the rest still from config.json
 }
 
 test_usage_errors_fail() {

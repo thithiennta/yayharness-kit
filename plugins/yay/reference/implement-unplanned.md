@@ -13,7 +13,7 @@ Skip this when the argument is a plan: a `P-<n>`, or text that `yayh artifact re
 - **standard:** everything else. Follow steps 1–3 below.
 1. **Find an existing plan.** For `R-<n>`, `BS-<n>` or `B-<n>`, look for a plan made from it: `yayh roadmap queue R-<n>` (its artifact column is a `P-<n>` once one exists), or `yayh artifact list plan` and match the plan's `from:`. For text, check `yayh artifact list plan` for a plan on the same topic. Ignore `done` and `dropped` plans. Found one: use it and go to the skill's step 1.
 2. **Write the plan.** Follow `/yay:plan` (`${CLAUDE_PLUGIN_ROOT}/skills/plan/SKILL.md`): steps 1–6 and 8 with the requirement as the topic (or `--from=<id>`), the `--type` given (`fix` for a `B-<n>`), and `roadmap=` when the source is a roadmap item. Ground it in the code as usual: open every file the tasks name, give each task its `Reuse:` line, and get `yayh plan check` to no errors.
-   - Don't run `/yay:plan`'s summary or its question round (step 7). Carry its hard questions (tests when the repo's rules need approval, the one biggest open design decision) into the skill's step 1 round, so the whole run still asks **at most one round**.
+   - Don't run `/yay:plan`'s question round (step 7). Carry its hard questions (tests when the repo's rules need approval, the one biggest open design decision) into the skill's step 1 round, so the whole run still asks **at most one round**.
    - A requirement too vague to plan responsibly (no clear user-visible outcome) is itself the hard question: ask it in the round, with your reading as the recommended answer. With nobody to ask, plan the most likely reading and record it under **Decided**. Never end the run without building just because the item is thin or a prerequisite is missing: a missing prerequisite the change needs (a field that isn't hooked up yet) becomes the plan's first task.
    - More than about 8 tasks, or unrelated areas: plan with `--split`. Build the first slice now, and list the others in the report, each with `/yay:implement P-<n>` to build it.
    - When the skill's step 1 round leaves nothing open, mark it ready: `yayh fm set <plan> status ready`.
@@ -22,7 +22,7 @@ Skip this when the argument is a plan: a `P-<n>`, or text that `yayh artifact re
 ## Explore first (`--explore`, or an unclear approach)
 
 For a **small** or **standard** lane, when the source has no brainstorm and either `--explore` was given or there are two or more really different ways to build it (a different hook, storage or UI place, a different edition split), brainstorm before step 2:
-1. Follow `/yay:brainstorm` (`${CLAUDE_PLUGIN_ROOT}/skills/brainstorm/SKILL.md`) with `--quick --from=<the source>` (or the requirement as the topic): two options, grounded in the code, and a recommendation. Skip its preview (step 5) and its report.
+1. Follow `/yay:brainstorm` (`${CLAUDE_PLUGIN_ROOT}/skills/brainstorm/SKILL.md`) with `--quick --from=<the source>` (or the requirement as the topic): two options, grounded in the code, and a recommendation. Skip its pick question (step 6) and its report.
 2. Carry "which option?" (recommended first) into the skill's step 1 round, with the plan's own hard questions. It's still one round at most. With nobody to ask, build the recommended option, set the brainstorm `decided`, and say so under **Decided**.
 3. Plan from it (`--from=BS-<n>`) in step 2 below. The brainstorm is carried into the branch with the plan.
 
