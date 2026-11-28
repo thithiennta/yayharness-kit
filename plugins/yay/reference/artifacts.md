@@ -113,10 +113,10 @@ id: BS-3
 title: Express checkout buttons
 status: open | decided | dropped
 from: R-12                      # roadmap item, bug id or empty
-decision:                       # chosen option name once status is decided
+decision:                       # chosen direction once status is decided
 created: 2026-11-10
 ```
-Body: Problem, Constraints, Options (2 to 4, with tradeoffs), Recommendation, Open questions.
+Body: Problem (with the assumptions checked), Direction (the one to build, its size and why), Discarded (one line each), Risks and edge cases, Open questions. Older brainstorms with Constraints, Options and Recommendation still read: their decision is the direction.
 
 ### Plan: `docs/plans/<slug>.md`
 ```

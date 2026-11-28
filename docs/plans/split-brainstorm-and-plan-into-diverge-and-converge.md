@@ -34,7 +34,7 @@ Done means:
 - Every test passes.
 
 ## Tasks
-- [ ] T1 Brainstorm diverges: `plugins/yay/skills/brainstorm/SKILL.md`, `plugins/yay/templates/artifacts/brainstorm.md`, `plugins/yay/reference/asking.md`, `plugins/yay/reference/artifacts.md` (Brainstorm) [size: S]
+- [x] T1 Brainstorm diverges: `plugins/yay/skills/brainstorm/SKILL.md`, `plugins/yay/templates/artifacts/brainstorm.md`, `plugins/yay/reference/asking.md`, `plugins/yay/reference/artifacts.md` (Brainstorm) [size: S]
   - a challenge round first, only when the input is rough; a new template; asking rules allow brainstorm's two rounds
 - [ ] T2 Plan format and `plan check` (`plugins/yay/templates/artifacts/plan.md`, `plugins/yay/templates/artifacts/plan-small.md` deleted, `plugins/yay/lib/artifact.sh`, `tests/unit/test_artifact.sh`, `tests/unit/test_tests.sh`, `tests/unit/test_e2e.sh`, `plugins/yay/reference/artifacts.md` (Plan)) [size: M] [after: T1]
   - the template has Goal, Tasks, Verify and Risks; `lane=` is still accepted and makes no difference
