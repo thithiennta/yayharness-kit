@@ -35,11 +35,10 @@ Find **why**, with evidence, and write it down. This skill doesn't fix product c
 
 ### 2. Ground
 - Read the project block, `docs/knowledge/known-issues.md` (it may already be known), and the knowledge doc for the area.
-- Find the code path from the symptom: grep for the error text, hook names, REST routes, or template names, then follow the call chain.
 - History: `git log --oneline -20 -- <files>`, plus `--since` if given, and `git log -S'<symbol>'` for when a behavior appeared.
 
 ### 3. Hypotheses
-Write 2–5 hypotheses, each specific and falsifiable. For example: "`OrderSync::apply()` reads `_billing_country` with `get_post_meta`, which is empty under HPOS". "Something with orders" is not a hypothesis.
+Write 2–5 hypotheses, each specific and falsifiable.
 
 ### 4. Check them in parallel (skip with `--quick`)
 Spawn one `yay:hypothesis-checker` agent per hypothesis, **in one message**, up to `--agents`, with the Agent tool's `model` and `effort` both set from `yayh model resolve hypothesis` (model routing: `${CLAUDE_PLUGIN_ROOT}/reference/models.md`). Each brief gets the hypothesis, the symptom and environment, the files to start from, and the read-only WP-CLI permission if `--repro`. Weigh the verdicts. Re-check any "supported" verdict yourself, against the cited lines, before relying on it.
@@ -47,8 +46,8 @@ Spawn one `yay:hypothesis-checker` agent per hypothesis, **in one message**, up 
 ### 5. Confirm (as far as the options allow)
 - **Logs** (`--logs`): look for the matching lines and timestamps.
 - **Repro** (`--repro`): read state with WP-CLI (`wp option get`, `wp wc …`, `wp eval` for reads). For anything that writes (creating an order, changing a setting), ask first, as a single question. Otherwise describe the write as a repro step in the report.
-- **Instrumentation** (not with `--report-only`): you may add temporary logging to product code. Every added line must carry a `yay:debug` comment marker, for example `error_log( '…' ); // yay:debug`. Hooks block commits that contain markers. **Remove all of them before finishing:** `yayh debug markers` must print nothing.
-- **Bisect** (`--bisect`): write a check script that exits 0 when the code is good and 1 when it's bad (e.g. a grep, a `php -r`, or a unit test). Then run `git bisect start HEAD <good>`, `git bisect run <script>`, and `git bisect reset`. Record the first bad commit.
+- **Instrumentation** (not with `--report-only`): you may add temporary logging to product code. Every added line must carry a `yay:debug` comment marker, for example `error_log( '…' ); // yay:debug`. Hooks block commits that contain markers.
+- **Bisect** (`--bisect`): `git bisect run` a check script between `<good>` and HEAD, record the first bad commit, and reset.
 
 ### 6. Write the report
 Fill in every section:
@@ -63,7 +62,7 @@ Set the status:
 - `duplicate` or `wontfix` with the reason (link the duplicate)
 
 ### 7. Wrap up
-- Run `yayh debug markers`. It must print nothing. Run `git status` to confirm no product files changed: `git diff --stat` must be empty apart from the new report.
+- Run `yayh debug markers`. It must print nothing. `git diff --stat` must be empty: no product files changed.
 - If this is a trap others will hit, say so. `/yay:fix` or `/yay:knowledge-update` adds it to `known-issues.md` in the fix branch.
 - Report the bug ID, the one-paragraph root cause, the confidence, the recommended fix, and end with the **Next** line (`reference/asking.md`), usually `/yay:fix B-<n>` (or `--hotfix` when severity is critical or high and a release is affected).
 

@@ -9,6 +9,7 @@
 - **The PR template gains a "Decided" section, and `/yay:implement` is shorter.** Run `/yay:harness-update` to pick up the new `.github/pull_request_template.md`.
   - "Decided" lists the choices made where the plan was silent. `/yay:implement` always wrote one; now the template has the heading, so `/yay:fix` PRs get it too ("none" if none).
   - `/yay:implement` now fills the PR body from the template's own comments instead of repeating each section, and drops a few lines that restated other rules. What it does is unchanged.
+- **`/yay:debug` and `/yay:fix` are a little shorter.** Lines that taught general debugging and git (tracing a call chain, `git bisect` commands, stashing a fix to prove a test fails), and rules already loaded or stated nearby, are gone. What they do is unchanged. `/yay:fix --hotfix` now names its branch correctly (`hotfix/b-<n>-<slug>`), and `/yay:debug`'s final check is just "`git diff --stat` is empty". Comes with the plugin update.
 
 ## 0.23.0 (2026-11-28)
 - **`/yay:brainstorm` diverges and `/yay:plan` converges** (P-9, from BS-5). Comes with the plugin update. Run `/yay:harness-update` to refresh the `yay-workflow` rule and `docs/yay-workflow.md`.
