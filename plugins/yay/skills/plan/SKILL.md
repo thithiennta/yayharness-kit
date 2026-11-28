@@ -82,7 +82,7 @@ When a small plan turns out bigger than that, switch it to standard (`yayh fm se
    - Does every Findings item end in a task, a Non-goal or a note? A finding nothing acts on is lost.
 
    Fix what you find in the draft.
-7. **Hard questions** (`${CLAUDE_PLUGIN_ROOT}/reference/asking.md`). Ask in one AskUserQuestion (at most 3, your pick first, marked "(Recommended)"), or none:
+7. **Hard questions** (`${CLAUDE_PLUGIN_ROOT}/reference/asking.md`). Ask in one AskUserQuestion, or none:
    - **Tests to include**, but only when the repo's rules say tests need approval (the project block or `.claude/rules/`). Otherwise decide yourself, and keep the tests that guard a real risk.
    - **The single biggest open decision**, if one is left (which brainstorm option, or a design choice).
 
