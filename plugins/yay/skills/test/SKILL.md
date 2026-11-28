@@ -32,7 +32,7 @@ Tests at the cheapest layer that proves each risk, tagged with the artifact they
    - Integration with the tests site down and Docker running → `yayh e2e env start`.
    - Docker not running → write the integration tests anyway, and mark them **not run**. Never wait.
 2. **The risks.**
-   - **`P-<n>`:** read the plan's Goal and Verify section. Each Verify item ending in `(unit)`, `(integration)` or `(js)` is a test at that layer.
+   - **`P-<n>`:** read the plan's Goal and Verify section. Each Verify item ending in `(unit)`, `(integration)` or `(js)` is a test at that layer. An older plan's Tests line counts the same: each `[unit]`, `[integration]` or `[js]` item on it is a test at that layer.
      - If there are none, apply the ladder to the Verify items. If a risk deserves a test, add its layer to the item first, then write it.
    - **`B-<n>`:** read Root cause and Regression test proposal. Test at the layer where the root cause lives (`reference/testing.md`, "Bugs").
      - If the cause is markup, JS rendering or a click path that only a browser shows, hand over to `/yay:e2e B-<n>`.

@@ -222,8 +222,8 @@ test_old_plan_sections_and_lanes_still_pass() {
 import sys,re; p=sys.argv[1]; s=open(p).read()
 s=s.replace("status: draft","status: draft\nlane: small",1)
 s=s.replace("## Tasks","## Findings\nnone\n\n## Tasks",1)
-s=re.sub(r"- \[ \] T1 .*", "- [ ] T1 Rename the label — `includes/Admin.php`\n  - Reuse: n/a", s)
-s=re.sub(r"## Verify\n<!--.*?-->\n-\n", "**Tests:** none\n\n## Verify\n- Settings shows \"Gift note\"\n", s, flags=re.S)
+s=re.sub(r"- \[ \] T1 .*", "- [ ] T1 Store the label — `includes/Admin.php` [risk: 3]\n  - Reuse: n/a", s)
+s=re.sub(r"## Verify\n<!--.*?-->\n-\n", "**Tests:** [unit] test_label (tests/AdminTest.php) — label lost\n\n**E2E:** none\n\n## Verify\n- Settings shows \"Gift note\"\n", s, flags=re.S)
 open(p,"w").write(s)
 X
   out="$("$YAYH" plan check "$q")"; assert_eq 0 $?
@@ -240,12 +240,14 @@ tasks = """## Tasks
 - [ ] T2 Show it — `includes/Admin.php` [size: XL] [after: T1]
 - [ ] T3 Docs — `readme.txt` [size: M] [after: T4]
 - [ ] T4 Email — `includes/Mail.php` [after: T1, T2]
+- [ ] T5 Last — `includes/Last.php` [after: *]
 """
 s=re.sub(r"## Tasks\n.*?\n\n", tasks+"\n", s, flags=re.S); open(p,"w").write(s)
 X
   local out; out="$("$YAYH" plan check "$q" 2>&1 || true)"
   assert_contains "$out" "warn: task T2 has size 'XL'"
   assert_contains "$out" "warn: task T3 is after 'T4', which isn't an earlier task"
+  assert_contains "$out" "warn: task T5 is after '*', which isn't an earlier task"
   case "$out" in *"task T1 "*|*"task T4 "*) _fail "false size/after warning: $out" ;; *) _pass ;; esac
 }
 

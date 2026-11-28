@@ -35,17 +35,17 @@ Converge: turn a chosen direction into work someone can follow without deciding 
    - **Open notes** (`yayh backlog open --for=<source id>`, and `P-<n>` when revising): settle a decision the code or finished work answers (`yayh backlog settle BL-<n> decided "<answer>"`) and plan it, else plan its default; take deferred work that fits as tasks (`settle BL-<n> planned P-<n>`). For a tracked note, write `Settles: BL-<n> …` under Risks: `/yay:implement` settles it.
 2. **Read the code:** the project block, the knowledge docs it touches, and **every file the tasks will name**. Name the existing helpers the work should call (`yayh code find <verb> <noun>`, `docs/knowledge/helpers.md`) in the task text.
 3. **Tasks.** `T1…Tn` in build order (data, server, UI, docs). Each task:
-   - is one working commit: what changes (not how to type it), its files in backticks, new ones `(new)`
+   - is one working commit: what changes, its files in backticks, new ones `(new)`
    - ends with `[size: S|M|L]`, and `[after: T<n>]` when it needs a task that isn't the one before
    - ends with `[risk: 3]` when it's hard to undo (stores or deletes data, runs in the background, emails customers, touches money, personal data or permissions), `[risk: 1]` for copy or docs
    - may end with `[tier: veryfast]` or `[tier: deep]` when clearly mechanical or hard (`${CLAUDE_PLUGIN_ROOT}/reference/models.md`)
 
    A knowledge doc the change makes wrong gets a task.
 4. **Verify: the acceptance criteria.** Each check gives the action and the result that passes, across every edition touched.
-   - A check a command can make is written ``- `<command>` → <expected>``, which `yayh verify P-<n> --run` runs (recipes: `${CLAUDE_PLUGIN_ROOT}/reference/testing.md`, "Verify checks"). One that writes data removes it again.
+   - A check a command can make is written ``- `<command>` → <expected>``, which `yayh verify P-<n> --run` runs (recipes: `${CLAUDE_PLUGIN_ROOT}/reference/testing.md`, "Verify checks"). One that writes data cleans up.
    - A check a test should keep guarding ends with its layer: `(unit)`, `(integration)`, `(js)`, or `(e2e)` for what only a browser proves (`${CLAUDE_PLUGIN_ROOT}/reference/e2e.md`, when `commands.e2e` is set): the cheapest layer on `testing.md`'s ladder, one per real risk, usually 1-4.
-   - Every risk-3 task has a command check or a test-layer check.
-   - Copy the applying checks from `docs/knowledge/conventions.md` (`## Checks`).
+   - Each risk-3 task gets a command or test-layer check; a command check never ends in a layer.
+   - Add the applying checks from `docs/knowledge/conventions.md`.
 5. **Self-check.** Can it be built without a new decision? Check uninstall, i18n, capabilities, nonces and escaping, HPOS, block checkout, Free without Pro, upgrades. An open decision goes back to step 1, or is parked (step 6).
 6. **Write it.**
    - `yayh artifact new plan "<title>" from=<id> roadmap=<R-n or empty> type=<type>`: fill in Goal, Tasks, Verify and Risks (with the rollback).

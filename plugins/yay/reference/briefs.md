@@ -44,7 +44,7 @@ This is the one exception to "at most one round" (`asking.md`): an optional seco
 When an item has a brief (`yayh brief path R-<n>`), read it before the code. It's the product source of truth:
 - the Goal starts from In one line
 - What the user sees and Rules and edge cases bind every option and every task
-- Out of scope is a Non-goal
+- Out of scope goes in the plan's Goal, as what it doesn't change
 - every Done when check becomes a Verify check (`yayh brief checks R-<n>` says how many; `yayh plan check` warns when Verify has fewer)
 - an open question that changes the work goes to the run's question round, or becomes a backlog decision note with the brief's leaning as its default
 

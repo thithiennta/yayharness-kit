@@ -31,7 +31,7 @@ yay_render_vars() {
 }
 
 # yay_artifact_new <type> "<title>" [key=value...] -> path of the new file.
-# Known keys: from, roadmap, type (plan branch type), lane (plan: accepted, ignored),
+# Known keys: from, roadmap, type (plan branch type), lane (plan: standard|small, ignored),
 # severity, editions; for backlog: kind (idea|decision|deferred), affects, default.
 yay_artifact_new() {
   local type="$1" title="$2"; shift 2 || yay_die "usage: yayh artifact new <type> \"<title>\" [key=value...]"
@@ -195,9 +195,11 @@ EOF
     [ -n "$t" ] || continue
     tag="$(printf '%s' "$k" | sed -nE 's/.*\[size:[[:space:]]*([^]]*)\].*/\1/p' | sed -E 's/[[:space:]]+$//')"
     case "$tag" in ''|S|M|L) ;; *) _pw "task $t has size '$tag'; use S, M or L" ;; esac
+    set -f
     for k in $(printf '%s' "$k" | sed -nE 's/.*\[after:[[:space:]]*([^]]*)\].*/\1/p' | tr ',' ' '); do
       case " $seen " in *" $k "*) ;; *) _pw "task $t is after '$k', which isn't an earlier task" ;; esac
     done
+    set +f
     seen="$seen $t"
   done <<EOF
 $tasks
@@ -218,12 +220,13 @@ EOF
 $tasks
 EOF
   # A Verify item proven by a test ends with its layer: (unit), (integration), (js) or (e2e).
-  if [ -n "$risky" ]; then
+  # An older plan's Tests line with a [layer] item proves it too.
+  if [ -n "$risky" ] && ! grep -Eq '^[*][*]Tests:[*][*][[:space:]]*\[(unit|integration|js)\]' "$f"; then
     if ! awk '/^## Verify/{on=1; next} /^## /{on=0} on && !/^<!--/ && (/`[^`]+`[[:space:]]*(→|->)/ || /\((unit|integration|js|e2e)\)/){found=1} END{exit !found}' "$f"; then
       _pw "risk-3 task(s)$risky but no Verify item proves them: add a \`command\` → expected check, or an item a test proves, ending in (unit), (integration), (js) or (e2e)"
-    elif ! awk '/^## Verify/{on=1; next} /^## /{on=0} on && !/^<!--/ && /\((unit|integration|js|e2e)\)/{found=1} END{exit !found}' "$f" \
+    elif ! awk '/^## Verify/{on=1; next} /^## /{on=0} on && !/^<!--/ && /\((unit|integration|js)\)/{found=1} END{exit !found}' "$f" \
       && [ -n "$(yay_config_get commands.test-unit 2>/dev/null)$(yay_config_get commands.test-integration 2>/dev/null)" ]; then
-      _pw "risk-3 task(s)$risky are proven only by Verify command checks, which stop running once the plan is done. This repo has tests, so end one Verify item in (unit) or (integration) to keep guarding the risky part (reference/testing.md, \"Verify checks\")"
+      _pw "risk-3 task(s)$risky are proven only by Verify command checks, which stop running once the plan is done. This repo has tests, so end one Verify item in (unit), (integration) or (js) to keep guarding the risky part (reference/testing.md, \"Verify checks\")"
     fi
   fi
   # Notes left for this plan (lib/backlog.sh): settle them or keep their default on purpose.

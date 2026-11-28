@@ -32,7 +32,7 @@ Specs that prove what only a browser can prove, tagged with the artifact they pr
    - `env down` with Docker running → `yayh e2e env start`.
    - Docker not running → you can still write specs (steps 2–3), but mark them **not run** in the report. Never wait.
 2. **What to prove.**
-   - **`P-<n>`:** read the plan's Goal and Verify sections. Each Verify item ending in `(e2e)` becomes a test. If there's none, say so and stop, unless the user named a flow: then add it to Verify, ending in `(e2e)`, first.
+   - **`P-<n>`:** read the plan's Goal and Verify sections. Each Verify item ending in `(e2e)` becomes a test, and so does each item on an older plan's E2E line. If there's none, say so and stop, unless the user named a flow: then add it to Verify, ending in `(e2e)`, first.
    - **`B-<n>`:** read Repro and Root cause. One test that walks the repro and asserts the correct behaviour. If a unit test can cover it (the cause is pure PHP logic), say so and stop: that belongs to `/yay:fix`'s regression test.
    - **`"<flow>"`:** the outcome the user described, at one level of detail: one spec file, one to three tests.
    - Check existing coverage first: the **Flows** table in `docs/knowledge/e2e.md`, `yayh e2e specs` and `yayh e2e specs <ID>`. Extend the flow's existing file instead of adding a near-copy. For a `"<flow>"` that is a `candidate` row, use its slug, locators source and `needs`.

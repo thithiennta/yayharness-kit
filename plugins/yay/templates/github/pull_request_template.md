@@ -11,7 +11,7 @@
 -
 
 ## Verified
-<!-- The exact commands you ran and the UI checks you did, with the result. "Tests: none" is fine when the plan says so. -->
+<!-- The exact commands you ran and the UI checks you did, with the result. "Tests: none" is fine when the plan has no test-layer checks. -->
 - [ ] lint / typecheck / tests that apply
 - [ ] manual check:
 
