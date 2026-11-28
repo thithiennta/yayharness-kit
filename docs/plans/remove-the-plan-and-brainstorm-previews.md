@@ -23,7 +23,7 @@ created: 2026-11-28
   - step 3 UI: a drafted design is written in step 8, no waiting
   - step 7 becomes **Hard questions**: tests only when the repo's rules need approval, and the single biggest open decision, in one AskUserQuestion (at most 3, recommended first), or none
   - step 8 writes from the reviewed draft; step 9's report drops "the preview rounds" and adds the data changes in plain words (each key, its default, upgrades, uninstall; or "none")
-- [ ] T2 Brainstorm skill without the preview, trimmed (`plugins/yay/skills/brainstorm/SKILL.md`, `plugins/yay/skills/brainstorm/preview-summary.md` deleted):
+- [x] T2 Brainstorm skill without the preview, trimmed (`plugins/yay/skills/brainstorm/SKILL.md`, `plugins/yay/skills/brainstorm/preview-summary.md` deleted):
   - remove the `--yes` row and step 5's preview; the description no longer says it previews
   - new flow: write the file `open`, then show each option in 1-2 lines with the recommendation, then one AskUserQuestion to pick (recommended first, marked "(Recommended)", plus at most 2 open questions the choice depends on); the answer sets `decision` and `status decided`; "don't ask" or no answer leaves it `open`
   - trim: step 2's checklist down to editions and existing data; step 3's "really different, pros, cons" wording (the template holds the fields); the Explore agents per option; step 4's "be honest"; step 7's removed-flags line and "preview rounds"; the Don't that repeats step 3
