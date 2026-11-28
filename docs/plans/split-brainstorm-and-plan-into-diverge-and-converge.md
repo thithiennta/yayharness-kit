@@ -47,7 +47,7 @@ Done means:
 - [x] T4 Readers of the old format (`plugins/yay/skills/implement/SKILL.md`, `plugins/yay/reference/implement-unplanned.md`, `plugins/yay/skills/test/SKILL.md`, `plugins/yay/skills/e2e/SKILL.md`, `plugins/yay/skills/go/SKILL.md`, `plugins/yay/reference/code-rules.md`, `plugins/yay/reference/models.md`, `plugins/yay/reference/config.md`, `plugins/yay/reference/config.schema.json`, `plugins/yay/templates/rules/yay-workflow.md`, `plugins/yay/templates/docs/yay-workflow.md`, `plugins/yay/templates/artifacts/design.md`) [size: M] [after: T3]
   - implement reads the Verify layers instead of the Tests and E2E lines, and its lanes are tiny or plan
   - strictness: relaxed and strict no longer change `plan check`; strict still has no tiny lane
-- [ ] T5 Evals and changelog (`plugins/yay/evals/plan-from-request/graders/plan-format.md`, `plugins/yay/evals/README.md`, `plugins/yay/CHANGELOG.md`) [size: S] [after: T4] [risk: 1]
+- [x] T5 Evals and changelog (`plugins/yay/evals/plan-from-request/graders/plan-format.md`, `plugins/yay/evals/README.md`, `plugins/yay/CHANGELOG.md`) [size: S] [after: T4] [risk: 1]
 
 ## Verify
 - `test ! -e plugins/yay/templates/artifacts/plan-small.md` → exit 0
