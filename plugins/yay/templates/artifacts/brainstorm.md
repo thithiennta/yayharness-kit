@@ -9,7 +9,7 @@ created: {{today}}
 # {{id}} {{title}}
 
 ## Problem
-<!-- Who hits it, what they're trying to do, what happens now. Link the roadmap item, bug, or ticket. Then the assumptions behind the request, what you checked, and the answers given. Editions: {{artifact_editions}}. -->
+<!-- Who hits it, what they're trying to do, what happens now. Link the roadmap item, bug, or ticket. Then the assumptions behind the request, what you checked, and the answers given. -->
 
 ## Direction
 <!-- The direction you'd build: how it works (files and hooks), its size (S/M/L), why this one, and what would change your mind. -->
@@ -19,6 +19,6 @@ created: {{today}}
 -
 
 ## Risks and edge cases
-<!-- Of the problem, not one option: existing data, editions, block vs classic checkout, upgrades, what a merchant could break. -->
+<!-- Of the problem, not one option: existing data, editions ({{artifact_editions}}), PHP {{requires.php}}+, block vs classic checkout, upgrades, what a merchant could break. -->
 
 ## Open questions

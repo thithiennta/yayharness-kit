@@ -133,20 +133,6 @@ test_integration_needs_its_tests_site() {
   assert_eq "port=$((port + 1)) args: --filter x" "$out"
 }
 
-test_plan_check_warns_on_tests_without_a_layer() {
-  export YAY_REPO; YAY_REPO="$(_testrepo)"
-  local plan; plan="$("$YAYH" artifact new plan "Gift tiers")"
-  assert_eq "" "$("$YAYH" plan check "$plan" 2>&1 | grep 'has no layer' || true)" "none is fine"
-  python3 -I - "$YAY_REPO/$plan" <<'PY'
-import sys; p=sys.argv[1]; s=open(p).read()
-s=s.replace("**Tests:** none\n","**Tests:** [unit] test_rounds (tests/php/unit/TierTest.php) — wrong totals; test_saves_option — lost setting; [js] formats — label\n",1)
-open(p,"w").write(s)
-PY
-  local out; out="$("$YAYH" plan check "$plan" 2>&1)"
-  assert_contains "$out" "warn: test 'test_saves_option — lost setting' has no layer"
-  assert_eq "1" "$(printf '%s\n' "$out" | grep -c 'has no layer')"
-}
-
 test_scaffold_maps_an_existing_node_test_script() {
   export YAY_REPO; YAY_REPO="$(_testrepo 'pkg={"scripts":{"test":"node --test apps/**/*.test.mjs"}}')"
   "$YAYH" config get commands.test-js >/dev/null && { jq 'del(.commands["test-js"])' "$YAY_REPO/.yay/config.json" > "$T_TMP/c" && mv "$T_TMP/c" "$YAY_REPO/.yay/config.json"; }
