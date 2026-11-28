@@ -1,7 +1,7 @@
 ---
 name: plan
 description: Write or review a Yay plugin implementation plan. Use when the user says "plan this", "write a plan", "break this down", "review the plan", before any non-trivial change, or when /yay:fix escalates. Turns a decided brainstorm, roadmap item, bug or request into docs/plans/ P-<n>: ordered tasks naming their files, sizes and dependencies, and Verify checks. --check reviews one.
-argument-hint: "<topic|BS-<n>|R-<n>|B-<n>|UX-<n>|P-<n>> [--from=<id>] [--check] [--split] [--type=feat|fix|chore|refactor|perf] [--edition=<name>|all] [--commit]"
+argument-hint: "<topic|BS-<n>|R-<n>|B-<n>|UX-<n>|P-<n>> [--from=<id>] [--check] [--split] [--type=feat|fix|chore|refactor|perf] [--commit]"
 allowed-tools: Bash(yayh *), Bash(git *), Read, Grep, Glob, Write, Edit, AskUserQuestion
 ---
 
@@ -20,7 +20,6 @@ Converge: turn a chosen direction into work someone can follow without deciding 
 | `--check` | Review an existing plan instead (see below). |
 | `--split` | Over about 8 tasks, or unrelated areas: one plan per shippable slice. |
 | `--type=<t>` | Branch type for `/yay:implement` (default `feat`; `fix` for bugs). |
-| `--edition=<e>` | Editions it touches. Default: from where the code lives. |
 | `--commit` | Commit the plan on a non-base branch. |
 
 ## Steps
