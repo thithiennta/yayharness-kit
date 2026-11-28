@@ -5,7 +5,7 @@ The yay plugin's SessionStart hook loads these into every session in a yay repo,
 ## Reuse before you write
 - **Search before creating.** Before adding a function, method, class, hook or constant, search for one that already does the job. Search by the verb and the noun (`format price`, `get setting`, `is eligible`), with `yayh code find <words>` or Grep. Also read how neighbouring code solves the same problem.
 - **Call what exists.** Use the existing helper, service, setting getter or filter, even if you'd have written it differently. Extend it (a parameter, a filter) rather than writing a near-copy.
-- **Say why when you add.** If you still add a new function, say in one line why the existing one doesn't fit, in your reply or in the plan's `Reuse:` line.
+- **Say why when you add.** If you still add a new function, say in one line why the existing one doesn't fit, in your reply or in the plan's task.
 - **Never re-implement plugin or WooCommerce helpers inline.** That covers price formatting, settings reads (no `get_option` where a settings class exists), capability checks, escaping and date maths.
 
 ## Write only what's used

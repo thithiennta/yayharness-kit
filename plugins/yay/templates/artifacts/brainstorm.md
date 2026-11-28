@@ -9,29 +9,16 @@ created: {{today}}
 # {{id}} {{title}}
 
 ## Problem
-<!-- Who hits it, what they're trying to do, what happens now. Link the roadmap item, bug, or ticket. -->
+<!-- Who hits it, what they're trying to do, what happens now. Link the roadmap item, bug, or ticket. Then the assumptions behind the request, what you checked, and the answers given. -->
 
-## Constraints
-<!-- Editions ({{artifact_editions}}), PHP {{requires.php}}+, WooCommerce surfaces, compatibility, deadlines, what must not change. -->
+## Direction
+<!-- The direction you'd build: how it works (files and hooks), its size (S/M/L), why this one, and what would change your mind. -->
 
-## Options
-### A.
-- How:
-- Pros:
-- Cons:
-- Risks:
-- Editions:
-- Size: S | M | L
+## Discarded
+<!-- One line each: the idea and why not. -->
+-
 
-### B.
-- How:
-- Pros:
-- Cons:
-- Risks:
-- Editions:
-- Size: S | M | L
-
-## Recommendation
-<!-- The option, the one-paragraph why, and what would change your mind. -->
+## Risks and edge cases
+<!-- Of the problem, not one option: existing data, editions ({{artifact_editions}}), PHP {{requires.php}}+, block vs classic checkout, upgrades, what a merchant could break. -->
 
 ## Open questions

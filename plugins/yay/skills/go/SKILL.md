@@ -36,7 +36,7 @@ Route by what the user wants, not by keywords. Pass the user's own words on as t
 | to share an idea, a summary of what they did, or a feature pitch with the lead or team: "write this up for the lead", "report" | `/yay:report <idea\|done\|feature> "<their notes>"` (`--from=<id\|branch>` when it names one) |
 | a how-to for someone else: "write a guide for support on…", "how do I explain to the team how to…" | `/yay:report guide "<their notes>"` (`--for=devs` when it's for developers) |
 | a plan, "break this down" | `/yay:plan "<topic>"` or `--from=<id>` |
-| something built or changed: "add…", "make…", "rename…", "build R-12" | `/yay:implement "<requirement>"` or `<id>` (it picks the lane: tiny, small or standard). Add `--explore` when they say "from scratch", "explore first" or "end to end", or ask to compare approaches. |
+| something built or changed: "add…", "make…", "rename…", "build R-12" | `/yay:implement "<requirement>"` or `<id>` (it picks the lane: tiny, or a plan). Add `--explore` when they say "from scratch", "explore first" or "end to end", or ask to compare approaches. |
 | to know why something breaks: a symptom, an error, a log | `/yay:debug "<symptom>"` |
 | a bug fixed: a `B-<n>`, or a bug whose cause is already clear | `/yay:fix B-<n>`; an unexplained bug goes to `/yay:debug` first |
 | tests for a behaviour, or failing tests explained | `/yay:test "<behaviour>"` / `--triage` |

@@ -14,29 +14,14 @@ created: {{today}}
 # {{id}} {{title}}
 
 ## Goal
-<!-- One paragraph: the user-visible outcome and how we'll know it's done. -->
-
-## Non-goals
-
-## Findings
-<!-- Read this first. What reading the code changed about the source (brainstorm, roadmap item, bug), one numbered item each, with its file:line evidence and what the plan does about it. Then any docs the plan differs from: "differs: docs/knowledge/x.md says … → T4 updates it". Write "none" when the code held no surprises. -->
-
-## Approach
-<!-- First line: Model on: <path:line> — the existing feature this copies in structure (or "none, nothing similar exists"). Then the design in a few bullets: where it hooks in, data/storage changes, edition split, compatibility. Cite files. -->
+<!-- What changes for the user, the decision it builds (from the brainstorm), and "done means…". -->
 
 ## Tasks
-- [ ] T1 <what> — `path/to/file.php`
-  - Reuse: <existing function/hook/setting and its file>, or `none, new <name>() because …`
-  - Callers: <each new symbol → what calls it (T<n> when a later task wires it)>. Leave this line out when the task adds no symbols.
-
-**Tests:** none
-<!-- One per risk, at the cheapest layer that proves it (reference/testing.md), separated by ";": [unit] test_name (tests/php/unit/X/YTest.php) — the risk; [integration] …; [js] …. Or none. -->
-
-**E2E:** none
-<!-- Browser-only acceptance criteria that get a Playwright spec tagged with this plan's id (reference/e2e.md). Usually none, at most 2. -->
+<!-- In build order. Each: what changes, the files it touches, [size: S|M|L], [after: T<n>] when it needs a task that isn't the one before, [risk: 3] when it's hard to undo. -->
+- [ ] T1 <what> — `path/to/file.php` [size: S]
 
 ## Verify
-<!-- Exact checks. A command check: - `<command>` → exit 0 | <text the output contains> (yayh verify runs it). Otherwise the UI path and the result that means it passed. -->
+<!-- The acceptance criteria. A command check: - `<command>` → exit 0 | <text the output contains> (yayh verify runs it). A check a test proves ends with its layer: (unit), (integration), (js) or (e2e). Otherwise the UI path and the result that means it passed. -->
 -
 
 ## Risks

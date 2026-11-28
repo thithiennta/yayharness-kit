@@ -39,7 +39,7 @@ For each **risk** in the change (an acceptance criterion, a bug's root cause, a 
 
 **How many:** a test per risk, not per function. A typical plan has 1–4 tests, mostly unit. A pure refactor proves "no change" with the tests that already exist; add one only where coverage is missing around the code it moves. No tests for copy changes, trivial getters, WordPress core behaviour, or code the change doesn't touch.
 
-**Missing layer:** if the right layer isn't set up here (`yayh test status`), still pick it, and write the test into the plan as `[unit] … (not set up: /yay:test-init)`. Don't drop down to a worse layer. Then use the manual check until the layer exists.
+**Missing layer:** if the right layer isn't set up here (`yayh test status`), still pick it, and end the plan's Verify item with its layer anyway, noting `not set up: /yay:test-init` in the item's text. Don't drop down to a worse layer. Then use the manual check until the layer exists.
 
 ## Verify checks: run by a command, then kept as tests
 
@@ -57,7 +57,7 @@ A plan's **Verify** list proves the plan is done. `yayh verify P-<n> --run` runs
 - **Run it against the dev site:** `site.wpPath`, or `yayh e2e cli` for wp-env. Never run it against the tests site, which the integration suite resets.
 - **Leave nothing behind.** A check that creates data deletes it in the same command (`… && wp post delete "$id" --force`), so the list can run again after a fix. Data a check needs goes in the seed (`/yay:e2e-init`) or in the command itself.
 - **A manual check ends with what you should see.** When the action stores something, give the command that shows it (`wp db query …`), so the reviewer checks the data, not only the screen.
-- **Keep what guards a risk.** A Verify check stops running once its plan is done, but a test runs on every later change. A check that proves a risk-3 part (data written, money, a background job, permissions) becomes a test on the **Tests** line when that layer is set up. `yayh plan check` warns when a risk-3 task has only command checks in a repo that has tests. Add the test to the area's existing test class, so each area's tests grow plan by plan and `yayh test run all` re-checks all of them.
+- **Keep what guards a risk.** A Verify check stops running once its plan is done, but a test runs on every later change. A check that proves a risk-3 part (data written, money, a background job, permissions) becomes a Verify item ending in `(unit)` or `(integration)` when that layer is set up. `yayh plan check` warns when a risk-3 task has only command checks in a repo that has tests. Add the test to the area's existing test class, so each area's tests grow plan by plan and `yayh test run all` re-checks all of them.
 
 ## Writing tests
 

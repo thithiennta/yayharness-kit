@@ -61,8 +61,9 @@ _plan_with_tasks() {
   python3 -I - "$YAY_REPO/$p" <<'PY'
 import sys
 p=sys.argv[1]; s=open(p).read()
-s=s.replace("- [ ] T1 <what> — `path/to/file.php`", "- [ ] T1 Add the setting — `includes/Plugin.php`\n  - detail bullet\n- [ ] T2 Wire the UI (no files)\n- [ ] T10 Docs — `readme.txt`")
-s=s.replace("## Verify\n<!-- Exact checks. A command check: - `<command>` → exit 0 | <text the output contains> (yayh verify runs it). Otherwise the UI path and the result that means it passed. -->\n-", "## Verify\n- Open Settings → see the toggle.")
+import re
+s=s.replace("- [ ] T1 <what> — `path/to/file.php` [size: S]", "- [ ] T1 Add the setting — `includes/Plugin.php`\n  - detail bullet\n- [ ] T2 Wire the UI (no files)\n- [ ] T10 Docs — `readme.txt`")
+s=re.sub(r"## Verify\n<!--.*?-->\n-\n", "## Verify\n- Open Settings → see the toggle.\n", s, flags=re.S)
 open(p,'w').write(s)
 PY
   printf '%s\n' "$p"
@@ -96,8 +97,7 @@ test_plan_check() {
   out="$("$YAYH" plan check P-2 2>&1)"
   assert_contains "$out" "error: '## Verify' is missing or empty"
   assert_exit 1 "$YAYH" plan check P-2
-  sed -i.bak 's/^\*\*Tests:\*\* none$/**Tests:**/' "$YAY_REPO/$q"
-  assert_contains "$("$YAYH" plan check P-2 2>&1)" "no '**Tests:** <tests or none>' line"
+  for k in Findings Reuse Tests E2E lane; do case "$out" in *"$k"*) _fail "plan check still asks for $k: $out" ;; *) _pass ;; esac; done
   "$YAYH" fm set "$YAY_REPO/$q" status shipped
   assert_contains "$("$YAYH" plan check P-2 2>&1)" "status 'shipped'"
 }
@@ -195,37 +195,6 @@ test_help_flag_never_creates_an_artifact() {
   assert_eq "" "$(cd "$YAY_REPO" && git status --porcelain -- docs/)"
 }
 
-test_plan_check_reuse_lines() {
-  export YAY_REPO; YAY_REPO="$(_arepo)"
-  local q; q="$("$YAYH" artifact new plan "Reuse plan")"
-  python3 -I - "$YAY_REPO/$q" <<'PY'
-import sys,re
-p=sys.argv[1]; s=open(p).read()
-tasks="""## Tasks
-- [ ] T1 Show the fee — `includes/Checkout.php`
-  - Reuse: Format::price() in includes/Support/Format.php
-- [ ] T2 Add a setting — `includes/Settings.php`
-- [ ] T3 New helper — `includes/Fee.php` (new)
-  - Reuse: none, new Fee::total()
-- [ ] T4 Another helper — `includes/Wrap.php` (new)
-  - Reuse: none, new Wrap::cost() because Format only formats
-  - Callers: Wrap::cost() → Checkout::fees() (T1)
-- [ ] T5 Docs (no files)
-  - Reuse: n/a
-- [ ] T6 Forgot the paths
-  - Reuse: n/a
-"""
-s=re.sub(r"## Tasks\n.*?\n\n", tasks+"\n", s, flags=re.S)
-open(p,"w").write(s)
-PY
-  local out; out="$("$YAYH" plan check P-1 2>&1 || true)"
-  assert_contains "$out" "warn: task T2 has no 'Reuse:' line"
-  assert_contains "$out" "warn: task T3 adds new code ('Reuse: none') without saying why"
-  assert_contains "$out" "warn: task T3 adds new code ('Reuse: none') but has no 'Callers:' line"
-  assert_contains "$out" "warn: task T6 names no files"
-  case "$out" in *"task T1 has no"*|*"task T4 "*|*"task T5 has no"*) _fail "false reuse warning: $out" ;; *) _pass ;; esac
-}
-
 test_id_next_counts_worktrees_and_parallel_new_never_collides() {
   export YAY_REPO; YAY_REPO="$(_arepo)"
   local p wt i
@@ -243,40 +212,43 @@ P-6
 P-7" "$(grep -h '^id:' "$YAY_REPO"/docs/plans/parallel-*.md | sed 's/^id: //' | sort -t- -k2 -n)"
 }
 
-test_small_plan_needs_only_goal_tasks_and_verify() {
+test_old_plan_sections_and_lanes_still_pass() {
   export YAY_REPO; YAY_REPO="$(_arepo)"
   local q out; q="$("$YAYH" artifact new plan "Rename label" lane=small roadmap=R-2)"
-  assert_eq "small" "$("$YAYH" fm get "$YAY_REPO/$q" lane)"
   assert_eq "R-2" "$("$YAYH" fm get "$YAY_REPO/$q" roadmap)"
-  # fill the template's placeholders and drop the Tests line: still no errors, no Reuse warnings
-  sed -i.bak -e 's|^- \[ \] T1 .*|- [ ] T1 Rename the label — `includes/Admin.php`|' -e '/^\*\*Tests:\*\*/d' -e 's|^-$|- Settings shows "Gift note"|' "$YAY_REPO/$q"
-  out="$("$YAYH" plan check "$q")"; assert_eq 0 $?
-  case "$out" in *Reuse*|*Tests*|*E2E*) _fail "small plan got standard-plan findings: $out" ;; *) _pass ;; esac
-  # the same plan as a standard one is held to the full checks
-  "$YAYH" fm set "$YAY_REPO/$q" lane standard >/dev/null
-  assert_fails "$YAYH" plan check "$q"
-  "$YAYH" fm set "$YAY_REPO/$q" lane huge >/dev/null
-  assert_contains "$("$YAYH" plan check "$q")" "lane 'huge' is not standard or small"
   assert_fails "$YAYH" artifact new plan "X" lane=tiny
   assert_fails "$YAYH" artifact new bug "X" lane=small
-}
-
-test_plan_check_asks_for_findings_while_planning() {
-  export YAY_REPO; YAY_REPO="$(_arepo)"
-  local q; q="$("$YAYH" artifact new plan "Findings plan")"
-  assert_contains "$("$YAYH" plan check "$q" 2>&1 || true)" "warn: '## Findings' is missing or empty"
-  python3 -I - "$YAY_REPO/$q" <<'X'
-import sys; p=sys.argv[1]; s=open(p).read()
-s=s.replace("## Findings\n", "## Findings\n1. Guests have customer_id 0 (includes/Cart.php:212): T2 skips them.\n", 1)
-open(p,"w").write(s)
-X
-  case "$("$YAYH" plan check "$q" 2>&1 || true)" in *Findings*) _fail "filled Findings still warned" ;; *) _pass ;; esac
-  # a done plan isn't asked again
   python3 -I - "$YAY_REPO/$q" <<'X'
 import sys,re; p=sys.argv[1]; s=open(p).read()
-s=re.sub(r"## Findings\n1\..*?\n", "## Findings\n", s); s=s.replace("status: draft","status: done",1); open(p,"w").write(s)
+s=s.replace("status: draft","status: draft\nlane: small",1)
+s=s.replace("## Tasks","## Findings\nnone\n\n## Tasks",1)
+s=re.sub(r"- \[ \] T1 .*", "- [ ] T1 Store the label — `includes/Admin.php` [risk: 3]\n  - Reuse: n/a", s)
+s=re.sub(r"## Verify\n<!--.*?-->\n-\n", "**Tests:** [unit] test_label (tests/AdminTest.php) — label lost\n\n**E2E:** none\n\n## Verify\n- Settings shows \"Gift note\"\n", s, flags=re.S)
+open(p,"w").write(s)
 X
-  case "$("$YAYH" plan check "$q" 2>&1 || true)" in *Findings*) _fail "done plan asked for Findings" ;; *) _pass ;; esac
+  out="$("$YAYH" plan check "$q")"; assert_eq 0 $?
+  assert_eq "" "$out" "an old-format plan gets no findings"
+}
+
+test_plan_size_and_after_tags() {
+  export YAY_REPO; YAY_REPO="$(_arepo)"
+  local q; q="$("$YAYH" artifact new plan "Ordered plan")"
+  python3 -I - "$YAY_REPO/$q" <<'X'
+import sys,re; p=sys.argv[1]; s=open(p).read()
+tasks = """## Tasks
+- [ ] T1 Store it — `includes/Store.php` [size: S]
+- [ ] T2 Show it — `includes/Admin.php` [size: XL] [after: T1]
+- [ ] T3 Docs — `readme.txt` [size: M] [after: T4]
+- [ ] T4 Email — `includes/Mail.php` [after: T1, T2]
+- [ ] T5 Last — `includes/Last.php` [after: *]
+"""
+s=re.sub(r"## Tasks\n.*?\n\n", tasks+"\n", s, flags=re.S); open(p,"w").write(s)
+X
+  local out; out="$("$YAYH" plan check "$q" 2>&1 || true)"
+  assert_contains "$out" "warn: task T2 has size 'XL'"
+  assert_contains "$out" "warn: task T3 is after 'T4', which isn't an earlier task"
+  assert_contains "$out" "warn: task T5 is after '*', which isn't an earlier task"
+  case "$out" in *"task T1 "*|*"task T4 "*) _fail "false size/after warning: $out" ;; *) _pass ;; esac
 }
 
 test_plan_risk_tags() {
@@ -286,13 +258,9 @@ test_plan_risk_tags() {
 import sys,re; p=sys.argv[1]; s=open(p).read()
 tasks = """## Tasks
 - [ ] T1 Label copy — `includes/Admin.php` [risk: 1]
-  - Reuse: n/a
 - [ ] T2 Fee logic — `includes/Fee.php`
-  - Reuse: n/a
 - [ ] T3 Add the fees table — `includes/Install.php` [risk: 3] [tier: deep]
-  - Reuse: n/a
 - [ ] T4 Odd — `includes/X.php` [risk: high]
-  - Reuse: n/a
 """
 s=re.sub(r"## Tasks\n.*?\n\n", tasks+"\n", s, flags=re.S); open(p,"w").write(s)
 X
@@ -304,13 +272,15 @@ T4	2" "$("$YAYH" plan risk "$q")"
   assert_fails "$YAYH" plan risk "$q" T9
   local out; out="$("$YAYH" plan check "$q" 2>&1 || true)"
   assert_contains "$out" "warn: task T4 has risk 'high'"
-  assert_contains "$out" "warn: risk-3 task(s) T3 but '**Tests:** none'"
+  assert_contains "$out" "warn: risk-3 task(s) T3 but no Verify item proves them"
   sed -i.bak 's|^-$|- `wp db query "SHOW TABLES"` → fees|' "$YAY_REPO/$q"
   case "$("$YAYH" plan check "$q" 2>&1 || true)" in *"risk-3 task"*) _fail "command check didn't satisfy risk 3" ;; *) _pass ;; esac
   python3 -I - "$YAY_REPO/.yay/config.json" <<'PY2'
 import sys,json; p=sys.argv[1]; c=json.load(open(p)); c.setdefault("commands",{})["test-unit"]="vendor/bin/phpunit"; json.dump(c,open(p,"w"))
 PY2
   assert_contains "$("$YAYH" plan check "$q" 2>&1 || true)" "warn: risk-3 task(s) T3 are proven only by Verify command checks"
+  python3 -I -c 'import sys; p=sys.argv[1]; s=open(p).read(); open(p,"w").write(s.replace("## Risks","- The fee row is saved once (integration)\n\n## Risks",1))' "$YAY_REPO/$q"
+  case "$("$YAYH" plan check "$q" 2>&1 || true)" in *"risk-3 task"*) _fail "a test-layer item didn't satisfy risk 3" ;; *) _pass ;; esac
 }
 
 test_artifact_where_and_tidy_leftover_copies() {
@@ -333,19 +303,9 @@ test_artifact_where_and_tidy_leftover_copies() {
   assert_no_file "$YAY_REPO/$p"
 }
 
-test_strictness_changes_what_plan_check_asks() {
+
+test_strictness_value_is_validated() {
   export YAY_REPO; YAY_REPO="$(_arepo)"
-  local q; q="$("$YAYH" artifact new plan "Mode plan")"
-  sed -i.bak -e 's|^- \[ \] T1 .*|- [ ] T1 Rename the label — `includes/Admin.php`|' -e '/^\*\*Tests:\*\*/d' -e 's|^-$|- Settings shows "Gift note"|' "$YAY_REPO/$q"
-  assert_fails "$YAYH" plan check "$q"                       # standard: a standard plan needs its Tests line
-  printf '{ "workflow": { "strictness": "relaxed" } }\n' > "$YAY_REPO/.yay/local.json"
-  assert_ok "$YAYH" plan check "$q"
-  case "$("$YAYH" plan check "$q")" in *Reuse*) _fail "relaxed still asks for Reuse lines" ;; *) _pass ;; esac
-  "$YAYH" fm set "$YAY_REPO/$q" lane small >/dev/null
-  printf '{ "workflow": { "strictness": "strict" } }\n' > "$YAY_REPO/.yay/local.json"
-  assert_fails "$YAYH" plan check "$q"                       # strict: small plans get the standard checks
-  assert_contains "$("$YAYH" plan check "$q" || true)" "this repo is strict"
-  rm -f "$YAY_REPO/.yay/local.json"
   python3 -I -c 'import json,sys; p=sys.argv[1]; d=json.load(open(p)); d["workflow"]={"strictness":"loose"}; json.dump(d,open(p,"w"))' "$YAY_REPO/.yay/config.json"
   assert_fails "$YAYH" config validate
 }

@@ -114,18 +114,6 @@ test_run_needs_setup_and_a_live_site_and_appends_args() {
   assert_fails "$YAYH" e2e cli wp option get blogname
 }
 
-test_plan_check_warns_without_e2e_line_only_when_set_up() {
-  export YAY_REPO; YAY_REPO="$(_e2erepo)"
-  local plan; plan="$("$YAYH" artifact new plan "Gift tab")"
-  assert_contains "$(cat "$YAY_REPO/$plan")" "**E2E:** none"
-  python3 -I - "$YAY_REPO/$plan" <<'PY'
-import sys; p=sys.argv[1]; s=open(p).read().replace("**E2E:** none\n",""); open(p,"w").write(s)
-PY
-  assert_eq "" "$("$YAYH" plan check "$plan" 2>&1 | grep 'E2E' || true)" "no warning before setup"
-  "$YAYH" e2e scaffold --no-ci >/dev/null
-  assert_contains "$("$YAYH" plan check "$plan" 2>&1)" "warn: no '**E2E:**"
-}
-
 test_surfaces_lists_where_users_reach_the_plugin() {
   export YAY_REPO; YAY_REPO="$(_e2erepo wc)"
   mkdir -p "$YAY_REPO/src" "$YAY_REPO/blocks/card" "$YAY_REPO/vendor/x" "$YAY_REPO/tests/e2e"

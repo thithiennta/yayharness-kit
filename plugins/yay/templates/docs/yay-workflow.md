@@ -47,7 +47,7 @@ Don't remember a command? Type `/yay:go` followed by what you want in plain word
 /yay:implement P-1               # its own worktree and branch, a commit per task, tests, review, PR
 ```
 
-Do the same for R-2 and R-3. A small item can go straight to `/yay:implement R-2`; it picks the lane (tiny, small or standard) and says which.
+Do the same for R-2 and R-3. A small item can go straight to `/yay:implement R-2`; it picks the lane (tiny, or a plan) and says which.
 
 ## 3. The developer's part
 

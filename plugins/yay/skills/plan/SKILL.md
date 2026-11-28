@@ -1,112 +1,60 @@
 ---
 name: plan
-description: Write or review a Yay plugin implementation plan. Use when the user says "plan this", "write a plan", "break this down", "review the plan", before any non-trivial change, or when /yay:fix escalates. Turns a brainstorm, roadmap item, bug or request into docs/plans/ P-<n> (goal, tasks naming their files, Tests and Verify checks). --check reviews one.
-argument-hint: "<topic|BS-<n>|R-<n>|B-<n>|UX-<n>|P-<n>> [--from=<id>] [--check] [--split] [--type=feat|fix|chore|refactor|perf] [--tests=auto|none] [--edition=<name>|all] [--lane=small|standard] [--commit]"
-allowed-tools: Bash(yayh *), Bash(git *), Read, Grep, Glob, Write, Edit, Agent, AskUserQuestion
+description: Write or review a Yay plugin implementation plan. Use when the user says "plan this", "write a plan", "break this down", "review the plan", before any non-trivial change, or when /yay:fix escalates. Turns a decided brainstorm, roadmap item, bug or request into docs/plans/ P-<n>: ordered tasks naming their files, sizes and dependencies, and Verify checks. --check reviews one.
+argument-hint: "<topic|BS-<n>|R-<n>|B-<n>|UX-<n>|P-<n>> [--from=<id>] [--check] [--split] [--type=feat|fix|chore|refactor|perf] [--edition=<name>|all] [--commit]"
+allowed-tools: Bash(yayh *), Bash(git *), Read, Grep, Glob, Write, Edit, AskUserQuestion
 ---
 
 # /yay:plan
 
 Arguments: `$ARGUMENTS`
 
-A plan is the contract `/yay:implement` follows task by task. The format is in `${CLAUDE_PLUGIN_ROOT}/reference/artifacts.md` (Plan). This skill writes only the plan file (new), or edits a plan that isn't `in-progress` or later.
+Converge: turn a chosen direction into work someone can follow without deciding anything new. Exactly what, where, in what order, and how we know it's done. Format: `${CLAUDE_PLUGIN_ROOT}/reference/artifacts.md` (Plan). Writes only the plan file, or edits one that isn't `in-progress` yet.
 
 ## Options
 
 | Option | Effect |
 |---|---|
-| `<topic\|id>` | A topic, or the source artifact: `BS-<n>` (the usual case), `R-<n>`, `B-<n>`, or `P-<n>` to revise an existing plan. |
+| `<topic\|id>` | A topic, or the source: `BS-<n>`, `R-<n>`, `B-<n>`, `UX-<n>`, or `P-<n>` to revise. |
 | `--from=<id>` | The source, when the first argument is a topic. |
-| `--check` | Review an existing plan instead of writing one: run the structural check, then do a critical review (see step 6). Doesn't change the plan unless the user agrees. |
-| `--split` | If the work is bigger than about 8 tasks or touches unrelated areas, split it into several plans that ship on their own, linked through `from:`. |
-| `--type=<t>` | Branch and commit type for `/yay:implement` (default `feat`; `fix` for bugs; `refactor` for no behavior change). |
-| `--tests=auto\|none` | `auto` (default; `ask` is accepted as the same): pick the tests yourself, one per risk at the right layer, and ask only if the repo's rules require approval for tests. `none`: write `**Tests:** none` and verify by manual checks. |
-| `--edition=<e>` | Which editions the plan touches. Default: inferred from where the code lives. |
-| `--lane=small\|standard` | How much plan the work needs. Default: picked in step 2 (see **Lanes**). |
-| `--commit` | Commit the plan when you're on a non-base branch (with its `docs/assets/P-<n>` screenshots, if any). |
-
-## Lanes
-
-Match the plan to the work. Pick the lane yourself in step 2, once you've read the code, and say which one under **Decided**.
-- **small:** an S roadmap item, or a clear change in one area: at most about 3 tasks, no data or storage change, no new screen. Create it with `lane=small`. It has only Goal, Tasks (each naming its files) and Verify. Leave out Non-goals, Approach, Risks, the design step, the `Reuse:` lines and the Tests and E2E lines. Add a `Reuse:` line or a test when there's a real reuse or a real risk; `plan check` doesn't require them. Skip step 6's self-review, apart from its reuse question.
-- **standard:** everything else. All the steps below apply.
-- A change smaller than a small plan (one or two files, about 30 lines, no customer-visible decision) needs no plan at all: `/yay:implement "<the change>"` builds it in the **tiny** lane.
-
-In a `strict` repo (`yayh config get workflow.strictness standard`), every plan is standard. In a `relaxed` one, `plan check` doesn't ask for Reuse, Tests or E2E lines on any plan, but write them where they help.
-
-When a small plan turns out bigger than that, switch it to standard (`yayh fm set <plan> lane standard`) and fill in the missing sections.
+| `--check` | Review an existing plan instead (see below). |
+| `--split` | Over about 8 tasks, or unrelated areas: one plan per shippable slice. |
+| `--type=<t>` | Branch type for `/yay:implement` (default `feat`; `fix` for bugs). |
+| `--edition=<e>` | Editions it touches. Default: from where the code lives. |
+| `--commit` | Commit the plan on a non-base branch. |
 
 ## Steps
 
-1. **Source.** Run `yayh artifact resolve <id>` and read it:
-   - **Brainstorm:** use its decision. If its `status` isn't `decided`, plan its recommended option, and make "plan option <X>?" a question in step 7.
-   - **Bug:** use its root cause. If it isn't `root-caused`, suggest `/yay:debug` first.
-   - **Design (`UX-<n>`):** plan from the design's own source (its `from:`), and set the plan's `design: UX-<n>`.
-   - **Acceptance:** whatever the source, when the work has a roadmap item, read its `acceptance` (`yayh roadmap get R-<n> acceptance`). It's what done means to whoever scheduled it: the Goal states it, and Verify checks each part of it. If the item has a brief (`yayh brief path R-<n>`), read it first: it's the product source of truth (`${CLAUDE_PLUGIN_ROOT}/reference/briefs.md`, For developers' skills). The Goal starts from its In one line, its Out of scope becomes Non-goals, and **every Done when check becomes a Verify check** (`yayh plan check` warns when Verify has fewer). When it's missing, write the Goal's "done means…" yourself and say so in the report.
-   - **Roadmap item:** if there's no brainstorm and the approach isn't obvious, plan the most likely approach, and say in the report that `/yay:brainstorm --from=R-<n>` would compare options.
-   - **Screenshots:** a screenshot attached to the request (a UI, a bug, a layout) is evidence. Read it, and once the plan exists, record and keep it as in `${CLAUDE_PLUGIN_ROOT}/reference/artifacts.md` (Screenshots). The source's own screenshots (`yayh asset list <source id>`) are evidence too; read them and link to them rather than copying them.
-   - **Open notes:** run `yayh backlog open --for=<source id>` (and `--for=P-<n>` when revising a plan). These are decisions and work an earlier step parked for later. Settle each one now if you can; see "Picking up notes" below.
-2. **Ground it.** Read the project block and the relevant `docs/knowledge/` docs. Read **every file the plan will touch**. A plan that names a file you haven't opened is a guess.
-   - **Findings** (standard lane): write down what the reading changed. For each surprise that changes the source's approach or adds work, one numbered item with its evidence (`includes/Cart.php:212`, or the WooCommerce or WordPress source file and line) and what the plan does about it. A guard the brief missed, an API that behaves differently, an edge case in the data. Compare the plan with the knowledge docs, `CLAUDE.md` and the design: a place where the plan **differs** from what a doc says gets a task that updates that doc in the same branch. The section is the implementer's and the reviewer's starting point, so keep it to facts, not a diary. Write `none` when nothing surprised you.
-3. **Design.**
-   - **Goal:** the user-visible outcome and "done means…", starting from the roadmap item's acceptance.
-   - **Non-goals.**
-   - **Findings:** from step 2.
-   - **Approach:** start with `Model on: <path:line> — <why it's the closest>`: the existing feature that already does the same kind of thing, which the change copies in structure, or `Model on: none, nothing similar exists`. Then hooks, storage and option keys, REST, UI, the edition split, compatibility, migration. When the change stores a status with 3+ states that change on events and there's no design with a statechart (backend work, a sync job, an order status flow), draw one here as in `/yay:design` (**Statechart**), and give each transition its line in Verify.
-   - **Risks** with a rollback.
-   - **UI:** when the change adds or changes something people see (an admin screen, tab or modal, a storefront, cart, checkout or My Account element, a block, an email), it follows a design. Use the one that exists (`yayh artifact list design`, or a `UX-<n>` that names this source), else draft one with `/yay:design --quick` (`${CLAUDE_PLUGIN_ROOT}/skills/design/SKILL.md`; the full skill when there are several screens). Keep it in the draft and write its file in step 8, then set the plan's `design:` with `yayh fm set <plan> design UX-<n>`. A UI that only adds an option to an existing, obvious place needs no design file; give its place, label and default in the Approach.
-   - Follow the repo's hard rules and conventions. Cite them where they shape the design.
-4. **Tasks.** Number them `T1…Tn`, in the order they'll be built. Each task:
-   - is one commit's worth of change that leaves the tree working
-   - names its files in backticks (new files marked `(new)`)
-   - says what changes, not how to type it
-   - has an indented `Reuse:` line naming the existing functions, hooks or settings it will call, with their file (`Reuse: Format::price() in includes/Support/Format.php`). Find them before writing the task: `yayh code find <verb> <noun>`, `docs/knowledge/helpers.md`, and how neighbouring code does the same job. If the task really needs a new function, write `Reuse: none, new <name>() because <why the existing ones don't fit>`. For tasks with no code, write `Reuse: n/a`.
-   - when it adds a function, method, class, constant, hook, option or REST route, has an indented `Callers:` line. It names each new symbol and what calls it, with the task that wires it up when that's a later one (`Callers: ExpressPay::adopt() → FunnelKitStripe::boot() (T4); adopt_into_block() → CheckoutPage::maybe_take_over()`). A hook callback names its hook (`→ action 'init'`), and a REST callback names its route. Don't add a symbol with no caller in the plan. A test alone isn't a caller, so don't add one "for later" either (`${CLAUDE_PLUGIN_ROOT}/reference/code-rules.md`).
-   - ends with a risk tag, `[risk: 3]`, when it's hard to undo: it stores, migrates or deletes data (a table, option or meta key), runs in the background (cron, Action Scheduler, a queue), emails or messages customers, touches money (prices, fees, coupons, payments, refunds), personal data, or capabilities and permissions. `[risk: 1]` marks copy, UI text, docs or template data that's easy to undo. An untagged task is risk 2 (new logic, a form, a REST route). `/yay:implement` has a risk-3 task reviewed for correctness before its commit, so tag only what really is. A risk-3 task needs a test on the Tests line or a command check in Verify that proves its risky part.
-   - optionally ends with a tier tag, `[tier: veryfast]` or `[tier: deep]`, but only when the task is clearly mechanical (a rename, copy, config) or clearly hard. `/yay:implement` then hands it to a subagent on that model (`${CLAUDE_PLUGIN_ROOT}/reference/models.md`). Most tasks have no tag. If a task's difficulty is hard to judge, leave it untagged, or use `[tier: balanced]` (Opus medium).
+1. **Source.** Run `yayh artifact resolve <id>` and read it.
+   - **Brainstorm:** build its decision. Not `decided`: ask its pick in one AskUserQuestion (its Direction first, "(Recommended)"), then `yayh fm set <brainstorm> decision "<name>"` and `status decided`. With "don't ask", plan its Direction and say so.
+   - **Bug:** build its root cause; not `root-caused` yet, suggest `/yay:debug`.
+   - **Design (`UX-<n>`):** plan from its source, set `design: UX-<n>`; UI tasks build its screens.
+   - **Roadmap item or request with no brainstorm:** one sensible way: plan it. Two or more really different ways (hook, storage, UI place, edition split): stop and suggest `/yay:brainstorm --from=<id>`.
+   - **Acceptance:** a roadmap item's `acceptance` and brief (`yayh brief path R-<n>`, `${CLAUDE_PLUGIN_ROOT}/reference/briefs.md`) are what done means: the Goal states it, and **every Done when check becomes a Verify check**.
+   - **Screenshots:** evidence; keep them as `artifacts.md` (Screenshots) says.
+   - **Open notes** (`yayh backlog open --for=<source id>`, and `P-<n>` when revising): settle a decision the code or finished work answers (`yayh backlog settle BL-<n> decided "<answer>"`) and plan it, else plan its default; take deferred work that fits as tasks (`settle BL-<n> planned P-<n>`). For a tracked note, write `Settles: BL-<n> …` under Risks: `/yay:implement` settles it.
+2. **Read the code:** the project block, the knowledge docs it touches, and **every file the tasks will name**. Name the existing helpers the work should call (`yayh code find <verb> <noun>`, `docs/knowledge/helpers.md`) in the task text.
+3. **Tasks.** `T1…Tn` in build order (data, server, UI, docs). Each task:
+   - is one working commit: what changes, its files in backticks, new ones `(new)`
+   - ends with `[size: S|M|L]`, and `[after: T<n>]` when it needs a task that isn't the one before
+   - ends with `[risk: 3]` when it's hard to undo (stores or deletes data, runs in the background, emails customers, touches money, personal data or permissions), `[risk: 1]` for copy or docs
+   - may end with `[tier: veryfast]` or `[tier: deep]` when clearly mechanical or hard (`${CLAUDE_PLUGIN_ROOT}/reference/models.md`)
 
-   A UI task names the design screen it builds (`UX-<n> "<screen>"`) and reuses the components the design names. Put data and migration first, then server, then UI, then docs. If the work makes a knowledge doc wrong, add a task to update it.
-5. **Tests and Verify.**
-   - **Tests:** list the risks in the change (acceptance criteria, branches of logic, data written, hooks touched). Give each one the **first layer down the ladder** in `${CLAUDE_PLUGIN_ROOT}/reference/testing.md` that can prove it: unit, integration, js, e2e or manual. Add a second layer only for a second, named risk. Check `yayh test status` and the **Coverage** table in `docs/knowledge/testing.md`: extend an existing test class rather than adding a new one, and mark a layer that isn't set up `(not set up: /yay:test-init)`.
-     - Write them on the `**Tests:**` line as `[unit] <test_name> (<file>) — <risk>`, separated by `;`. Use `[integration]`, `[js]` or `[manual]` the same way. Browser-only risks go on the **E2E** line instead.
-     - With a statechart (the design's or the Approach's), each transition that stores data, touches money or messages a customer is a Tests item, and so is the same event arriving twice.
-     - A typical plan has 1–4 tests, mostly unit. Decide this yourself. Only when the repo's rules require approval for tests (the project block or `.claude/rules/`) do they become a question in step 7.
-   - **E2E** (only when `yayh config get commands.e2e` is set): pick the acceptance criteria that **only a browser can prove**, by the test in `${CLAUDE_PLUGIN_ROOT}/reference/e2e.md` ("When a flow deserves a spec"). Usually that's 0–2: a customer-facing flow, or a JS-rendered admin screen that must save and reload. Read the **Flows** table in `docs/knowledge/e2e.md` first: when the change touches a flow that already has a spec, name that flow (its spec gets extended), and a touched `candidate` row is a strong reason to add it. Write them on the `**E2E:**` line as `<flow>: <the outcome to assert>`, separated by `;`, or write `**E2E:** none`. Decide this yourself; it's not a question.
-   - **Verify:** exact checks, each with the command or the UI path, the input, and the result that means it passed. Write every check a command can do as ``- `<command>` → <expected>``, where expected is `exit 0` / `exit 1` or text the output must contain (for example ``- `wp option get giftly_settings --format=json` → "max_length":200``). `yayh verify P-<n> --run` runs those, so done is proven, not claimed. Copy the checks from the `## Checks` section of `docs/knowledge/conventions.md` that apply to the files the plan touches. **A check a command can make is a command check**: state through WP-CLI (`wp option get`, `wp db query "SELECT …"`, `wp eval`), a REST response through `rest_do_request()`, and front-end markup through `curl -s` (recipes in `${CLAUDE_PLUGIN_ROOT}/reference/testing.md`, "Verify checks"). A command check that writes data removes it again, so the list can run twice. Browser and judgement checks stay as plain items, each ending in what you should see. When the action stores something, the item also gives the command that shows the stored data. With a design, its **Acceptance** checks go here, and the browser-only ones are candidates for the E2E line. Cover every edition the plan touches. A Verify item covered by a test says its layer: `(unit)`, `(integration)`, `(js)` or `(e2e)`.
-6. **Self-review the draft.** Up to here the plan is a draft in this conversation, not a file. Review it as a skeptical senior reviewer:
-   - Is anything missing: uninstall, i18n, capability checks, nonce/escaping, HPOS, block checkout, Free with Pro absent, upgrades from the last release?
-   - Is any task too big? Is every task that writes data, runs in the background, emails customers or touches money tagged `[risk: 3]`, and nothing else?
-   - Does any task re-implement something that already exists (price or date formatting, settings reads, capability checks, a near-copy of a helper)? Search once more for each new function a task adds.
-   - Does every new symbol have a caller on its `Callers:` line, other than a test? Is any parameter, option or filter there only for a future need?
-   - Is the Verify list enough to catch a regression?
-   - Does every Findings item end in a task, a Non-goal or a note? A finding nothing acts on is lost.
-
-   Fix what you find in the draft.
-7. **Hard questions** (`${CLAUDE_PLUGIN_ROOT}/reference/asking.md`). Ask in one AskUserQuestion, or none:
-   - **Tests to include**, but only when the repo's rules say tests need approval (the project block or `.claude/rules/`). Otherwise decide yourself, and keep the tests that guard a real risk.
-   - **The single biggest open decision**, if one is left (which brainstorm option, or a design choice).
-
-   With "don't ask", or nothing hard left, ask nothing and plan the defaults.
-8. **Write it.**
-   - `yayh artifact new plan "<title>" from=<id> roadmap=<R-n or empty> type=<type> [lane=small]`, then fill in every section from the reviewed draft and the answers. Write the drafted design first, if there is one (step 3, UI).
-   - With `--split`, create one plan per shippable slice, each with `from:` pointing at the source.
-   - Run `yayh plan check <P-n>` and fix every `error`. Fix the `warn`s too, unless there's a reason not to. If a fix changes the approach, say so in the report.
-   - When `yayh plan check` has no errors and no hard decision is still unanswered, mark the plan ready yourself: `yayh fm set <file> status ready`.
-
-   **Park what's still open.** A decision that can't be made now, and isn't worth the question round, becomes a decision note: `yayh artifact new backlog "<the question>" kind=decision from=P-<n> default="<what the plan does for now>" [affects="<other P-/R-ids>"]`. Plan the default, and add the line `Open: BL-<n> <question> (default: …)` under `## Risks`. Work you leave out of scope that someone will want later becomes `kind=deferred from=P-<n>`; name it under **Non-goals** as `BL-<n>`. Neither one stops the plan or keeps it `draft`.
-9. **Report.** Give the file, the task count, the Tests and E2E lines, the data changes in plain words (each option, meta key, table or column added, changed or removed, with its default, what happens to existing sites and on uninstall; or "Data changes: none"), any open risks, the notes settled into the plan, the notes written or left open (`BL-<n>`, kind, default), and end with the **Next** line (`reference/asking.md`), usually `/yay:implement P-<n>`.
-
-### Picking up notes
-For each row of `yayh backlog open --for=<id>`:
-- **decision:** decide it now if the code, the source artifact, an answer in this round, or work finished since (its `from:` plan is done, the item it waited on shipped) settles it. Write the answer with `yayh backlog settle BL-<n> decided "<answer>"`, then plan the answer instead of the default. If the default was **already built** by a finished plan and the answer differs, the change is a task in this plan when it touches the same code. Otherwise, write a `kind=deferred` note for the change. A decision that still can't be made stays open: plan its default and reference it under `## Risks` as above. A decision only the user can make, that's expensive to get wrong, can be a question in step 7.
-- **deferred:** if the work fits this plan's goal, add it as tasks and run `yayh backlog settle BL-<n> planned P-<n>`. If it doesn't fit, leave it open, and say so in the report.
-
-A note that's become pointless (the code it named is gone, the item was dropped) is closed with `yayh backlog settle BL-<n> dropped "<why>"`. Settling edits the note's file. Before a branch exists, that's allowed only for an untracked note. A tracked note is settled by `/yay:implement` on the branch, so here write `Settles: BL-<n> decided "<answer>"` (or `planned P-<n>`) under the plan's `## Risks` for it. List every note you settled, or left open, in the report.
+   A knowledge doc the change makes wrong gets a task.
+4. **Verify: the acceptance criteria.** Each check gives the action and the result that passes, across every edition touched.
+   - A check a command can make is written ``- `<command>` → <expected>``, which `yayh verify P-<n> --run` runs (recipes: `${CLAUDE_PLUGIN_ROOT}/reference/testing.md`, "Verify checks"). One that writes data cleans up.
+   - A check a test should keep guarding ends with its layer: `(unit)`, `(integration)`, `(js)`, or `(e2e)` for what only a browser proves (`${CLAUDE_PLUGIN_ROOT}/reference/e2e.md`, when `commands.e2e` is set): the cheapest layer on `testing.md`'s ladder, one per real risk, usually 1-4.
+   - Each risk-3 task gets a command or test-layer check; a command check never ends in a layer.
+   - Add the applying checks from `docs/knowledge/conventions.md`.
+5. **Self-check.** Can it be built without a new decision? Check uninstall, i18n, capabilities, nonces and escaping, HPOS, block checkout, Free without Pro, upgrades. An open decision goes back to step 1, or is parked (step 6).
+6. **Write it.**
+   - `yayh artifact new plan "<title>" from=<id> roadmap=<R-n or empty> type=<type>`: fill in Goal, Tasks, Verify and Risks (with the rollback).
+   - Run `yayh plan check <P-n>` and fix every `error` and `warn`. Then `yayh fm set <file> status ready`.
+   - **Park what's open:** a small decision becomes `yayh artifact new backlog "<question>" kind=decision from=P-<n> default="<what the plan does>"` (and `Open: BL-<n> …` under Risks); later work, `kind=deferred`.
+7. **Report.** The file, the tasks with their sizes, the data changes in plain words (each option, meta key, table or column added, changed or removed, its default, what happens to existing sites and on uninstall; or "Data changes: none"), the test-layer checks, the open risks, the notes, and the **Next** line (`${CLAUDE_PLUGIN_ROOT}/reference/asking.md`), usually `/yay:implement P-<n>`.
 
 ### `--check` mode
-Run `yayh plan check <plan>`. Then review against the code as it is **now**: do the files still exist, is the approach still valid, and are there tasks the self-review list says are missing? Report blocking issues and suggestions separately. Offer to apply the fixes, but don't edit a plan that's `in-progress` without saying so; changes there must be visible to whoever is implementing it.
+Run `yayh plan check <plan>`, then review against the code now: do the files exist, can each task be built without a new decision, does Verify prove the Goal? Report blockers and suggestions apart, and offer fixes.
 
 ## Don'ts
-- Don't write code or change anything except the plan file.
-- Don't put the same assertion at two layers, or a test at a costlier layer than the ladder picks.
-- Don't plan from memory: open the files first.
+- Don't choose between approaches (that's `/yay:brainstorm`) or write code.

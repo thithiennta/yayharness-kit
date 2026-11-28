@@ -31,7 +31,7 @@ yay_render_vars() {
 }
 
 # yay_artifact_new <type> "<title>" [key=value...] -> path of the new file.
-# Known keys: from, roadmap, type (plan branch type), lane (plan: standard|small),
+# Known keys: from, roadmap, type (plan branch type), lane (plan: standard|small, ignored),
 # severity, editions; for backlog: kind (idea|decision|deferred), affects, default.
 yay_artifact_new() {
   local type="$1" title="$2"; shift 2 || yay_die "usage: yayh artifact new <type> \"<title>\" [key=value...]"
@@ -55,7 +55,6 @@ yay_artifact_new() {
   case "$lane" in ''|standard|small) ;; *) yay_die "lane must be standard or small (a tiny change has no plan file)";; esac
   [ -z "$lane" ] || [ "$type" = plan ] || yay_die "lane is for plans only"
   tpl="$YAY_TEMPLATES/artifacts/$type.md"
-  [ "$lane" != small ] || tpl="$YAY_TEMPLATES/artifacts/plan-small.md"
   case "$severity" in critical|high|medium|low) ;; *) yay_die "severity must be critical, high, medium or low";; esac
   case "$bl_kind" in idea|decision|deferred) ;; *) yay_die "backlog kind must be idea, decision or deferred";; esac
   case "$default$affects" in *$'\n'*) yay_die "default and affects must be one line";; esac
@@ -174,15 +173,6 @@ yay_plan_check() {
   for k in id title status created; do yay_fm_get "$f" "$k" >/dev/null 2>&1 || _pe "front-matter is missing '$k'"; done
   st="$(yay_fm_get "$f" status 2>/dev/null || true)"
   case "$st" in draft|ready|in-progress|done|dropped) ;; *) _pe "status '$st' is not draft|ready|in-progress|done|dropped";; esac
-  # A small plan (lane: small) needs only Goal, Tasks and Verify; the Reuse, Tests
-  # and E2E checks are for standard plans.
-  local lane; lane="$(yay_fm_get "$f" lane 2>/dev/null || true)"
-  case "$lane" in ''|standard|small) ;; *) _pe "lane '$lane' is not standard or small";; esac
-  # workflow.strictness: strict holds every plan to the standard checks, relaxed to the small ones.
-  case "$(yay_strictness)" in
-    strict) [ "$lane" != small ] || _pw "this repo is strict (workflow.strictness): the plan is checked as a standard one"; lane=standard ;;
-    relaxed) lane=small ;;
-  esac
   grep -q '^## Goal' "$f" || _pe "no '## Goal' section"
   grep -q '^## Tasks' "$f" || _pe "no '## Tasks' section"
   local tasks; tasks="$(yay_plan_tasks "$rel")"
@@ -199,23 +189,22 @@ EOF
   # Every task names files (backticked) unless it says (no files).
   awk '/^## /{intasks=($0 ~ /^## Tasks/)} intasks && /^- \[[ xX]\] T[0-9]+/ { if ($0 !~ /`/ && $0 !~ /\(no files\)/) { match($0, /T[0-9]+/); print substr($0, RSTART, RLENGTH) } }' "$f" \
     | while read -r t; do [ -n "$t" ] && echo "warn: task $t names no files (backtick the paths, or write '(no files)')"; done
-  # Every task says what existing code it reuses (or why it adds new code).
-  [ "$lane" = small ] || awk '
-    function done_task() { if (t != "") { if (!reuse) print t "\tmissing"; else if (none && !why) print t "\tnowhy"; if (none && !callers) print t "\tnocallers" } }
-    /^## / { if (intasks) done_task(); intasks = ($0 ~ /^## Tasks/); t = ""; next }
-    intasks && /^- \[[ xX]\] T[0-9]+/ { done_task(); match($0, /T[0-9]+/); t = substr($0, RSTART, RLENGTH); reuse = 0; none = 0; why = 0; callers = 0; next }
-    intasks && t != "" && /^[[:space:]]+[-*]?[[:space:]]*Reuse:/ { reuse = 1; if ($0 ~ /Reuse:[[:space:]]*none/) { none = 1; why = ($0 ~ /because/) } }
-    intasks && t != "" && /^[[:space:]]+[-*]?[[:space:]]*Callers:/ { callers = 1 }
-    END { if (intasks) done_task() }' "$f" \
-    | while IFS="$(printf '\t')" read -r t why; do
-        case "$why" in
-          missing) echo "warn: task $t has no 'Reuse:' line (the existing code it calls, 'none, new X() because …', or 'n/a')" ;;
-          nowhy) echo "warn: task $t adds new code ('Reuse: none') without saying why the existing code doesn't fit ('because …')" ;;
-          nocallers) echo "warn: task $t adds new code ('Reuse: none') but has no 'Callers:' line (each new symbol → what calls it; a test alone isn't a caller)" ;;
-        esac
-      done
+  # A [size: S|M|L] tag estimates a task; an [after: T<n>] tag names an earlier task it needs.
+  local seen="" tag
+  while IFS="$(printf '\t')" read -r t _ k; do
+    [ -n "$t" ] || continue
+    tag="$(printf '%s' "$k" | sed -nE 's/.*\[size:[[:space:]]*([^]]*)\].*/\1/p' | sed -E 's/[[:space:]]+$//')"
+    case "$tag" in ''|S|M|L) ;; *) _pw "task $t has size '$tag'; use S, M or L" ;; esac
+    set -f
+    for k in $(printf '%s' "$k" | sed -nE 's/.*\[after:[[:space:]]*([^]]*)\].*/\1/p' | tr ',' ' '); do
+      case " $seen " in *" $k "*) ;; *) _pw "task $t is after '$k', which isn't an earlier task" ;; esac
+    done
+    set +f
+    seen="$seen $t"
+  done <<EOF
+$tasks
+EOF
   # A [tier: <name>] tag sends the task to a subagent on that tier (reference/models.md).
-  local tag
   while IFS="$(printf '\t')" read -r t _ k; do
     tag="$(printf '%s' "$k" | sed -nE 's/.*\[tier:[[:space:]]*([^]]*)\].*/\1/p' | sed -E 's/[[:space:]]+$//')"
     [ -z "$tag" ] || _yay_model_tier_known "$tag" || _pw "task $t has unknown tier '$tag'; it will run as $YAY_MODEL_FALLBACK (one of: $YAY_MODEL_ORDER, or a models.tiers key)"
@@ -230,11 +219,14 @@ EOF
   done <<EOF
 $tasks
 EOF
-  if [ -n "$risky" ] && [ "$lane" != small ] && grep -Eq '^\*\*Tests:\*\*[[:space:]]*none' "$f"; then
-    if ! awk '/^## Verify/{on=1; next} /^## /{on=0} on && !/^<!--/ && /`[^`]+`[[:space:]]*(→|->)/{found=1} END{exit !found}' "$f"; then
-      _pw "risk-3 task(s)$risky but '**Tests:** none' and no command check in Verify: add a test or a \`command\` → expected check that proves the risky part"
-    elif [ -n "$(yay_config_get commands.test-unit 2>/dev/null)$(yay_config_get commands.test-integration 2>/dev/null)" ]; then
-      _pw "risk-3 task(s)$risky are proven only by Verify command checks, which stop running once the plan is done. This repo has tests, so add one on the Tests line that keeps guarding the risky part (reference/testing.md, \"Verify checks\")"
+  # A Verify item proven by a test ends with its layer: (unit), (integration), (js) or (e2e).
+  # An older plan's Tests line with a [layer] item proves it too.
+  if [ -n "$risky" ] && ! grep -Eq '^[*][*]Tests:[*][*][[:space:]]*\[(unit|integration|js)\]' "$f"; then
+    if ! awk '/^## Verify/{on=1; next} /^## /{on=0} on && !/^<!--/ && (/`[^`]+`[[:space:]]*(→|->)/ || /\((unit|integration|js|e2e)\)/){found=1} END{exit !found}' "$f"; then
+      _pw "risk-3 task(s)$risky but no Verify item proves them: add a \`command\` → expected check, or an item a test proves, ending in (unit), (integration), (js) or (e2e)"
+    elif ! awk '/^## Verify/{on=1; next} /^## /{on=0} on && !/^<!--/ && /\((unit|integration|js)\)/{found=1} END{exit !found}' "$f" \
+      && [ -n "$(yay_config_get commands.test-unit 2>/dev/null)$(yay_config_get commands.test-integration 2>/dev/null)" ]; then
+      _pw "risk-3 task(s)$risky are proven only by Verify command checks, which stop running once the plan is done. This repo has tests, so end one Verify item in (unit), (integration) or (js) to keep guarding the risky part (reference/testing.md, \"Verify checks\")"
     fi
   fi
   # Notes left for this plan (lib/backlog.sh): settle them or keep their default on purpose.
@@ -258,25 +250,6 @@ EOF
       [ "$have" -ge "$want" ] || _pw "the brief for $item has $want Done when checks but Verify has $have: add a check for each ($(yay_brief_path "$item"))"
     fi ;;
   esac
-  [ "$lane" = small ] || grep -Eq '^\*\*Tests:\*\*[[:space:]]*[^[:space:]]' "$f" || _pe "no '**Tests:** <tests or none>' line"
-  # Each test names the layer it runs at (reference/testing.md): [unit], [integration], [js] or [manual].
-  sed -nE 's/^\*\*Tests:\*\*[[:space:]]*//p' "$f" | sed -n 1p | tr ';' '\n' | sed -E 's/^[[:space:]]+//; s/[[:space:]]+$//' \
-    | while IFS= read -r t; do
-        case "$t" in ''|none|none:*|'none '*|'['unit']'*|'['integration']'*|'['js']'*|'['manual']'*) ;;
-          *) echo "warn: test '$(printf '%s' "$t" | cut -c1-50)' has no layer: start it with [unit], [integration], [js] or [manual] (reference/testing.md)" ;;
-        esac
-      done
-  # Repos with e2e set up decide per plan which flows get a browser spec.
-  if [ "$lane" != small ] && yay_config_get commands.e2e >/dev/null 2>&1 && ! grep -Eq '^\*\*E2E:\*\*[[:space:]]*[^[:space:]]' "$f"; then
-    _pw "no '**E2E:** <browser-only flows, or none>' line (this repo has e2e set up)"
-  fi
-  # Findings: what reading the code changed (standard plans still being written or reviewed).
-  if [ "$lane" != small ]; then
-    case "$st" in draft|ready)
-      awk '/^## Findings/{on=1; next} /^## /{on=0} on && /[^[:space:]]/ && !/^<!--/{found=1} END{exit !found}' "$f" \
-        || _pw "'## Findings' is missing or empty: what reading the code changed about the source, with file:line, or 'none'" ;;
-    esac
-  fi
   if ! awk '/^## Verify/{on=1; next} /^## /{on=0} on && /[^[:space:]]/ && !/^<!--/ && !/^[[:space:]]*([-*]|[0-9]+\.)[[:space:]]*$/{found=1} END{exit !found}' "$f"; then
     _pe "'## Verify' is missing or empty: write exact manual checks"
   fi

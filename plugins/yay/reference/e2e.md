@@ -20,7 +20,7 @@ Playwright against a throwaway WordPress site that wp-env runs in Docker, from `
 
 ## The flow map
 
-`docs/knowledge/e2e.md` has a **Flows** table: every user flow `/yay:e2e-init` found (from `yayh e2e surfaces` and the `yay:e2e-scout` reports), with its actor, priority (`critical`: money, checkout, data loss or the plugin's main promise; `important`; `minor`), coverage and entry point. Coverage is one of `specs/<file>` with its `@flow-<slug>` tag, `candidate` (browser-only, no spec yet), `unit: <test>` or `manual: <why>`. `/yay:e2e` updates a row when it writes a spec; `/yay:plan` reads the table to see which spec a change touches. Re-running `/yay:e2e-init` adds the flows that are new since.
+`docs/knowledge/e2e.md` has a **Flows** table: every user flow `/yay:e2e-init` found (from `yayh e2e surfaces` and the `yay:e2e-scout` reports), with its actor, priority (`critical`: money, checkout, data loss or the plugin's main promise; `important`; `minor`), coverage and entry point. Coverage is one of `specs/<file>` with its `@flow-<slug>` tag, `candidate` (browser-only, no spec yet), `unit: <test>` or `manual: <why>`. `/yay:e2e` updates a row when it writes a spec; `/yay:e2e` reads it to see which spec a change touches. Re-running `/yay:e2e-init` adds the flows that are new since.
 
 A baseline spec describes behaviour the plugin has today, so it must pass on the current code, and it must fail when its one precondition is broken (an option turned off, the product deleted). A product bug found by a baseline spec becomes a `B-<n>` artifact and the test is marked `test.fail( true, 'B-<n>: …' )`, which `/yay:fix B-<n>` removes.
 
