@@ -25,9 +25,8 @@ Implement a plan exactly, in a worktree, with one commit per task. Given a requi
 | `--continue` | Resume an `in-progress` plan in its existing worktree, starting at the first unticked task. |
 | `--no-worktree` | Create the branch in the current checkout (`git switch -c`) instead of a worktree. |
 | `--base=<branch>` | Branch from here instead of `git.baseBranch`. |
-| `--no-pr` | Stop after the last commit, and print the push and PR commands. Default: push the branch and open the PR, assigned to you. |
+| `--no-pr` / `--no-push` | Stop after the last commit, and print the push and PR commands. Default: push the branch and open the PR, assigned to you. |
 | `--draft` | Open the PR as a draft. |
-| `--no-push` | Same as `--no-pr`. |
 | `--no-review` | Skip the reviews (step 4.5). For throwaway branches only. |
 
 ## Steps
@@ -70,8 +69,6 @@ For each unticked task in order (or only `--task`):
    - In a `strict` repo (`yayh config get workflow.strictness standard`), every plan change is the second case: stop and ask.
    - **Same goal, same scope, same customer-visible behaviour** (a file moved, a hook or API has another name, an approach fails and an equivalent one works, a task needs one more file): adapt. Edit the task text (and its Verify items) in the same commit as the code, and list the change under **Decided** in the PR. Don't stop.
    - **The scope or what customers see would change** (a new setting, different behaviour, another edition, a much bigger change): stop and tell the user what you found and what you propose. With their agreement, edit the plan first, then continue. With nobody to ask, commit what works and report it as blocked.
-
-   Either way, the plan and the code never disagree: no silent drift.
    - **A decision the plan doesn't settle and you can't responsibly make** (customer-visible wording, a behaviour product must choose, an outcome that depends on other work): don't stop. Take the default that fits the plan, write it as a decision note (`yayh artifact new backlog "<question>" kind=decision from=P-<n> default="<what you built>" [affects=…]`), and go on. Any later plan that touches this one finds the note and settles it.
    - **The design doesn't fit the code** (a component it names doesn't exist, a state it missed): build the closest thing in the design's spirit, update the design file in the same commit (its Screens, States or Copy), and list it under "Decided" in the PR.
    - **Work you find that the plan doesn't list** (a follow-up, an adjacent gap, a nice-to-have): don't build it. Write a `kind=deferred` note (`from=P-<n>`, plus `affects=` when you know which item it belongs to).
@@ -81,7 +78,7 @@ For each unticked task in order (or only `--task`):
    - the tests for this task's Verify items that end in `(unit)`, `(integration)` or `(js)`. Write them in the same task, following `/yay:test` steps 3–4: tag them `P-<n>`, put them at the layer the item names (an older plan's Tests line counts too: each `[layer]` item on it is a test), and prove that they fail without the change. Run them with `yayh test run <layer> --id=P-<n>`. Integration needs this worktree's tests site (`yayh e2e env start`); without Docker, write the tests and mark them **not run**.
    - `yayh code unused <base>`: every symbol this task added has a caller. Delete one that doesn't, unless a later task wires it up. A test alone isn't a caller.
 
-   Fix what fails. If something fails that your change can't explain, check whether it also fails on the base branch: `git stash`, or run it in a temporary detached worktree of the base. A pre-existing failure is reported, not fixed.
+   A failure your change can't explain that also fails on the base branch is pre-existing: report it, don't fix it.
 3. **Risk-3 tasks get a review before the commit** (`yayh plan risk P-<n> T<n>` prints `3`; skipped with `--no-review`). Spawn one read-only `yay:bug-reviewer` with the Agent tool's `model` and `effort` both set from `yayh model resolve review --plan=P-<n>`. Its brief: the worktree path, "review the uncommitted diff (`git diff`, plus untracked files) of task T<n>", the task's text, and the plan's **Goal**, with none of your reasoning. Fix each finding before committing, or answer it with a reason. Either way it goes under "Review" in the PR, marked `T<n>`. The final review (step 4.5) still runs on the whole branch; this one catches a data, money or background-job mistake while it's still one task's diff.
 4. **Tick the task:** `yayh plan tick <plan> T<n>`.
 5. **Commit** the code and the ticked plan together:
@@ -106,8 +103,6 @@ For each unticked task in order (or only `--task`):
      - **Answer:** you disagree, with a reason. It goes in the PR under "Review".
    - **A `blocker`** (a security hole, or data lost or corrupted) is fixed before the PR, never answered away. If you can't fix it, open the PR as a draft and put the blocker first in its body.
    - Each reviewer's **Questions**: check the ones you can, and list the rest for the human reviewer.
-
-   Apart from blockers, the reviews flag and never block.
 6. Run `yayh knowledge stale --since=<base>`. For each doc this branch made wrong, update it now on this branch, following `/yay:knowledge-update`'s rules. Then `yayh knowledge check` must pass, and you run `yayh knowledge stamp <doc>`. Commit it as `docs(knowledge): P-<n> …`.
 7. Run `yayh fm set <plan> status done`. If the plan has `roadmap: R-<n>` and it's the item's last open plan, also run `yayh roadmap set R-<n> built "$(date +%Y-%m-%d)"` (with `started`, set when the item went in-progress, it's the item's pace record for `yayh roadmap pace`). Commit both as `docs(plan): P-<n> complete`, with the roadmap files (`git status -- docs/roadmap docs/roadmap.md`).
 
@@ -118,18 +113,9 @@ git push -u origin "$branch"
 gh pr create --base <base> --head "$branch" --assignee @me [--draft] \
   --title "<type>(<scope>): P-<n> <plan title, lowercase summary>" --body-file <tmp>
 ```
-Fill the PR body from `.github/pull_request_template.md`:
-- link `P-<n>` (and `R-<n>`, `BS-<n>`, `UX-<n>`; with a design, mention its mockup path when one exists, which reviewers can regenerate with `/yay:design UX-<n> --mockup`)
-- list what changed
-- under "Worth a closer look": the 2–5 places a reviewer should read first (risk-3 tasks first, then what surprised you in the code), each as `path:line`: what it does and why it's done that way
-- give the exact checks run, with their results (e2e specs by tag: passed, or not run)
-- under "Not verified": every check that didn't run here and why (no browser, no Docker, one edition), and what a human must do before merging; "none" when everything ran
-- under "How to test": numbered steps for the reviewer, built from the plan's manual Verify items (where to go, the input, what they should see), with one edge case
-- name the editions
-- write a customer-facing release note line, or "internal"
-- under "Decided": the choices you made where the plan was silent
-- under "Open decisions and later work": every note this branch wrote or left open (`BL-<n>`, the question, the default built), and every note it settled
-- under "Review": the correctness and the reuse and comments findings you fixed (one line each), the ones you answered with your reason, and the open questions
+Fill the PR body from `.github/pull_request_template.md`, following its comments. Also:
+- link `R-<n>`, `BS-<n>` and `UX-<n>` next to `P-<n>`, and a design's mockup path when one exists (reviewers regenerate it with `/yay:design UX-<n> --mockup`)
+- paste the `yayh verify` result into Verified, with e2e specs by tag (passed, or not run), and build How to test from the plan's manual Verify items
 
 Then record the PR number with `yayh fm set <plan> pr <number>`, and commit and push that.
 

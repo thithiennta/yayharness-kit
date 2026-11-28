@@ -6,6 +6,9 @@
 - **`/yay:plan` drops `--edition`, and `/yay:brainstorm` can continue an existing brainstorm.** Comes with the plugin update.
   - `--edition` never reached the plan file: a new plan's `editions:` always listed every configured edition, and it still does. Edit that line by hand when a plan touches fewer.
   - `/yay:brainstorm` already offered to continue a brainstorm on the same topic but also said not to edit an older one. It now writes either a new `BS-<n>` or the one it continues, and nothing else.
+- **The PR template gains a "Decided" section, and `/yay:implement` is shorter.** Run `/yay:harness-update` to pick up the new `.github/pull_request_template.md`.
+  - "Decided" lists the choices made where the plan was silent. `/yay:implement` always wrote one; now the template has the heading, so `/yay:fix` PRs get it too ("none" if none).
+  - `/yay:implement` now fills the PR body from the template's own comments instead of repeating each section, and drops a few lines that restated other rules. What it does is unchanged.
 
 ## 0.23.0 (2026-11-28)
 - **`/yay:brainstorm` diverges and `/yay:plan` converges** (P-9, from BS-5). Comes with the plugin update. Run `/yay:harness-update` to refresh the `yay-workflow` rule and `docs/yay-workflow.md`.
