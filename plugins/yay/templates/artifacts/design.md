@@ -43,5 +43,5 @@ created: {{today}}
 <!-- The choices made and the simpler or richer alternative not taken, one line each. Parked calls become backlog decision notes (BL-<n>). -->
 
 ## Acceptance
-<!-- Checks a reviewer or test can run, one per line: the action and the visible result. They feed the plan's Verify and E2E lines. -->
+<!-- Checks a reviewer or test can run, one per line: the action and the visible result. They feed the plan's Verify items; browser-only ones end in (e2e). -->
 -

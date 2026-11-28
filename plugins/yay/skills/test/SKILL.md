@@ -15,7 +15,7 @@ Tests at the cheapest layer that proves each risk, tagged with the artifact they
 
 | Option | Effect |
 |---|---|
-| `P-<n>` | Write the tests on the plan's `**Tests:**` line, tagged `P-<n>`. |
+| `P-<n>` | Write the tests the plan's Verify items name (`(unit)`, `(integration)`, `(js)`), tagged `P-<n>`. |
 | `B-<n>` | Write one regression test at the layer of the bug's root cause, tagged `B-<n>`. It must fail without the fix. |
 | `<file>` / `Class::method` | Cover one unit: the risky cases of that code (tag `baseline`). |
 | `"<behaviour>"` | A described behaviour: find the code that implements it, then test it. |
@@ -32,8 +32,8 @@ Tests at the cheapest layer that proves each risk, tagged with the artifact they
    - Integration with the tests site down and Docker running → `yayh e2e env start`.
    - Docker not running → write the integration tests anyway, and mark them **not run**. Never wait.
 2. **The risks.**
-   - **`P-<n>`:** read the plan's `**Tests:**` line, its Goal, its Approach and its Verify section. Each `[layer]` item is a test.
-     - If the line is `none`, apply the ladder to the plan's acceptance criteria. If a risk deserves a test, add it to the plan's `**Tests:**` line first, then write it.
+   - **`P-<n>`:** read the plan's Goal and Verify section. Each Verify item ending in `(unit)`, `(integration)` or `(js)` is a test at that layer.
+     - If there are none, apply the ladder to the Verify items. If a risk deserves a test, add its layer to the item first, then write it.
    - **`B-<n>`:** read Root cause and Regression test proposal. Test at the layer where the root cause lives (`reference/testing.md`, "Bugs").
      - If the cause is markup, JS rendering or a click path that only a browser shows, hand over to `/yay:e2e B-<n>`.
    - **A unit or a behaviour:** read the code, its callers and its `git log`. List 2–4 cases (input → expected), each backed by the code, a docblock or history. A limit (a cap, a minimum, a threshold) gets three cases: one below it, one exactly at it, and one just above it (for a 200 cap: 199, 200, 201). A case far past the limit doesn't stand in for the one just above it.

@@ -15,7 +15,7 @@ Specs that prove what only a browser can prove, tagged with the artifact they pr
 
 | Option | Effect |
 |---|---|
-| `P-<n>` | Write specs for the plan's `**E2E:**` line, tagged `@P-<n>`. |
+| `P-<n>` | Write specs for the plan's Verify items ending in `(e2e)`, tagged `@P-<n>`. |
 | `B-<n>` | Write one regression spec from the bug's repro, tagged `@B-<n>`. It must fail without the fix. |
 | `"<flow>"` | Write a spec for a described flow (no artifact; tag it `@flow-<slug>`). |
 | `--run[=<grep>]` | Only run: the tagged specs of the given ID, a grep (`--run="@P-4\|@smoke"`), or with no value the smoke spec. |
@@ -32,7 +32,7 @@ Specs that prove what only a browser can prove, tagged with the artifact they pr
    - `env down` with Docker running → `yayh e2e env start`.
    - Docker not running → you can still write specs (steps 2–3), but mark them **not run** in the report. Never wait.
 2. **What to prove.**
-   - **`P-<n>`:** read the plan's `**E2E:**` line and its Goal and Verify sections. Each item on the E2E line becomes a test. If the line is `none`, say so and stop, unless the user named a flow: then add it to the plan's E2E line first.
+   - **`P-<n>`:** read the plan's Goal and Verify sections. Each Verify item ending in `(e2e)` becomes a test. If there's none, say so and stop, unless the user named a flow: then add it to Verify, ending in `(e2e)`, first.
    - **`B-<n>`:** read Repro and Root cause. One test that walks the repro and asserts the correct behaviour. If a unit test can cover it (the cause is pure PHP logic), say so and stop: that belongs to `/yay:fix`'s regression test.
    - **`"<flow>"`:** the outcome the user described, at one level of detail: one spec file, one to three tests.
    - Check existing coverage first: the **Flows** table in `docs/knowledge/e2e.md`, `yayh e2e specs` and `yayh e2e specs <ID>`. Extend the flow's existing file instead of adding a near-copy. For a `"<flow>"` that is a `candidate` row, use its slug, locators source and `needs`.

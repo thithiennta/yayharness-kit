@@ -70,7 +70,7 @@ A plan task may end with a tier tag: `- [ ] T3 Rename the option — \`includes/
 In the task loop, `yayh model resolve task --plan=P-n --task=Tn`:
 - `{}`: do the task inline, as always.
 - Anything else: spawn one `general-purpose` agent with that model and effort. Its brief is:
-  - the worktree path, the plan path, and the task's full text with its `Reuse:` line
+  - the worktree path, the plan path, and the task's full text
   - the code rules (`${CLAUDE_PLUGIN_ROOT}/reference/code-rules.md`)
   - "do exactly this task, run the checks it touches, don't tick or commit; return the files changed, checks run and their results, and any decision you made".
 
