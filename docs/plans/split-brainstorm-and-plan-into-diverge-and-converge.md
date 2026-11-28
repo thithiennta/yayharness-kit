@@ -1,7 +1,7 @@
 ---
 id: P-9
 title: Split brainstorm and plan into diverge and converge
-status: in-progress
+status: done
 lane: small
 from: BS-5
 roadmap:
