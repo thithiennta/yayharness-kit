@@ -41,7 +41,7 @@ Done means:
   - `plan check` drops the lane, strictness, Reuse, Callers, Tests, E2E and Findings checks
   - `plan check` warns on an unknown `[size: …]` and on an `[after: T<n>]` naming a task that isn't earlier
   - a risk-3 task needs a Verify item that's a command check or names a test layer
-- [ ] T3 Plan converges (`plugins/yay/skills/plan/SKILL.md`) [size: M] [after: T2]
+- [x] T3 Plan converges (`plugins/yay/skills/plan/SKILL.md`) [size: M] [after: T2]
   - the steps are: source (ask the pick, or send back to `/yay:brainstorm`), read the files, tasks, Verify, self-check, write, report
   - no question round apart from the pick; drop `--tests` and `--lane`
 - [ ] T4 Readers of the old format (`plugins/yay/skills/implement/SKILL.md`, `plugins/yay/reference/implement-unplanned.md`, `plugins/yay/skills/test/SKILL.md`, `plugins/yay/skills/e2e/SKILL.md`, `plugins/yay/skills/go/SKILL.md`, `plugins/yay/reference/code-rules.md`, `plugins/yay/reference/models.md`, `plugins/yay/reference/config.md`, `plugins/yay/reference/config.schema.json`, `plugins/yay/templates/rules/yay-workflow.md`, `plugins/yay/templates/docs/yay-workflow.md`, `plugins/yay/templates/artifacts/design.md`) [size: M] [after: T3]
