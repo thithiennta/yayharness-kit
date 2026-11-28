@@ -31,7 +31,7 @@ Turn a topic into a `BS-<n>` file that `/yay:plan` builds on. This skill writes 
 3. **Options.** 2-4 approaches, only as many as really differ, each checked against the code (cite files and hooks) and sized S/M/L. With `--research`, add what you learned, with links.
 4. **Recommend** one, and say what would change your mind.
 5. **Write it.** `yayh artifact new brainstorm "<title>" from=<id>` prints the path. Fill in the template, `status: open`. Open questions are only what a human must answer. Keep an attached screenshot as in `${CLAUDE_PLUGIN_ROOT}/reference/artifacts.md` (Screenshots).
-6. **Pick.** Show each option in 1-2 plain lines with its size, and the recommendation. Then ask one AskUserQuestion: the options (recommended first, marked "(Recommended)"), plus at most 2 open questions the choice depends on. On a pick, run `yayh fm set <file> decision "<letter and name>"` and `yayh fm set <file> status decided`, and write the answers into Recommendation. With "don't ask", or no answer, leave it `open`. Inside `/yay:implement --explore`, skip this step: that skill asks.
+6. **Pick.** Show each option in 1-2 plain lines with its size, and the recommendation. Then ask one AskUserQuestion: the options, plus at most 2 open questions the choice depends on. On a pick, run `yayh fm set <file> decision "<letter and name>"` and `yayh fm set <file> status decided`, and write the answers into Recommendation. With "don't ask", or no answer, leave it `open`. When `/yay:implement` runs this in its own flow, skip this step: it asks.
 7. **Report.** Give the file, the decision (or that it's open) and the open questions, and end with the **Next** line (`${CLAUDE_PLUGIN_ROOT}/reference/asking.md`), usually `/yay:plan --from=BS-<n>`.
 
 ## Don'ts

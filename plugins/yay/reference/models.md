@@ -21,7 +21,6 @@ Each step that runs a subagent can use a different model and reasoning effort. `
 |---|---|---|
 | `scout` | knowledge-init, knowledge-update, test-init, e2e-init scouts | `veryfast` |
 | `web-research` | `/yay:roadmap --web` research agent | `veryfast` |
-| `feasibility` | `/yay:brainstorm` Explore agent per option | `veryfast` |
 | `reader` | `/yay:report` cold reader: reads only the finished report, as the lead | `veryfast` |
 | `review` | `yay:bug-reviewer` and `yay:code-reviewer` (implement, fix) | `balanced` |
 | `hypothesis` | `/yay:debug` hypothesis checkers | `balanced` |
@@ -36,7 +35,7 @@ These are the built-in defaults. Override any step in `.yay/config.json` (or `.y
 ```json
 "models": {
   "steps": {
-    "scout": "inherit", "web-research": "inherit", "feasibility": "inherit", "reader": "inherit",
+    "scout": "inherit", "web-research": "inherit", "reader": "inherit",
     "review": "inherit", "hypothesis": "inherit",
     "portfolio-research": "inherit", "cowork": "inherit",
     "synthesis": "inherit", "task": "inherit"
