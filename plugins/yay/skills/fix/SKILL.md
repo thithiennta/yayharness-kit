@@ -17,7 +17,7 @@ Fix one bug, minimally, on its own branch. **No fix without a cause:** the bug r
 |---|---|
 | `<B-n\|slug>` | The bug report to fix. |
 | `<description>` | No report yet. Run a quick inline diagnosis (step 1), which creates `B-<n>` first. |
-| `--hotfix` | Branch `hotfix/<slug>` from the latest release tag (`yayh git last-tag`), so `/yay:release --hotfix` can ship a patch without unreleased work. |
+| `--hotfix` | Branch `hotfix/b-<n>-<slug>` from the latest release tag (`yayh git last-tag`), so `/yay:release --hotfix` can ship a patch without unreleased work. |
 | `--from=<tag>` | Branch the hotfix from this tag instead. |
 | `--test` / `--no-test` | Write the proposed regression test without asking, or skip it and rely on the manual check. Default: write it, unless the repo's rules say tests need approval (then it's one question in step 4's round). |
 | `--no-worktree` | Branch in the current checkout instead of a worktree. |
@@ -46,17 +46,14 @@ Fix one bug, minimally, on its own branch. **No fix without a cause:** the bug r
 ### 3. Fix, minimally
 - Change only what the root cause needs, calling the existing helpers the code already has (`yayh code find <verb> <noun>`) rather than writing new ones. Don't touch comments the fix doesn't make wrong. No refactors and no drive-by fixes; write each as a deferred note (`yayh artifact new backlog "<what>" kind=deferred from=B-<n>`). A call the fix can't make (customer-visible behaviour the report doesn't pin down) becomes a decision note with the default you built (`kind=decision default="…"`); it never stops the fix. Commit the notes with the fix.
 - **Escalate** if the fix needs a schema or data migration, touches more than about 3 modules, changes a public API or hook, or needs a design decision. Stop, commit nothing to product code, and run `/yay:plan --from=B-<n> --type=fix`. A planned fix is then built by `/yay:implement`.
-- Follow the hard rules: PHP floor, editions boundary, escaping and nonces, HPOS.
 
 ### 4. Regression test
 Read the report's Regression test proposal. Put the test at the layer where the **root cause** lives (`${CLAUDE_PLUGIN_ROOT}/reference/testing.md`, "Bugs"): **unit** for logic, **integration** for hooks, storage, REST or WooCommerce objects, and **js** for front-end logic. Follow `/yay:test B-<n>` steps 3–4. Tag it `B-<n>`. When the bug came from a baseline test marked `markTestIncomplete( 'B-<n>: …' )`, `test.fails` or `test.failing`, remove the mark; that test is the regression test. If the layer isn't set up, use the manual check and suggest `/yay:test-init`.
-- With `--test`, write it.
-- With `--no-test`, skip it.
-- Otherwise write it, unless the repo's rules (the project block or `.claude/rules/`) say tests need approval. Only then ask, in **one** AskUserQuestion round, together with the low-confidence question from step 1 if it applies. Write the test if accepted. It must fail without the fix and pass with it; check both, for example by `git stash`-ing the fix.
+- Write it (see `--test` / `--no-test`), unless the repo's rules (the project block or `.claude/rules/`) say tests need approval. Only then ask, in **one** AskUserQuestion round, together with the low-confidence question from step 1 if it applies. It must fail without the fix and pass with it; check both.
 
 Without a test, do the report's manual check exactly and record the result.
 
-**E2E regression** (only when `commands.e2e` is set, the repro is a browser click path, and no unit test can catch it, for example a JS, template or checkout-markup bug): follow `/yay:e2e B-<n>` steps 1–5. Write one spec tagged `@B-<n>`, and prove it fails with the fix stashed and passes with it. It's part of the fix, so don't ask about it. If a unit test covers the cause, write that instead (it's cheaper). When the bug came from a baseline spec marked `test.fail( true, 'B-<n>: …' )`, remove the mark; that spec is the regression test. Without Docker, write it and mark it **not run**.
+**E2E regression** (only when `commands.e2e` is set, the repro is a browser click path, and no unit test can catch it, for example a JS, template or checkout-markup bug): follow `/yay:e2e B-<n>` steps 1–5. Write one spec tagged `@B-<n>`, and prove it fails without the fix and passes with it. It's part of the fix, so don't ask about it. When the bug came from a baseline spec marked `test.fail( true, 'B-<n>: …' )`, remove the mark; that spec is the regression test. Without Docker, write it and mark it **not run**.
 
 ### 5. Verify and commit
 1. Run the configured checks for what changed (`yayh run lint`, `typecheck`, the relevant `test`). Report pre-existing failures as in `/yay:implement`.
