@@ -34,16 +34,17 @@ created: 2026-11-28
   - CHANGELOG: an entry under `## Unreleased (0.23.0)`
 
 ## Verify
-- `test ! -e plugins/yay/reference/preview.md` → exit 0
-- `test ! -e plugins/yay/skills/plan/preview-summary.md` → exit 0
-- `test ! -e plugins/yay/skills/brainstorm/preview-summary.md` → exit 0
-- `test ! -d plugins/yay/evals/plan-previews-first` → exit 0
-- `test ! -d plugins/yay/evals/brainstorm-previews-first` → exit 0
-- `grep -rlE 'preview\.md|preview-summary|previews-first' plugins/yay/skills plugins/yay/reference plugins/yay/agents plugins/yay/evals/README.md` → exit 1
-- `grep -c 'One loop' plugins/yay/reference/asking.md` → exit 1
-- `test "$(wc -w < plugins/yay/skills/brainstorm/SKILL.md)" -le 480` → exit 0
-- `grep -c 'Unreleased (0.23.0)' plugins/yay/CHANGELOG.md` → 1
-- `./tests/run.sh` → exit 0
-- `claude plugin validate plugins/yay` → exit 0
-- In a plugin repo, `/yay:brainstorm <topic>` writes BS-n as `open`, then asks one question to pick an option; picking sets `status: decided`.
-- In a plugin repo, `/yay:plan <topic>` writes the plan without showing a draft first, and its report lists the data changes.
+- ✅ `test ! -e plugins/yay/reference/preview.md` → exit 0
+- ✅ `test ! -e plugins/yay/skills/plan/preview-summary.md` → exit 0
+- ✅ `test ! -e plugins/yay/skills/brainstorm/preview-summary.md` → exit 0
+- ✅ `test ! -d plugins/yay/evals/plan-previews-first` → exit 0
+- ✅ `test ! -d plugins/yay/evals/brainstorm-previews-first` → exit 0
+- ✅ `grep -rlE 'preview\.md|preview-summary|previews-first' plugins/yay/skills plugins/yay/reference plugins/yay/agents` → exit 1
+- ✅ `grep -cE '^. .(plan|brainstorm)-previews-first' plugins/yay/evals/README.md` → exit 1
+- ✅ `grep -c 'One loop' plugins/yay/reference/asking.md` → exit 1
+- ✅ `test "$(wc -w < plugins/yay/skills/brainstorm/SKILL.md)" -le 480` → exit 0
+- ✅ `grep -c 'Unreleased (0.23.0)' plugins/yay/CHANGELOG.md` → 1
+- ✅ `./tests/run.sh` → exit 0
+- ✅ `claude plugin validate plugins/yay` → exit 0
+- ⬜ In a plugin repo, `/yay:brainstorm <topic>` writes BS-n as `open`, then asks one question to pick an option; picking sets `status: decided`.
+- ⬜ In a plugin repo, `/yay:plan <topic>` writes the plan without showing a draft first, and its report lists the data changes.
