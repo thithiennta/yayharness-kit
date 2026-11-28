@@ -1,7 +1,7 @@
 ---
 id: P-8
 title: Remove the plan and brainstorm previews, and trim the brainstorm skill
-status: in-progress
+status: done
 lane: small
 from:
 roadmap:
